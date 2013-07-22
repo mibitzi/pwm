@@ -25,8 +25,16 @@ def handle(event):
         ename = ename[:-5]
 
     if ename == "MapRequest":
-        w = pwm.window.Window(pwm.workspaces.current(), event.window)
+        w = pwm.window.Window(event.window)
         pwm.workspaces.current().add_window(w)
+
     elif ename == "UnmapNotify":
-        w = pwm.workspaces.find_window(event.window)
-        w.workspace.remove_window(w)
+        result = pwm.workspaces.find_window(event.window)
+        if result is not None:
+            w, workspace = result
+            workspace.remove_window(w)
+
+    elif ename == "EnterNotify":
+        w = pwm.workspaces.current().find_window(event.event)
+        if w is not None:
+            pwm.workspaces.current().focus(w)

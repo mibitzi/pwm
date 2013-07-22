@@ -15,6 +15,7 @@ current_workspace_index = 0
 class Workspace:
     def __init__(self):
         self.windows = set([])
+        self.focused = None
 
         self.bar = pwm.bar.Bar()
 
@@ -27,6 +28,7 @@ class Workspace:
         self.layout = pwm.layouts.Default(self)
 
     def add_window(self, window):
+        window.workspace = self
         self.windows.add(window)
         self.layout.add(window)
         window.show()
@@ -43,18 +45,54 @@ class Workspace:
         for w in self.windows:
             w.show()
 
+    def find_window(self, wid):
+        """Searches this workspace for a window with the given wid"""
+
+        for win in self.windows:
+            if win.wid == wid:
+                return win
+        return None
+
+    def focus(self, window):
+        """Focuses the given window
+        window=None will unfocus the current window
+        """
+
+        if window is not None and window not in self.windows:
+            return
+
+        if self.focused is not None:
+            self.focused.handle_focus(False)
+            self.focused = None
+
+        if window is not None:
+            self.focused = window
+            self.focused.handle_focus(True)
+
+
+def setup():
+    """Sets up initial workspace"""
+    add(Workspace())
+
 
 def add(workspace):
+    """Adds a new workspace"""
     workspaces.append(workspace)
 
 
 def current():
+    """Returns the currently active workspace"""
     return workspaces[current_workspace_index]
 
 
 def find_window(wid):
+    """Searches all workspaces for a window with the given wid.
+    Returns (window, workspace) if found otherwise None
+    """
+
     for wspace in workspaces:
-        for win in wspace.windows:
-            if win.wid == wid:
-                return win
+        win = wspace.find_window(wid)
+        if win is not None:
+            return (win, wspace)
+
     return None

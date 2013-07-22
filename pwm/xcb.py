@@ -41,7 +41,8 @@ def setup_screens():
     root_event_mask = (xproto.EventMask.StructureNotify |
                        xproto.EventMask.SubstructureNotify |
                        xproto.EventMask.SubstructureRedirect |
-                       xproto.EventMask.KeyPress)
+                       xproto.EventMask.EnterWindow |
+                       xproto.EventMask.LeaveWindow)
 
     cookie = core.ChangeWindowAttributesChecked(
         screen.root,

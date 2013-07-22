@@ -17,8 +17,7 @@ if __name__ == "__main__":
 
     pwm.xcb.connect()
     pwm.xcb.setup_screens()
-
-    pwm.workspaces.add(pwm.workspaces.Workspace())
+    pwm.workspaces.setup()
 
     pwm.events.loop()
 

@@ -15,11 +15,12 @@ class TestLayouts(unittest.TestCase):
     def setUp(self):
         pwm.xcb.connect()
         pwm.xcb.setup_screens()
+        pwm.workspaces.setup()
 
-        self.workspace = pwm.workspaces.Workspace()
+        self.workspace = pwm.workspaces.current()
         self.layout = pwm.layouts.Default(self.workspace)
 
-        self.windows = [pwm.window.Window(self.workspace, i)
+        self.windows = [pwm.window.Window(i)
                         for i in range(10)]
 
     def tearDown(self):

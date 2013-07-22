@@ -4,23 +4,31 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import xcb.xproto as xproto
+
 import pwm.xcb
 import pwm.color
+import pwm.workspaces
 
 border_width = 1
 
 
 class Window:
-    def __init__(self, workspace, wid):
-        self.workspace = workspace
+    def __init__(self, wid):
         self.wid = wid
         self.x = 0
         self.y = 0
         self.width = 0
         self.height = 0
-        self.bordercolor = "#ff00ff"
+        self.focused = False
 
-        self.change_attributes(borderpixel=pwm.color.get_pixel("#ff00ff"))
+        self.handle_focus(False)
+
+        self.change_attributes(
+            eventmask=(xproto.EventMask.EnterWindow |
+                       xproto.EventMask.FocusChange |
+                       xproto.EventMask.PropertyChange |
+                       xproto.EventMask.StructureNotify))
 
     def show(self):
         pwm.xcb.core.MapWindow(self.wid)
@@ -42,10 +50,30 @@ class Window:
         self.width = int(kwargs.get("width", self.width))
         self.height = int(kwargs.get("height", self.height))
 
+        workspace = pwm.workspaces.current()
+
         mask, values = pwm.xcb.configure_mask(
-            x=self.workspace.x + self.x,
-            y=self.workspace.y + self.y,
+            x=workspace.x + self.x,
+            y=workspace.y + self.y,
             width=self.width - 2*border_width,
             height=self.height - 2*border_width,
             borderwidth=border_width)
         pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
+
+    def handle_focus(self, focused):
+        """Handles a change in focus.
+        To focus a window use Workspace.focus
+        """
+
+        self.focused = focused
+
+        border = None
+        if self.focused:
+            # Archlinux Blue
+            border = pwm.color.get_pixel("#1793D1")
+        else:
+            border = pwm.color.get_pixel("#222222")
+
+        # TODO: color for urgent: #900000
+
+        self.change_attributes(borderpixel=border)
