@@ -4,6 +4,8 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import xcb.xproto as xp
+
 import pwm.xcb
 import pwm.window
 import pwm.workspaces
@@ -20,21 +22,17 @@ def loop():
 
 
 def handle(event):
-    ename = event.__class__.__name__
-    if ename.endswith("Event"):
-        ename = ename[:-5]
-
-    if ename == "MapRequest":
+    if isinstance(event, xp.MapRequestEvent):
         w = pwm.window.Window(event.window)
         pwm.workspaces.current().add_window(w)
 
-    elif ename == "UnmapNotify":
+    elif isinstance(event, xp.UnmapNotifyEvent):
         result = pwm.workspaces.find_window(event.window)
         if result is not None:
             w, workspace = result
             workspace.remove_window(w)
 
-    elif ename == "EnterNotify":
+    elif isinstance(event, xp.EnterNotifyEvent):
         w = pwm.workspaces.current().find_window(event.event)
         if w is not None:
             pwm.workspaces.current().focus(w)
