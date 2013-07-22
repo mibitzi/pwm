@@ -15,6 +15,9 @@ class TestColor(unittest.TestCase):
         pwm.xcb.connect()
         pwm.xcb.setup_screens()
 
+    def tearDown(self):
+        pwm.xcb.disconnect()
+
     def test_get(self):
         self.assertEqual(pwm.color.get_pixel("#000000"),
                          pwm.xcb.screen.black_pixel)

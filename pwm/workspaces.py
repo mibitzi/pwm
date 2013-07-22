@@ -50,3 +50,11 @@ def add(workspace):
 
 def current():
     return workspaces[current_workspace_index]
+
+
+def find_window(wid):
+    for wspace in workspaces:
+        for win in wspace.windows:
+            if win.wid == wid:
+                return win
+    return None
