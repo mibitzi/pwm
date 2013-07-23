@@ -4,6 +4,7 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+from pwm.config import config
 import pwm.xcb
 import pwm.bar
 import pwm.layouts
@@ -14,16 +15,17 @@ current_workspace_index = 0
 
 class Workspace:
     def __init__(self):
+        self.active = False
         self.windows = set([])
         self.focused = None
 
-        self.bar = pwm.bar.Bar()
-
         self.x = 0
-        self.y = self.bar.height
+        self.y = config["bar"]["height"]
 
         self.width = pwm.xcb.screen.width_in_pixels
-        self.height = pwm.xcb.screen.height_in_pixels - self.bar.height
+        self.height = pwm.xcb.screen.height_in_pixels - self.y
+
+        self.bar = pwm.bar.Bar(self)
 
         self.layout = pwm.layouts.Default(self)
 
@@ -38,10 +40,16 @@ class Workspace:
         self.layout.remove(window)
 
     def hide(self):
+        self.active = False
+        self.bar.hide()
+
         for w in self.windows:
             w.hide()
 
     def show(self):
+        self.active = True
+        self.bar.show()
+
         for w in self.windows:
             w.show()
 
@@ -73,6 +81,13 @@ class Workspace:
 def setup():
     """Sets up initial workspace"""
     add(Workspace())
+    current().show()
+
+
+def destroy():
+    """Destroys all workspaces"""
+    global workspaces
+    workspaces = []
 
 
 def add(workspace):
@@ -90,9 +105,9 @@ def find_window(wid):
     Returns (window, workspace) if found otherwise None
     """
 
-    for wspace in workspaces:
-        win = wspace.find_window(wid)
+    for ws in workspaces:
+        win = ws.find_window(wid)
         if win is not None:
-            return (win, wspace)
+            return (win, ws)
 
     return None

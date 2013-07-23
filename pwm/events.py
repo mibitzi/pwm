@@ -4,6 +4,7 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import logging
 import xcb.xproto as xp
 
 import pwm.xcb
@@ -23,8 +24,18 @@ def loop():
 
 def handle(event):
     if isinstance(event, xp.MapRequestEvent):
-        w = pwm.window.Window(event.window)
-        pwm.workspaces.current().add_window(w)
+        #if event.window == pwm.workspaces.current().bar.wid:
+        #    logging.debug("ExposeEvent on bar")
+        #    pwm.workspaces.current().bar.show()
+
+        w = pwm.workspaces.current().find_window(event.window)
+
+        if w is None:
+            w = pwm.window.Window(event.window)
+            pwm.workspaces.current().add_window(w)
+        #else:
+        #    logging.debug("ExposeEvent on existing window")
+        #    w.show()
 
     elif isinstance(event, xp.UnmapNotifyEvent):
         result = pwm.workspaces.find_window(event.window)

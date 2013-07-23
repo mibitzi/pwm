@@ -84,3 +84,22 @@ class MaskMap:
 configure_mask = MaskMap(xproto.ConfigWindow)
 attribute_mask = MaskMap(xproto.CW)
 gc_mask = MaskMap(xproto.GC)
+
+
+def create_gc():
+    """Creates a new graphics context"""
+    gc = conn.generate_id()
+
+    mask, values = gc_mask(
+        foreground=screen.white_pixel,
+        background=screen.black_pixel,
+        graphicsexposures=0)
+
+    core.CreateGC(gc, screen.root, mask, values)
+
+    return gc
+
+
+def change_gc(gc, **kwargs):
+    """Shortcut fore core.ChangeGC(gc, *gc_mask(...))"""
+    core.ChangeGC(gc, *gc_mask(**kwargs))

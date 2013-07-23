@@ -1,2 +1,2 @@
-pwm
-===
+Pointless Window Manager
+========================

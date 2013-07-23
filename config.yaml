@@ -2,6 +2,9 @@ loglevel: debug
 
 border_width: 3
 
+bar:
+        height: 18
+
 colors:
         focused: "#1793D1"
         unfocused: "#222222"

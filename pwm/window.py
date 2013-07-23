@@ -20,6 +20,7 @@ class Window:
         self.width = 0
         self.height = 0
         self.focused = False
+        self.visible = False
 
         self.handle_focus(False)
 
@@ -30,9 +31,11 @@ class Window:
                        xproto.EventMask.StructureNotify))
 
     def show(self):
+        self.visible = True
         pwm.xcb.core.MapWindow(self.wid)
 
     def hide(self):
+        self.visible = False
         pwm.xcb.core.UnmapWindow(self.wid)
 
     def change_attributes(self, **kwargs):
