@@ -22,7 +22,7 @@ class Default:
 
     def remove(self, window):
         if window == self.master:
-            if len(self.stacked) > 0:
+            if self.stacked:
                 self.master = self.stacked.pop()
             else:
                 self.master = None
@@ -35,7 +35,7 @@ class Default:
         if self.master is None:
             return
 
-        if len(self.stacked) == 0:
+        if not self.stacked:
             self.master.configure(x=0, y=0, width=self.workspace.width,
                                   height=self.workspace.height)
             return
