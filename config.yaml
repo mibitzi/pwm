@@ -1,0 +1,8 @@
+loglevel: debug
+
+border_width: 3
+
+colors:
+        focused: "#1793D1"
+        unfocused: "#222222"
+        urgent: "#900000"

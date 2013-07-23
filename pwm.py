@@ -7,13 +7,18 @@ from __future__ import print_function, unicode_literals
 
 import logging
 
+from pwm.config import config
 import pwm.xcb
 import pwm.events
 import pwm.workspaces
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    loglevel = config["loglevel"].upper()
+
+    if loglevel != "INFO":
+        logging.basicConfig(level=getattr(logging, loglevel, None))
+        logging.info("Changed to loglevel %s" % loglevel)
 
     pwm.xcb.connect()
     pwm.xcb.setup_screens()

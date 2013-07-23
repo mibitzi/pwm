@@ -6,11 +6,10 @@ from __future__ import print_function, unicode_literals
 
 import xcb.xproto as xproto
 
+from pwm.config import config
 import pwm.xcb
 import pwm.color
 import pwm.workspaces
-
-border_width = 1
 
 
 class Window:
@@ -55,9 +54,9 @@ class Window:
         mask, values = pwm.xcb.configure_mask(
             x=workspace.x + self.x,
             y=workspace.y + self.y,
-            width=self.width - 2*border_width,
-            height=self.height - 2*border_width,
-            borderwidth=border_width)
+            width=self.width - 2*config["border_width"],
+            height=self.height - 2*config["border_width"],
+            borderwidth=config["border_width"])
         pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
 
     def handle_focus(self, focused):
@@ -69,11 +68,8 @@ class Window:
 
         border = None
         if self.focused:
-            # Archlinux Blue
-            border = pwm.color.get_pixel("#1793D1")
+            border = pwm.color.get_pixel(config["colors"]["focused"])
         else:
-            border = pwm.color.get_pixel("#222222")
-
-        # TODO: color for urgent: #900000
+            border = pwm.color.get_pixel(config["colors"]["unfocused"])
 
         self.change_attributes(borderpixel=border)
