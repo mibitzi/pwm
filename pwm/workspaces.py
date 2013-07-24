@@ -29,11 +29,9 @@ class Workspace:
 
         self.layout = pwm.layouts.Default(self)
 
-        pwm.events.window_mapped.add(self.handle_window_mapped)
         pwm.events.window_unmapped.add(self.handle_window_unmapped)
 
     def destroy(self):
-        pwm.events.window_mapped.remove(self.handle_window_mapped)
         pwm.events.window_unmapped.remove(self.handle_window_unmapped)
 
         self.bar.destroy()
@@ -62,16 +60,18 @@ class Workspace:
                 return win
         return None
 
-    def handle_window_mapped(self, window):
-        if self.active:
-            self.windows.append(window)
-            self.layout.add(window)
-            window.show()
+    def add_window(self, window):
+        self.windows.append(window)
+        self.layout.add(window)
+        window.show()
+
+    def remove_window(self, window):
+        self.windows.remove(window)
+        self.layout.remove(window)
 
     def handle_window_unmapped(self, window):
         if window in self.windows:
-            self.windows.remove(window)
-            self.layout.remove(window)
+            self.remove_window(window)
 
 
 def setup():
@@ -79,11 +79,20 @@ def setup():
     add(Workspace())
     current().show()
 
+    pwm.events.window_map_request.add(map_window)
+
 
 def destroy():
     """Destroys all workspaces"""
+
     global workspaces
+
+    for ws in workspaces:
+        ws.destroy()
+
     workspaces = []
+
+    pwm.events.window_map_request.remove(map_window)
 
 
 def add(workspace):
@@ -94,6 +103,11 @@ def add(workspace):
 def current():
     """Returns the currently active workspace"""
     return workspaces[current_workspace_index]
+
+
+def map_window(wid):
+    window = pwm.window.Window(wid)
+    current().add_window(window)
 
 
 def find_window(wid):

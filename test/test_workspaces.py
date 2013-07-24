@@ -19,10 +19,13 @@ class TestWorkspace(unittest.TestCase):
 
         self.window = pwm.window.Window(pwm.xcb.screen.root)
         self.workspace = pwm.workspaces.current()
-        self.workspace.handle_window_mapped(self.window)
+        self.workspace.add_window(self.window)
+
+        self.destroyed = False
 
     def tearDown(self):
-        pwm.workspaces.destroy()
+        if not self.destroyed:
+            pwm.workspaces.destroy()
         pwm.xcb.disconnect()
 
     def test_setup(self):
@@ -37,6 +40,7 @@ class TestWorkspace(unittest.TestCase):
     def test_destroy(self):
         pwm.workspaces.destroy()
         self.assertEqual(len(pwm.workspaces.workspaces), 0)
+        self.destroyed = True
 
     def test_add(self):
         pwm.workspaces.add(pwm.workspaces.Workspace())
@@ -50,19 +54,19 @@ class TestWorkspace(unittest.TestCase):
             self.workspace.height,
             pwm.xcb.screen.height_in_pixels - self.workspace.bar.height)
 
-    def test_handle_window_mapped(self):
+    def test_add_window(self):
         # Window already added
         self.assertEqual(len(self.workspace.windows), 1)
         self.assertTrue(self.window in self.workspace.windows)
 
-    def test_handle_window_unmapped(self):
+    def test_remove_window(self):
         win = pwm.window.Window(pwm.xcb.screen.root)
-        self.workspace.handle_window_mapped(win)
+        self.workspace.add_window(win)
 
-        self.workspace.handle_window_unmapped(self.window)
+        self.workspace.remove_window(self.window)
         self.assertEqual(len(self.workspace.windows), 1)
 
-        self.workspace.handle_window_unmapped(win)
+        self.workspace.remove_window(win)
         self.assertEqual(len(self.workspace.windows), 0)
 
     def test_find_window(self):

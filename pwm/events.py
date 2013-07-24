@@ -32,7 +32,7 @@ window_focused = Event()
 window_property_changed = Event()
 
 # handler(window)
-window_mapped = Event()
+window_map_request = Event()
 
 # handler(window)
 window_unmapped = Event()
@@ -52,8 +52,7 @@ def loop():
 
 def handle(event):
     if isinstance(event, xp.MapRequestEvent):
-        w = pwm.window.Window(event.window)
-        window_mapped(w)
+        window_map_request(event.window)
 
     elif isinstance(event, xp.UnmapNotifyEvent):
         result = pwm.workspaces.find_window(event.window)
