@@ -44,9 +44,6 @@ class Workspace:
         if window == self.focused:
             self.focused = None
 
-            if self.windows:
-                self.focus(self.windows[-1])
-
         self.bar.update()
 
     def hide(self):

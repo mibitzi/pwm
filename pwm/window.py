@@ -79,3 +79,6 @@ class Window:
             border = pwm.color.get_pixel(config["window"]["unfocused"])
 
         self.change_attributes(borderpixel=border)
+        pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
+                                   self.wid,
+                                   xproto.Time.CurrentTime)
