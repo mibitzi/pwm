@@ -13,6 +13,31 @@ import pwm.window
 import pwm.workspaces
 
 
+class Event(set):
+    """Simple event class based on a set."""
+
+    def fire(self, *args, **kargs):
+        """Fires this event and calls all handlers."""
+
+        # Iterate over a copy to enable manipulation during firing
+        for handler in self.copy():
+            handler(*args, **kargs)
+
+    __call__ = fire
+
+# handler(window)
+window_focused = Event()
+
+# handler(window)
+window_property_changed = Event()
+
+# handler(window)
+window_mapped = Event()
+
+# handler(window)
+window_unmapped = Event()
+
+
 def loop():
     while True:
         try:
@@ -27,31 +52,20 @@ def loop():
 
 def handle(event):
     if isinstance(event, xp.MapRequestEvent):
-        #if event.window == pwm.workspaces.current().bar.wid:
-        #    logging.debug("ExposeEvent on bar")
-        #    pwm.workspaces.current().bar.show()
-
-        w = pwm.workspaces.current().find_window(event.window)
-
-        if w is None:
-            w = pwm.window.Window(event.window)
-            pwm.workspaces.current().add_window(w)
-        #else:
-        #    logging.debug("ExposeEvent on existing window")
-        #    w.show()
+        w = pwm.window.Window(event.window)
+        window_mapped(w)
 
     elif isinstance(event, xp.UnmapNotifyEvent):
         result = pwm.workspaces.find_window(event.window)
         if result is not None:
-            w, workspace = result
-            workspace.remove_window(w)
+            window_unmapped(result[0])
 
     elif isinstance(event, xp.EnterNotifyEvent):
         w = pwm.workspaces.current().find_window(event.event)
         if w:
-            pwm.workspaces.current().focus(w)
+            window_focused(w)
 
     elif isinstance(event, xp.PropertyNotifyEvent):
         w = pwm.workspaces.current().find_window(event.window)
         if w:
-            pwm.workspaces.current().handle_property_notify(w)
+            window_property_changed(w)

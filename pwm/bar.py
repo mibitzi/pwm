@@ -4,18 +4,19 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-import xcb
 import xcb.xproto as xproto
 import cairo
 
 from pwm.config import config
 import pwm.xcb
 import pwm.color as color
+import pwm.events
 
 
 class Bar:
     def __init__(self, workspace):
         self.visible = False
+        self.focused = None
         self.workspace = workspace
 
         self.width = self.workspace.width
@@ -27,6 +28,17 @@ class Bar:
         (self.surface, self.ctx) = self.create_cairo_context()
 
         self.draw_pixmap()
+
+        pwm.events.window_focused.add(self.handle_window_focused)
+        pwm.events.window_property_changed.add(
+            self.handle_window_property_changed)
+        pwm.events.window_unmapped.add(self.handle_window_unmapped)
+
+    def destroy(self):
+        pwm.events.window_focused.remove(self.handle_window_focused)
+        pwm.events.window_property_changed.remove(
+            self.handle_window_property_changed)
+        pwm.events.window_unmapped.remove(self.handle_window_unmapped)
 
     def create_window(self):
         wid = pwm.xcb.conn.generate_id()
@@ -85,14 +97,14 @@ class Bar:
         self.ctx.paint()
 
     def draw_window_text(self):
-        if not self.workspace.focused:
+        if not self.focused:
             return
 
         self.ctx.set_source_rgb(1, 1, 1)
         self.ctx.select_font_face(config["bar"]["font"]["face"])
         self.ctx.set_font_size(config["bar"]["font"]["size"])
 
-        text = self.workspace.focused.get_name()
+        text = self.focused.get_name()
 
         _, y_bearing, _, height, _, _ = self.ctx.text_extents(text)
 
@@ -112,13 +124,26 @@ class Bar:
         self.copy_pixmap()
 
     def show(self):
-        """Renders the bar to its workspace"""
+        """Renders the bar"""
         self.visible = True
 
         pwm.xcb.core.MapWindow(self.wid)
         self.copy_pixmap()
 
     def hide(self):
-        """Hides the bar from its workspace"""
+        """Hides the bar"""
         self.visible = False
         pwm.xcb.core.UnmapWindow(self.wid)
+
+    def handle_window_focused(self, window):
+        self.focused = window
+        self.update()
+
+    def handle_window_property_changed(self, window):
+        if window == self.focused:
+            self.update()
+
+    def handle_window_unmapped(self, window):
+        if window == self.focused:
+            self.focused = None
+            self.update()

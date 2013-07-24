@@ -51,9 +51,9 @@ class TestWindow(unittest.TestCase):
         #attr = pwm.xcb.core.GetWindowAttributes(self.window.wid).reply()
         #self.assertEqual(attr.map_state, xproto.MapState.Unmapped)
 
-    def test_handle_focus(self):
-        self.window.handle_focus(True)
+    def test_handle_window_focused(self):
+        self.window.handle_window_focused(self.window)
         self.assertTrue(self.window.focused)
 
-        self.window.handle_focus(False)
+        self.window.handle_window_focused(None)
         self.assertFalse(self.window.focused)

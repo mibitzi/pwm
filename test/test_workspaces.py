@@ -19,8 +19,7 @@ class TestWorkspace(unittest.TestCase):
 
         self.window = pwm.window.Window(pwm.xcb.screen.root)
         self.workspace = pwm.workspaces.current()
-
-        self.workspace.add_window(self.window)
+        self.workspace.handle_window_mapped(self.window)
 
     def tearDown(self):
         pwm.workspaces.destroy()
@@ -51,34 +50,20 @@ class TestWorkspace(unittest.TestCase):
             self.workspace.height,
             pwm.xcb.screen.height_in_pixels - self.workspace.bar.height)
 
-    def test_add_window(self):
+    def test_handle_window_mapped(self):
+        # Window already added
         self.assertEqual(len(self.workspace.windows), 1)
         self.assertTrue(self.window in self.workspace.windows)
 
-    def test_remove_window(self):
+    def test_handle_window_unmapped(self):
         win = pwm.window.Window(pwm.xcb.screen.root)
-        self.workspace.add_window(win)
+        self.workspace.handle_window_mapped(win)
 
-        self.workspace.focus(self.window)
-        self.workspace.remove_window(self.window)
+        self.workspace.handle_window_unmapped(self.window)
         self.assertEqual(len(self.workspace.windows), 1)
 
-        self.workspace.focus(win)
-        self.workspace.remove_window(win)
+        self.workspace.handle_window_unmapped(win)
         self.assertEqual(len(self.workspace.windows), 0)
-
-    def test_focus(self):
-        # Don't focus windows from other workspaces
-        self.workspace.remove_window(self.window)
-        self.workspace.focus(self.window)
-        self.assertIsNone(self.workspace.focused)
-        self.assertFalse(self.window.focused)
-
-        # But focus windows from the current workspace
-        self.workspace.add_window(self.window)
-        self.workspace.focus(self.window)
-        self.assertEqual(self.workspace.focused, self.window)
-        self.assertTrue(self.window.focused)
 
     def test_find_window(self):
         (win, ws) = pwm.workspaces.find_window(self.window.wid)

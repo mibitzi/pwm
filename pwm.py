@@ -13,7 +13,7 @@ import pwm.events
 import pwm.workspaces
 
 
-if __name__ == "__main__":
+def main():
     loglevel = config["loglevel"].upper()
 
     if loglevel != "INFO":
@@ -27,3 +27,6 @@ if __name__ == "__main__":
     pwm.events.loop()
 
     pwm.xcb.disconnect()
+
+if __name__ == "__main__":
+    main()

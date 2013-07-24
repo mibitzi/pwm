@@ -10,6 +10,7 @@ from pwm.config import config
 import pwm.xcb
 import pwm.color
 import pwm.workspaces
+import pwm.events
 
 
 class Window:
@@ -22,13 +23,18 @@ class Window:
         self.focused = False
         self.visible = False
 
-        self.handle_focus(False)
-
         self.change_attributes(
             eventmask=(xproto.EventMask.EnterWindow |
                        xproto.EventMask.FocusChange |
                        xproto.EventMask.PropertyChange |
                        xproto.EventMask.StructureNotify))
+
+        pwm.events.window_focused.add(self.handle_window_focused)
+        pwm.events.window_unmapped.add(self.handle_window_unmapped)
+
+    def destroy(self):
+        pwm.events.window_focused.remove(self.handle_window_focused)
+        pwm.events.window_unmapped.remove(self.handle_window_unmapped)
 
     def show(self):
         self.visible = True
@@ -46,7 +52,7 @@ class Window:
         return pwm.xcb.get_property_string(self.wid, xproto.Atom.WM_NAME)
 
     def configure(self, **kwargs):
-        """ Arguments can be: x, y, width, height
+        """Arguments can be: x, y, width, height
         All changes to these variables should be done by calling this method.
         """
 
@@ -65,12 +71,16 @@ class Window:
             borderwidth=config["window"]["border"])
         pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
 
-    def handle_focus(self, focused):
-        """Handles a change in focus.
-        To focus a window use Workspace.focus
-        """
+    def handle_window_focused(self, window):
+        """Handler for the events.window_focused event"""
 
-        self.focused = focused
+        if self.focused and window == self:
+            return
+
+        if not self.focused and window != self:
+            return
+
+        self.focused = (window == self)
 
         border = None
         if self.focused:
@@ -79,6 +89,12 @@ class Window:
             border = pwm.color.get_pixel(config["window"]["unfocused"])
 
         self.change_attributes(borderpixel=border)
-        pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
-                                   self.wid,
-                                   xproto.Time.CurrentTime)
+
+        if self.focused:
+            pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
+                                       self.wid,
+                                       xproto.Time.CurrentTime)
+
+    def handle_window_unmapped(self, window):
+        if self == window:
+            self.destroy()

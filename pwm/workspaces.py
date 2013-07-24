@@ -8,6 +8,7 @@ from pwm.config import config
 import pwm.xcb
 import pwm.bar
 import pwm.layouts
+import pwm.events
 
 workspaces = []
 current_workspace_index = 0
@@ -17,7 +18,6 @@ class Workspace:
     def __init__(self):
         self.active = False
         self.windows = []
-        self.focused = None
 
         self.x = 0
         self.y = config["bar"]["height"]
@@ -29,22 +29,14 @@ class Workspace:
 
         self.layout = pwm.layouts.Default(self)
 
-    def add_window(self, window):
-        window.workspace = self
-        self.windows.append(window)
-        self.layout.add(window)
+        pwm.events.window_mapped.add(self.handle_window_mapped)
+        pwm.events.window_unmapped.add(self.handle_window_unmapped)
 
-        window.show()
-        self.bar.update()
+    def destroy(self):
+        pwm.events.window_mapped.remove(self.handle_window_mapped)
+        pwm.events.window_unmapped.remove(self.handle_window_unmapped)
 
-    def remove_window(self, window):
-        self.windows.remove(window)
-        self.layout.remove(window)
-
-        if window == self.focused:
-            self.focused = None
-
-        self.bar.update()
+        self.bar.destroy()
 
     def hide(self):
         self.active = False
@@ -70,29 +62,16 @@ class Workspace:
                 return win
         return None
 
-    def focus(self, window):
-        """Focuses the given window
-        window=None will unfocus the current window
-        """
+    def handle_window_mapped(self, window):
+        if self.active:
+            self.windows.append(window)
+            self.layout.add(window)
+            window.show()
 
-        if window is not None and window not in self.windows:
-            return
-
-        if self.focused is not None:
-            self.focused.handle_focus(False)
-            self.focused = None
-
-        if window is not None:
-            self.focused = window
-            self.focused.handle_focus(True)
-
-        self.bar.update()
-
-    def handle_property_notify(self, window):
-        if window not in self.windows:
-            return
-
-        self.bar.update()
+    def handle_window_unmapped(self, window):
+        if window in self.windows:
+            self.windows.remove(window)
+            self.layout.remove(window)
 
 
 def setup():
