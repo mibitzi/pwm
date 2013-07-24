@@ -1,11 +1,15 @@
 loglevel: debug
 
-border_width: 3
-
 bar:
-        height: 18
+  height: 18
+  background: "#222222"
+  foreground: "#ffffff"
+  font:
+    face: DejaVu Sans Mono
+    size: 12
 
-colors:
-        focused: "#1793D1"
-        unfocused: "#222222"
-        urgent: "#900000"
+window:
+  border: 3
+  focused: "#1793D1"
+  unfocused: "#222222"
+  urgent: "#900000"

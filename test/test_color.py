@@ -18,9 +18,20 @@ class TestColor(unittest.TestCase):
     def tearDown(self):
         pwm.xcb.disconnect()
 
-    def test_get(self):
+    def test_get_pixl(self):
         self.assertEqual(pwm.color.get_pixel("#000000"),
                          pwm.xcb.screen.black_pixel)
 
         self.assertEqual(pwm.color.get_pixel("#ffffff"),
                          pwm.xcb.screen.white_pixel)
+
+    def test_get_rgb(self):
+        self.assertEqual(pwm.color.get_rgb("#000000"), (0, 0, 0))
+        self.assertEqual(pwm.color.get_rgb("#ffffff"), (1, 1, 1))
+
+        self.assertEqual(pwm.color.get_rgb("#ff0000"), (1, 0, 0))
+        self.assertEqual(pwm.color.get_rgb("#00ff00"), (0, 1, 0))
+        self.assertEqual(pwm.color.get_rgb("#0000ff"), (0, 0, 1))
+
+        self.assertAlmostEqual(
+            pwm.color.get_rgb("#1793D1"), (23/255, 147/255, 209/255))

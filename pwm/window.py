@@ -42,6 +42,9 @@ class Window:
         mask, values = pwm.xcb.attribute_mask(**kwargs)
         pwm.xcb.core.ChangeWindowAttributes(self.wid, mask, values)
 
+    def get_name(self):
+        return pwm.xcb.get_property_string(self.wid, xproto.Atom.WM_NAME)
+
     def configure(self, **kwargs):
         """ Arguments can be: x, y, width, height
         All changes to these variables should be done by calling this method.
@@ -57,9 +60,9 @@ class Window:
         mask, values = pwm.xcb.configure_mask(
             x=workspace.x + self.x,
             y=workspace.y + self.y,
-            width=self.width - 2*config["border_width"],
-            height=self.height - 2*config["border_width"],
-            borderwidth=config["border_width"])
+            width=self.width - 2*config["window"]["border"],
+            height=self.height - 2*config["window"]["border"],
+            borderwidth=config["window"]["border"])
         pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
 
     def handle_focus(self, focused):
@@ -71,8 +74,8 @@ class Window:
 
         border = None
         if self.focused:
-            border = pwm.color.get_pixel(config["colors"]["focused"])
+            border = pwm.color.get_pixel(config["window"]["focused"])
         else:
-            border = pwm.color.get_pixel(config["colors"]["unfocused"])
+            border = pwm.color.get_pixel(config["window"]["unfocused"])
 
         self.change_attributes(borderpixel=border)

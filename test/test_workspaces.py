@@ -17,7 +17,7 @@ class TestWorkspace(unittest.TestCase):
         pwm.xcb.setup_screens()
         pwm.workspaces.setup()
 
-        self.window = pwm.window.Window(0)
+        self.window = pwm.window.Window(pwm.xcb.screen.root)
         self.workspace = pwm.workspaces.current()
 
         self.workspace.add_window(self.window)
@@ -27,7 +27,7 @@ class TestWorkspace(unittest.TestCase):
         pwm.xcb.disconnect()
 
     def test_setup(self):
-        # setup() was already called in the setup for this testcase
+        # setup() was already called in setUp
 
         self.assertEqual(len(pwm.workspaces.workspaces), 1)
         self.assertEqual(pwm.workspaces.current(),

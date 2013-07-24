@@ -24,3 +24,10 @@ def get_pixel(color):
     else:
         return pwm.xcb.core.AllocNamedColor(pwm.xcb.screen.default_colormap,
                                             len(color), color).reply().pixel
+
+
+def get_rgb(color):
+    value = color.lstrip('#')
+    lv = len(value)
+    step = int(lv/3)
+    return tuple(int(value[i:i+step], 16)/255 for i in range(0, lv, step))

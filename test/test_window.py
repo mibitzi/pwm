@@ -19,7 +19,7 @@ class TestWindow(unittest.TestCase):
         pwm.workspaces.setup()
 
         # TODO: create real window to test with
-        self.window = pwm.window.Window(0)
+        self.window = pwm.window.Window(pwm.xcb.screen.root)
 
     def tearDown(self):
         pwm.workspaces.destroy()

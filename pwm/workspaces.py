@@ -33,25 +33,30 @@ class Workspace:
         window.workspace = self
         self.windows.add(window)
         self.layout.add(window)
+
         window.show()
+        self.bar.update()
 
     def remove_window(self, window):
         self.windows.remove(window)
         self.layout.remove(window)
+        self.bar.update()
 
     def hide(self):
         self.active = False
-        self.bar.hide()
 
         for w in self.windows:
             w.hide()
 
+        self.bar.hide()
+
     def show(self):
         self.active = True
-        self.bar.show()
 
         for w in self.windows:
             w.show()
+
+        self.bar.show()
 
     def find_window(self, wid):
         """Searches this workspace for a window with the given wid"""
@@ -76,6 +81,8 @@ class Workspace:
         if window is not None:
             self.focused = window
             self.focused.handle_focus(True)
+
+        self.bar.update()
 
 
 def setup():

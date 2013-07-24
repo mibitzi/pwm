@@ -95,11 +95,16 @@ def create_gc():
         background=screen.black_pixel,
         graphicsexposures=0)
 
-    core.CreateGC(gc, screen.root, mask, values)
+    core.CreateGCChecked(gc, screen.root, mask, values).check()
 
     return gc
 
 
-def change_gc(gc, **kwargs):
-    """Shortcut fore core.ChangeGC(gc, *gc_mask(...))"""
-    core.ChangeGC(gc, *gc_mask(**kwargs))
+def get_property_string(wid, prop):
+    reply = core.GetProperty(False,
+                             wid,
+                             prop,
+                             xproto.GetPropertyType.Any,
+                             0, (2 ** 32) - 1).reply()
+
+    return "".join(chr(c) for c in reply.value)
