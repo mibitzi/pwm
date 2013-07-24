@@ -45,5 +45,10 @@ def handle(event):
 
     elif isinstance(event, xp.EnterNotifyEvent):
         w = pwm.workspaces.current().find_window(event.event)
-        if w is not None:
+        if w:
             pwm.workspaces.current().focus(w)
+
+    elif isinstance(event, xp.PropertyNotifyEvent):
+        w = pwm.workspaces.current().find_window(event.window)
+        if w:
+            pwm.workspaces.current().handle_property_notify(w)

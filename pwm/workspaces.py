@@ -16,7 +16,7 @@ current_workspace_index = 0
 class Workspace:
     def __init__(self):
         self.active = False
-        self.windows = set([])
+        self.windows = []
         self.focused = None
 
         self.x = 0
@@ -31,7 +31,7 @@ class Workspace:
 
     def add_window(self, window):
         window.workspace = self
-        self.windows.add(window)
+        self.windows.append(window)
         self.layout.add(window)
 
         window.show()
@@ -40,6 +40,13 @@ class Workspace:
     def remove_window(self, window):
         self.windows.remove(window)
         self.layout.remove(window)
+
+        if window == self.focused:
+            self.focused = None
+
+            if self.windows:
+                self.focus(self.windows[-1])
+
         self.bar.update()
 
     def hide(self):
@@ -81,6 +88,12 @@ class Workspace:
         if window is not None:
             self.focused = window
             self.focused.handle_focus(True)
+
+        self.bar.update()
+
+    def handle_property_notify(self, window):
+        if window not in self.windows:
+            return
 
         self.bar.update()
 

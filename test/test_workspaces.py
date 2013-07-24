@@ -56,8 +56,15 @@ class TestWorkspace(unittest.TestCase):
         self.assertTrue(self.window in self.workspace.windows)
 
     def test_remove_window(self):
-        self.workspace.remove_window(self.window)
+        win = pwm.window.Window(pwm.xcb.screen.root)
+        self.workspace.add_window(win)
 
+        self.workspace.focus(self.window)
+        self.workspace.remove_window(self.window)
+        self.assertEqual(len(self.workspace.windows), 1)
+
+        self.workspace.focus(win)
+        self.workspace.remove_window(win)
         self.assertEqual(len(self.workspace.windows), 0)
 
     def test_focus(self):
