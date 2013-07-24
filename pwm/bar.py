@@ -4,7 +4,6 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-import logging
 import xcb
 import xcb.xproto as xproto
 import cairo
@@ -105,11 +104,8 @@ class Bar:
                               0, 0, 0, 0, self.width, self.height)
 
     def draw_pixmap(self):
-        try:
-            self.draw_background()
-            self.draw_window_text()
-        except xcb.Error:
-            logging.exception("Draw pixmap error")
+        self.draw_background()
+        self.draw_window_text()
 
     def update(self):
         self.draw_pixmap()

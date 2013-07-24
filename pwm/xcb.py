@@ -95,7 +95,7 @@ def create_gc():
         background=screen.black_pixel,
         graphicsexposures=0)
 
-    core.CreateGCChecked(gc, screen.root, mask, values).check()
+    core.CreateGC(gc, screen.root, mask, values)
 
     return gc
 

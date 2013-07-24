@@ -13,3 +13,9 @@ window:
   focused: "#1793D1"
   unfocused: "#222222"
   urgent: "#900000"
+
+modkey: Mod4
+keybindings:
+  -
+    keys: Mod4 q
+    action: kill

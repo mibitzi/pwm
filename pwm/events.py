@@ -5,6 +5,7 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
 import logging
+import xcb
 import xcb.xproto as xp
 
 import pwm.xcb
@@ -13,13 +14,15 @@ import pwm.workspaces
 
 
 def loop():
-    try:
-        while True:
+    while True:
+        try:
             event = pwm.xcb.conn.poll_for_event()
             handle(event)
             pwm.xcb.conn.flush()
-    except (KeyboardInterrupt, SystemExit):
-        pass
+        except xcb.Error:
+            logging.exception("XCB Error")
+        except (KeyboardInterrupt, SystemExit):
+            break
 
 
 def handle(event):
