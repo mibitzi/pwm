@@ -12,6 +12,11 @@ import pwm.color
 import pwm.workspaces
 import pwm.events
 
+# wid: (window, workspace)
+windows = {}
+
+focused = None
+
 
 class Window:
     def __init__(self, wid):
@@ -20,7 +25,6 @@ class Window:
         self.y = 0
         self.width = 0
         self.height = 0
-        self.focused = False
         self.visible = False
 
         self.change_attributes(
@@ -28,13 +32,6 @@ class Window:
                        xproto.EventMask.FocusChange |
                        xproto.EventMask.PropertyChange |
                        xproto.EventMask.StructureNotify))
-
-        pwm.events.window_focused.add(self.handle_window_focused)
-        pwm.events.window_unmapped.add(self.handle_window_unmapped)
-
-    def destroy(self):
-        pwm.events.window_focused.remove(self.handle_window_focused)
-        pwm.events.window_unmapped.remove(self.handle_window_unmapped)
 
     def show(self):
         self.visible = True
@@ -71,30 +68,52 @@ class Window:
             borderwidth=config["window"]["border"])
         pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
 
-    def handle_window_focused(self, window):
-        """Handler for the events.window_focused event"""
-
-        if self.focused and window == self:
-            return
-
-        if not self.focused and window != self:
-            return
-
-        self.focused = (window == self)
+    def handle_focus(self, focused):
+        """Set border color and input focus according to focus."""
 
         border = None
-        if self.focused:
+        if focused:
             border = pwm.color.get_pixel(config["window"]["focused"])
         else:
             border = pwm.color.get_pixel(config["window"]["unfocused"])
 
         self.change_attributes(borderpixel=border)
 
-        if self.focused:
+        if focused:
             pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
                                        self.wid,
                                        xproto.Time.CurrentTime)
 
-    def handle_window_unmapped(self, window):
-        if self == window:
-            self.destroy()
+
+def handle_map_request(wid):
+    win = Window(wid)
+    ws = pwm.workspaces.current()
+
+    ws.add_window(win)
+    windows[wid] = (win, ws)
+
+
+def handle_unmap_notification(win):
+    _, ws = find(win.wid)
+    ws.remove_window(win)
+    del windows[win.wid]
+
+
+def handle_focus(wid):
+    global focused
+
+    (win, ws) = windows.get(wid, (None, None))
+    if not win or focused == win:
+        return
+
+    if focused:
+        focused.handle_focus(False)
+
+    focused = win
+    focused.handle_focus(True)
+
+    pwm.events.focus_changed(win)
+
+
+def find(wid):
+    return windows.get(wid, (None, None))

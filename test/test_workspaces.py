@@ -8,7 +8,7 @@ import unittest
 
 import pwm.xcb
 import pwm.workspaces
-import pwm.window
+import pwm.windows
 
 
 class TestWorkspace(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestWorkspace(unittest.TestCase):
         pwm.xcb.setup_screens()
         pwm.workspaces.setup()
 
-        self.window = pwm.window.Window(pwm.xcb.screen.root)
+        self.window = pwm.windows.Window(pwm.xcb.screen.root)
         self.workspace = pwm.workspaces.current()
         self.workspace.add_window(self.window)
 
@@ -60,7 +60,7 @@ class TestWorkspace(unittest.TestCase):
         self.assertTrue(self.window in self.workspace.windows)
 
     def test_remove_window(self):
-        win = pwm.window.Window(pwm.xcb.screen.root)
+        win = pwm.windows.Window(pwm.xcb.screen.root)
         self.workspace.add_window(win)
 
         self.workspace.remove_window(self.window)
@@ -68,12 +68,6 @@ class TestWorkspace(unittest.TestCase):
 
         self.workspace.remove_window(win)
         self.assertEqual(len(self.workspace.windows), 0)
-
-    def test_find_window(self):
-        (win, ws) = pwm.workspaces.find_window(self.window.wid)
-
-        self.assertEqual(win, self.window)
-        self.assertEqual(ws, self.workspace)
 
     def test_show(self):
         self.workspace.show()

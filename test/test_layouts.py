@@ -8,7 +8,7 @@ import unittest
 
 import pwm.workspaces
 import pwm.layouts
-import pwm.window
+import pwm.windows
 
 
 class TestLayouts(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestLayouts(unittest.TestCase):
         self.workspace = pwm.workspaces.current()
         self.layout = pwm.layouts.Default(self.workspace)
 
-        self.windows = [pwm.window.Window(i)
+        self.windows = [pwm.windows.Window(i)
                         for i in range(10)]
 
     def tearDown(self):

@@ -6,11 +6,9 @@ from __future__ import print_function, unicode_literals
 
 import unittest
 
-import xcb.xproto as xproto
-
 import pwm.xcb
 import pwm.workspaces
-import pwm.window
+import pwm.windows
 
 
 class TestWindow(unittest.TestCase):
@@ -19,7 +17,8 @@ class TestWindow(unittest.TestCase):
         pwm.workspaces.setup()
 
         # TODO: create real window to test with
-        self.window = pwm.window.Window(pwm.xcb.screen.root)
+        pwm.windows.handle_map_request(pwm.xcb.screen.root)
+        (self.window, _) = pwm.windows.find(pwm.xcb.screen.root)
 
     def tearDown(self):
         pwm.workspaces.destroy()
@@ -51,9 +50,17 @@ class TestWindow(unittest.TestCase):
         #attr = pwm.xcb.core.GetWindowAttributes(self.window.wid).reply()
         #self.assertEqual(attr.map_state, xproto.MapState.Unmapped)
 
-    def test_handle_window_focused(self):
-        self.window.handle_window_focused(self.window)
-        self.assertTrue(self.window.focused)
+    def test_handle_unmap_notification(self):
+        pwm.windows.handle_unmap_notification(self.window)
+        win, ws = pwm.windows.find(self.window.wid)
+        self.assertIsNone(win)
+        self.assertNotIn(win, pwm.workspaces.current().windows)
 
-        self.window.handle_window_focused(None)
-        self.assertFalse(self.window.focused)
+    def test_handle_focus(self):
+        # TODO: create real windows to test
+        pwm.windows.handle_focus(self.window.wid)
+        self.assertEqual(pwm.windows.focused, self.window)
+
+    def test_find(self):
+        win, _ = pwm.windows.find(self.window.wid)
+        self.assertEqual(win, self.window)

@@ -29,13 +29,13 @@ class Bar:
 
         self.draw_pixmap()
 
-        pwm.events.window_focused.add(self.handle_window_focused)
+        pwm.events.focus_changed.add(self.handle_focus_changed)
         pwm.events.window_property_changed.add(
             self.handle_window_property_changed)
         pwm.events.window_unmapped.add(self.handle_window_unmapped)
 
     def destroy(self):
-        pwm.events.window_focused.remove(self.handle_window_focused)
+        pwm.events.focus_changed.remove(self.handle_focus_changed)
         pwm.events.window_property_changed.remove(
             self.handle_window_property_changed)
         pwm.events.window_unmapped.remove(self.handle_window_unmapped)
@@ -135,7 +135,7 @@ class Bar:
         self.visible = False
         pwm.xcb.core.UnmapWindow(self.wid)
 
-    def handle_window_focused(self, window):
+    def handle_focus_changed(self, window):
         self.focused = window
         self.update()
 

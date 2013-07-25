@@ -10,7 +10,6 @@ import xcb.xproto as xproto
 
 import pwm.xcb
 import pwm.workspaces
-import pwm.window
 import pwm.bar
 
 
