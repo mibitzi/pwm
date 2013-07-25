@@ -13,6 +13,8 @@ import pwm.windows
 import pwm.workspaces
 import pwm.keybind
 
+from pwm.config import config
+
 
 class Event(set):
     """Simple event class based on a set."""
@@ -71,7 +73,6 @@ def handle(event):
         pwm.keybind.update_keyboard_mapping(event)
 
     elif isinstance(event, xp.KeyPressEvent):
-        logging.debug("keypress: {}".format(event))
-
-        if pwm.keybind.is_keystring(event, "Mod4-a"):
-            logging.debug("got Mod4-a")
+        for key in config.keys:
+            if pwm.keybind.is_keystring(event, key.keys):
+                key.call()

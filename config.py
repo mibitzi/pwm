@@ -21,7 +21,6 @@ window = Values(
     unfocused="#222222",
     urgent="#900000")
 
-modkey = "mod4"
 keys = [
-    Key("mod q", cmd.quit)
+    Key("Mod4-q", cmd.quit)
 ]

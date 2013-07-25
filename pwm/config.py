@@ -30,5 +30,6 @@ def load():
 
 
 def setup_keys():
-    mod, key = pwm.keybind.parse_keystring("Mod4-a")
-    pwm.keybind.grab_key(pwm.xcb.screen.root, mod, key)
+    for key in config.keys:
+        mod, key = pwm.keybind.parse_keystring(key.keys)
+        pwm.keybind.grab_key(pwm.xcb.screen.root, mod, key)
