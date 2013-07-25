@@ -30,8 +30,7 @@ class Window:
         self.change_attributes(
             eventmask=(xproto.EventMask.EnterWindow |
                        xproto.EventMask.FocusChange |
-                       xproto.EventMask.PropertyChange |
-                       xproto.EventMask.StructureNotify))
+                       xproto.EventMask.PropertyChange))
 
     def show(self):
         self.visible = True

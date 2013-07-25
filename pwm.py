@@ -7,11 +7,7 @@ from __future__ import print_function, unicode_literals
 
 import logging
 
-import pwm.config
-
-pwm.config.load()
 from pwm.config import config
-
 import pwm.xcb
 import pwm.events
 import pwm.workspaces

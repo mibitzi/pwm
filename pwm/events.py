@@ -55,11 +55,13 @@ def handle(event):
         pwm.windows.handle_map_request(event.window)
 
     elif isinstance(event, xp.UnmapNotifyEvent):
-        (win, ws) = pwm.windows.find(event.window)
+        if event.event != pwm.xcb.screen.root:
+            (win, ws) = pwm.windows.find(event.window)
 
-        if win and ws:
-            pwm.windows.handle_unmap_notification(win)
-            window_unmapped(win)
+            if win and ws:
+                logging.debug("UnmapNotifyEvent")
+                pwm.windows.handle_unmap_notification(win)
+                window_unmapped(win)
 
     elif isinstance(event, xp.EnterNotifyEvent):
         pwm.windows.handle_focus(event.event)

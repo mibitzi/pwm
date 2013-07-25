@@ -10,6 +10,8 @@ import pwm.xcb
 import pwm.workspaces
 import pwm.windows
 
+from pwm.config import config
+
 
 class TestWorkspace(unittest.TestCase):
     def setUp(self):
@@ -31,7 +33,7 @@ class TestWorkspace(unittest.TestCase):
     def test_setup(self):
         # setup() was already called in setUp
 
-        self.assertEqual(len(pwm.workspaces.workspaces), 1)
+        self.assertEqual(len(pwm.workspaces.workspaces), config.workspaces)
         self.assertEqual(pwm.workspaces.current(),
                          pwm.workspaces.workspaces[0])
 
@@ -41,10 +43,6 @@ class TestWorkspace(unittest.TestCase):
         pwm.workspaces.destroy()
         self.assertEqual(len(pwm.workspaces.workspaces), 0)
         self.destroyed = True
-
-    def test_add(self):
-        pwm.workspaces.add(pwm.workspaces.Workspace())
-        self.assertEqual(len(pwm.workspaces.workspaces), 2)
 
     def test_geometry(self):
         self.assertEqual(self.workspace.x, 0)
@@ -82,3 +80,8 @@ class TestWorkspace(unittest.TestCase):
         self.assertFalse(self.workspace.active)
         self.assertFalse(self.window.visible)
         self.assertFalse(self.workspace.bar.visible)
+
+    def test_switch_workspace(self):
+        pwm.workspaces.switch(1)
+        self.assertEqual(pwm.workspaces.current(),
+                         pwm.workspaces.workspaces[1])

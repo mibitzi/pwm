@@ -44,7 +44,7 @@ class Bar:
         wid = pwm.xcb.conn.generate_id()
 
         mask, values = pwm.xcb.attribute_mask(
-            backpixel=pwm.xcb.screen.white_pixel,
+            backpixel=pwm.xcb.screen.black_pixel,
             eventmask=xproto.EventMask.Exposure)
 
         pwm.xcb.core.CreateWindow(
@@ -100,11 +100,13 @@ class Bar:
         if not self.focused:
             return
 
+        text = self.focused.get_name()
+        if text == "":
+            return
+
         self.ctx.set_source_rgb(1, 1, 1)
         self.ctx.select_font_face(config.bar.font.face)
         self.ctx.set_font_size(config.bar.font.size)
-
-        text = self.focused.get_name()
 
         _, y_bearing, _, height, _, _ = self.ctx.text_extents(text)
 
@@ -128,7 +130,7 @@ class Bar:
         self.visible = True
 
         pwm.xcb.core.MapWindow(self.wid)
-        self.copy_pixmap()
+        self.update()
 
     def hide(self):
         """Hides the bar"""

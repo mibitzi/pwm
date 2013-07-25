@@ -10,9 +10,16 @@ import pwm.commands
 
 
 class TestCommands(unittest.TestCase):
-    def test_key(self):
-        key = pwm.commands.Key("", pwm.commands.test, 33, a=66)
-        ret = key.call()
+    def setUp(self):
+        pwm.xcb.connect()
+        pwm.workspaces.setup()
 
-        self.assertEqual(ret[0], (33,))
-        self.assertEqual(ret[1]["a"], 66)
+    def tearDown(self):
+        pwm.workspaces.destroy()
+        pwm.xcb.disconnect()
+
+    def test_switch_workspace(self):
+        pwm.commands.switch_workspace(1)
+
+        self.assertEqual(pwm.workspaces.current(),
+                         pwm.workspaces.workspaces[1])

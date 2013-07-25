@@ -24,12 +24,25 @@ class Key:
         return self.command(*self.args, **self.kwargs)
 
 
-def load():
-    global config
-    config = imp.load_source("config", "config.py")
-
-
 def setup_keys():
     for key in config.keys:
         mod, key = pwm.keybind.parse_keystring(key.keys)
         pwm.keybind.grab_key(pwm.xcb.screen.root, mod, key)
+
+
+class Config:
+    def __init__(self):
+        self.loaded = False
+        self.data = None
+
+    def load(self):
+        self.loaded = True
+        self.data = imp.load_source("config", "config.py")
+
+    def __getattr__(self, name):
+        if not self.loaded:
+            self.load()
+
+        return getattr(self.data, name)
+
+config = Config()

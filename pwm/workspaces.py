@@ -4,6 +4,8 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import logging
+
 from pwm.config import config
 import pwm.xcb
 import pwm.bar
@@ -59,13 +61,21 @@ class Workspace:
 
 
 def setup():
-    """Sets up initial workspace"""
-    add(Workspace())
+    """
+    Set up all workspaces.
+    """
+    global workspaces
+    workspaces = [Workspace() for i in range(0, config.workspaces)]
+
+    global current_workspace_index
+    current_workspace_index = 0
     current().show()
 
 
 def destroy():
-    """Destroys all workspaces"""
+    """
+    Destroy all workspaces.
+    """
 
     global workspaces
 
@@ -75,11 +85,26 @@ def destroy():
     workspaces = []
 
 
-def add(workspace):
-    """Adds a new workspace"""
-    workspaces.append(workspace)
-
-
 def current():
-    """Returns the currently active workspace"""
+    """
+    Return the currently active workspace.
+    """
     return workspaces[current_workspace_index]
+
+
+def switch(index):
+    """
+    Switch to workspace at given index.
+    """
+    global current_workspace_index
+    if current_workspace_index == index:
+        return
+
+    logging.debug("Switching to workspace {}".format(index))
+
+    new_ws = workspaces[index]
+    new_ws.show()
+
+    current().hide()
+
+    current_workspace_index = index
