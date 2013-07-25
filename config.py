@@ -1,3 +1,7 @@
+from pwm.config import Key
+import pwm.commands as cmd
+
+
 class Values(dict):
     def __init__(self, **kw):
         dict.__init__(self, kw)
@@ -18,3 +22,6 @@ window = Values(
     urgent="#900000")
 
 modkey = "mod4"
+keys = [
+    Key("mod q", cmd.quit)
+]

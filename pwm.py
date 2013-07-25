@@ -7,10 +7,15 @@ from __future__ import print_function, unicode_literals
 
 import logging
 
+import pwm.config
+
+pwm.config.load()
 from pwm.config import config
+
 import pwm.xcb
 import pwm.events
 import pwm.workspaces
+import pwm.keybind
 
 
 def main():
@@ -24,6 +29,8 @@ def main():
     pwm.xcb.setup_screens()
     pwm.workspaces.setup()
 
+    pwm.keybind.update_keyboard_mapping(None)
+    pwm.config.setup_keys()
     pwm.events.loop()
 
     pwm.xcb.disconnect()

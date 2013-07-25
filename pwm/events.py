@@ -11,6 +11,7 @@ import xcb.xproto as xp
 import pwm.xcb
 import pwm.windows
 import pwm.workspaces
+import pwm.keybind
 
 
 class Event(set):
@@ -66,5 +67,11 @@ def handle(event):
         if win and ws:
             window_property_changed(win)
 
+    elif isinstance(event, xp.MappingNotifyEvent):
+        pwm.keybind.update_keyboard_mapping(event)
+
     elif isinstance(event, xp.KeyPressEvent):
-        logging("keypress: {}".format(event))
+        logging.debug("keypress: {}".format(event))
+
+        if pwm.keybind.is_keystring(event, "Mod4-a"):
+            logging.debug("got Mod4-a")

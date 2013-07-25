@@ -6,4 +6,29 @@ from __future__ import print_function, unicode_literals
 
 import imp
 
-config = imp.load_source("config", "config.py")
+import pwm.keybind
+import pwm.xcb
+
+config = None
+
+
+class Key:
+    """Class to store a command and the keys which it responds to."""
+    def __init__(self, keys, command, *args, **kwargs):
+        self.keys = keys
+        self.command = command
+        self.args = args
+        self.kwargs = kwargs
+
+    def call(self):
+        return self.command(*self.args, **self.kwargs)
+
+
+def load():
+    global config
+    config = imp.load_source("config", "config.py")
+
+
+def setup_keys():
+    mod, key = pwm.keybind.parse_keystring("Mod4-a")
+    pwm.keybind.grab_key(pwm.xcb.screen.root, mod, key)
