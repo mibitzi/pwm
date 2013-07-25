@@ -4,17 +4,6 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-import yaml
+import imp
 
-config = {}
-
-
-def load():
-    contents = ""
-    with open("config.yaml") as f:
-        contents = f.read()
-
-    global config
-    config = yaml.safe_load(contents)
-
-load()
+config = imp.load_source("config", "config.py")

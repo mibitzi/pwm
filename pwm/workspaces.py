@@ -20,7 +20,7 @@ class Workspace:
         self.windows = []
 
         self.x = 0
-        self.y = config["bar"]["height"]
+        self.y = config.bar.height
 
         self.width = pwm.xcb.screen.width_in_pixels
         self.height = pwm.xcb.screen.height_in_pixels - self.y

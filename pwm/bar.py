@@ -20,7 +20,7 @@ class Bar:
         self.workspace = workspace
 
         self.width = self.workspace.width
-        self.height = config["bar"]["height"]
+        self.height = config.bar.height
 
         self.wid = self.create_window()
         self.pixmap = self.create_pixmap()
@@ -92,7 +92,7 @@ class Bar:
         return (surface, ctx)
 
     def draw_background(self):
-        self.ctx.set_source_rgb(*color.get_rgb(config["bar"]["background"]))
+        self.ctx.set_source_rgb(*color.get_rgb(config.bar.background))
         self.ctx.set_operator(cairo.OPERATOR_SOURCE)
         self.ctx.paint()
 
@@ -101,8 +101,8 @@ class Bar:
             return
 
         self.ctx.set_source_rgb(1, 1, 1)
-        self.ctx.select_font_face(config["bar"]["font"]["face"])
-        self.ctx.set_font_size(config["bar"]["font"]["size"])
+        self.ctx.select_font_face(config.bar.font.face)
+        self.ctx.set_font_size(config.bar.font.size)
 
         text = self.focused.get_name()
 

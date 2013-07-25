@@ -65,3 +65,6 @@ def handle(event):
         (win, ws) = pwm.windows.find(event.window)
         if win and ws:
             window_property_changed(win)
+
+    elif isinstance(event, xp.KeyPressEvent):
+        logging("keypress: {}".format(event))

@@ -63,9 +63,9 @@ class Window:
         mask, values = pwm.xcb.configure_mask(
             x=workspace.x + self.x,
             y=workspace.y + self.y,
-            width=self.width - 2*config["window"]["border"],
-            height=self.height - 2*config["window"]["border"],
-            borderwidth=config["window"]["border"])
+            width=self.width - 2*config.window.border,
+            height=self.height - 2*config.window.border,
+            borderwidth=config.window.border)
         pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
 
     def handle_focus(self, focused):
@@ -73,9 +73,9 @@ class Window:
 
         border = None
         if focused:
-            border = pwm.color.get_pixel(config["window"]["focused"])
+            border = pwm.color.get_pixel(config.window.focused)
         else:
-            border = pwm.color.get_pixel(config["window"]["unfocused"])
+            border = pwm.color.get_pixel(config.window.unfocused)
 
         self.change_attributes(borderpixel=border)
 

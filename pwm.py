@@ -14,7 +14,7 @@ import pwm.workspaces
 
 
 def main():
-    loglevel = config["loglevel"].upper()
+    loglevel = config.loglevel.upper()
 
     if loglevel != "INFO":
         logging.basicConfig(level=getattr(logging, loglevel, None))
