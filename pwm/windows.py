@@ -144,14 +144,8 @@ def get_wm_protocols(wid):
         pwm.xcb.get_property(wid, "WM_PROTOCOLS").reply())
 
 
-def kill(wid, kill_client=False):
-    """Kill the window with wid.
-
-    wid:         Id of the window to be killed
-    kill_client: If set to True, the client will be force-fully killed with
-                 xcb_kill_client.
-                 Otherwise the window will be closed with xcb_destroy_window
-    """
+def kill(wid):
+    """Kill the window with wid."""
 
     # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
     # the hard way.
