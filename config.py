@@ -2,15 +2,13 @@ from pwm.config import Key
 import pwm.commands as cmd
 
 
-class Values(dict):
-    def __init__(self, **kw):
-        dict.__init__(self, kw)
-        self.__dict__.update(kw)
+class Values():
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 loglevel = "debug"
 
 bar = Values(
-    height=22,
     font=Values(face="DejaVu Sans Mono", size=12),
 
     background="#222222",
@@ -35,10 +33,12 @@ window = Values(
     unfocused="#222222",
     urgent="#900000")
 
+
 keys = [
     Key("Mod4-a", cmd.kill),
     Key("Mod4-x", cmd.quit)
 ]
+
 
 workspaces = 10
 

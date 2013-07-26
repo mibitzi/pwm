@@ -18,7 +18,7 @@ class Bar:
         self.focused = None
 
         self.width = pwm.xcb.screen.width_in_pixels
-        self.height = config.bar.height
+        self.height = height()
 
         self.workspaces_end = 0
 
@@ -219,3 +219,7 @@ class Bar:
         # Even if it was not the focused window, closing this window
         # might have caused a workspace to be closed
         self.update()
+
+
+def height():
+    return config.bar.font.size + 8
