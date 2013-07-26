@@ -2,20 +2,21 @@
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
 from __future__ import division, absolute_import
-from __future__ import print_function  # , unicode_literals
+from __future__ import print_function, unicode_literals
 
 import unittest
 
 import pwm.xcb
+import test.util as util
 
 
 class TestXcb(unittest.TestCase):
 
     def setUp(self):
-        pwm.xcb.connect()
+        util.setup()
 
     def tearDown(self):
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_connect(self):
         self.assertIsNotNone(pwm.xcb.conn)
@@ -23,11 +24,5 @@ class TestXcb(unittest.TestCase):
         self.assertEqual(pwm.xcb.core, pwm.xcb.conn.core)
 
     def test_setup_screens(self):
-        pwm.xcb.connect()
-
-        pwm.xcb.setup_screens()
-
         self.assertIsNotNone(pwm.xcb.screen)
         self.assertEqual(pwm.xcb.screen, pwm.xcb.conn.get_setup().roots[0])
-
-        pwm.xcb.disconnect()

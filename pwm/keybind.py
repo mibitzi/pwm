@@ -30,16 +30,21 @@ TRIVIAL_MODS = [
 ]
 
 
-def is_keystring(event, key_string):
+def event_is_key(event, mods, keycode):
     """
-    Check wheter the given KeyPressEvent represents the key_string.
+    Check wheter the given KeyPressEvent represents mods and keycode.
     Ignore trivial modifier state like CAPSLOCK or NumLock.
     """
-    kc, mods = event.detail, event.state
-    for mod in TRIVIAL_MODS:
-        mods &= ~mod
+    ekeycode, emods = event.detail, event.state
 
-    return parse_keystring(key_string) == (mods, kc)
+    if ekeycode != keycode:
+        return False
+
+    # Strip out trivial modifiers
+    for emod in TRIVIAL_MODS:
+        emods &= ~emod
+
+    return emods == mods
 
 
 def parse_keystring(key_string):

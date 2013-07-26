@@ -14,6 +14,7 @@ import pwm.events
 
 workspaces = []
 current_workspace_index = 0
+bar = None
 
 
 class Workspace:
@@ -27,28 +28,17 @@ class Workspace:
         self.width = pwm.xcb.screen.width_in_pixels
         self.height = pwm.xcb.screen.height_in_pixels - self.y
 
-        self.bar = pwm.bar.Bar(self)
-
         self.layout = pwm.layouts.Default(self)
-
-    def destroy(self):
-        self.bar.destroy()
 
     def hide(self):
         self.active = False
-
         for w in self.windows:
             w.hide()
 
-        self.bar.hide()
-
     def show(self):
         self.active = True
-
         for w in self.windows:
             w.show()
-
-        self.bar.show()
 
     def add_window(self, window):
         self.windows.append(window)
@@ -64,6 +54,10 @@ def setup():
     """
     Set up all workspaces.
     """
+    global bar
+    bar = pwm.bar.Bar()
+    bar.show()
+
     global workspaces
     workspaces = [Workspace() for i in range(0, config.workspaces)]
 
@@ -78,11 +72,12 @@ def destroy():
     """
 
     global workspaces
-
-    for ws in workspaces:
-        ws.destroy()
-
     workspaces = []
+
+    global bar
+    if bar:
+        bar.destroy()
+        bar = None
 
 
 def current():

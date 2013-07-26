@@ -7,16 +7,15 @@ from __future__ import print_function, unicode_literals
 import unittest
 
 import pwm.commands
+import test.util as util
 
 
 class TestCommands(unittest.TestCase):
     def setUp(self):
-        pwm.xcb.connect()
-        pwm.workspaces.setup()
+        util.setup()
 
     def tearDown(self):
-        pwm.workspaces.destroy()
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_switch_workspace(self):
         pwm.commands.switch_workspace(1)

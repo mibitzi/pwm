@@ -11,18 +11,16 @@ import xcb.xproto as xproto
 import pwm.xcb
 import pwm.workspaces
 import pwm.bar
+import test.util as util
 
 
 class TestBar(unittest.TestCase):
     def setUp(self):
-        pwm.xcb.connect()
-        pwm.workspaces.setup()
-
-        self.bar = pwm.workspaces.current().bar
+        util.setup()
+        self.bar = pwm.workspaces.bar
 
     def tearDown(self):
-        pwm.workspaces.destroy()
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_show(self):
         self.bar.hide()

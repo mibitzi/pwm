@@ -9,26 +9,20 @@ import unittest
 import pwm.xcb
 import pwm.workspaces
 import pwm.windows
-
 from pwm.config import config
+import test.util as util
 
 
-class TestWorkspace(unittest.TestCase):
+class TestWorkspaces(unittest.TestCase):
     def setUp(self):
-        pwm.xcb.connect()
-        pwm.xcb.setup_screens()
-        pwm.workspaces.setup()
+        util.setup()
 
         self.window = pwm.windows.Window(pwm.xcb.screen.root)
         self.workspace = pwm.workspaces.current()
         self.workspace.add_window(self.window)
 
-        self.destroyed = False
-
     def tearDown(self):
-        if not self.destroyed:
-            pwm.workspaces.destroy()
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_setup(self):
         # setup() was already called in setUp
@@ -42,15 +36,14 @@ class TestWorkspace(unittest.TestCase):
     def test_destroy(self):
         pwm.workspaces.destroy()
         self.assertEqual(len(pwm.workspaces.workspaces), 0)
-        self.destroyed = True
 
     def test_geometry(self):
         self.assertEqual(self.workspace.x, 0)
-        self.assertEqual(self.workspace.y, self.workspace.bar.height)
+        self.assertEqual(self.workspace.y, pwm.workspaces.bar.height)
         self.assertEqual(self.workspace.width, pwm.xcb.screen.width_in_pixels)
         self.assertEqual(
             self.workspace.height,
-            pwm.xcb.screen.height_in_pixels - self.workspace.bar.height)
+            pwm.xcb.screen.height_in_pixels - pwm.workspaces.bar.height)
 
     def test_add_window(self):
         # Window already added
@@ -72,14 +65,12 @@ class TestWorkspace(unittest.TestCase):
 
         self.assertTrue(self.workspace.active)
         self.assertTrue(self.window.visible)
-        self.assertTrue(self.workspace.bar.visible)
 
     def test_hide(self):
         self.workspace.hide()
 
         self.assertFalse(self.workspace.active)
         self.assertFalse(self.window.visible)
-        self.assertFalse(self.workspace.bar.visible)
 
     def test_switch_workspace(self):
         pwm.workspaces.switch(1)

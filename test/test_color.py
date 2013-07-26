@@ -8,15 +8,15 @@ import unittest
 
 import pwm.xcb
 import pwm.color
+import test.util as util
 
 
 class TestColor(unittest.TestCase):
     def setUp(self):
-        pwm.xcb.connect()
-        pwm.xcb.setup_screens()
+        util.setup()
 
     def tearDown(self):
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_get_pixl(self):
         self.assertEqual(pwm.color.get_pixel("#000000"),

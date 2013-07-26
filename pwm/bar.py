@@ -14,12 +14,11 @@ import pwm.events
 
 
 class Bar:
-    def __init__(self, workspace):
+    def __init__(self):
         self.visible = False
         self.focused = None
-        self.workspace = workspace
 
-        self.width = self.workspace.width
+        self.width = pwm.xcb.screen.width_in_pixels
         self.height = config.bar.height
 
         self.wid = self.create_window()
@@ -39,6 +38,10 @@ class Bar:
         pwm.events.window_property_changed.remove(
             self.handle_window_property_changed)
         pwm.events.window_unmapped.remove(self.handle_window_unmapped)
+
+        pwm.xcb.core.DestroyWindow(self.wid)
+        pwm.xcb.core.FreePixmap(self.pixmap)
+        pwm.xcb.core.FreeGC(self.gc)
 
     def create_window(self):
         wid = pwm.xcb.conn.generate_id()

@@ -9,20 +9,19 @@ import unittest
 import pwm.xcb
 import pwm.workspaces
 import pwm.windows
+import test.util as util
 
 
 class TestWindow(unittest.TestCase):
     def setUp(self):
-        pwm.xcb.connect()
-        pwm.workspaces.setup()
+        util.setup()
 
         # TODO: create real window to test with
         pwm.windows.handle_map_request(pwm.xcb.screen.root)
         (self.window, _) = pwm.windows.find(pwm.xcb.screen.root)
 
     def tearDown(self):
-        pwm.workspaces.destroy()
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_configure(self):
         self.window.configure(x=100, y=200, width=300, height=400)

@@ -63,6 +63,13 @@ def handle(event):
                 pwm.windows.handle_unmap_notification(win)
                 window_unmapped(win)
 
+    elif isinstance(event, xp.DestroyNotifyEvent):
+        (win, ws) = pwm.windows.find(event.window)
+        if win and ws:
+            logging.debug("DestroyNotifyEvent")
+            ws.remove_window(win)
+            window_unmapped(win)
+
     elif isinstance(event, xp.EnterNotifyEvent):
         pwm.windows.handle_focus(event.event)
 
@@ -76,5 +83,5 @@ def handle(event):
 
     elif isinstance(event, xp.KeyPressEvent):
         for key in config.keys:
-            if pwm.keybind.is_keystring(event, key.keys):
+            if pwm.keybind.event_is_key(event, key.mods, key.keycode):
                 key.call()

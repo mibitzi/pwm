@@ -14,11 +14,15 @@ config = None
 
 class Key:
     """Class to store a command and the keys which it responds to."""
-    def __init__(self, keys, command, *args, **kwargs):
-        self.keys = keys
+    def __init__(self, keystr, command, *args, **kwargs):
+        self.keystr = keystr
         self.command = command
         self.args = args
         self.kwargs = kwargs
+
+        # Will be set in setup_keys
+        self.mods = None
+        self.keycode = None
 
     def call(self):
         return self.command(*self.args, **self.kwargs)
@@ -26,8 +30,8 @@ class Key:
 
 def setup_keys():
     for key in config.keys:
-        mod, key = pwm.keybind.parse_keystring(key.keys)
-        pwm.keybind.grab_key(pwm.xcb.screen.root, mod, key)
+        key.mods, key.keycode = pwm.keybind.parse_keystring(key.keystr)
+        pwm.keybind.grab_key(pwm.xcb.screen.root, key.mods, key.keycode)
 
 
 class Config:

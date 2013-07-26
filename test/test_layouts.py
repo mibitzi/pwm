@@ -9,13 +9,12 @@ import unittest
 import pwm.workspaces
 import pwm.layouts
 import pwm.windows
+import test.util as util
 
 
 class TestLayouts(unittest.TestCase):
     def setUp(self):
-        pwm.xcb.connect()
-        pwm.xcb.setup_screens()
-        pwm.workspaces.setup()
+        util.setup()
 
         self.workspace = pwm.workspaces.current()
         self.layout = pwm.layouts.Default(self.workspace)
@@ -24,7 +23,7 @@ class TestLayouts(unittest.TestCase):
                         for i in range(10)]
 
     def tearDown(self):
-        pwm.xcb.disconnect()
+        util.tear_down()
 
     def test_default_add(self):
         self.layout.add(self.windows[0])

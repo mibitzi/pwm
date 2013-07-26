@@ -10,7 +10,7 @@ import pwm.config
 import pwm.commands
 
 
-class TestCommands(unittest.TestCase):
+class TestConfig(unittest.TestCase):
 
     def test_key(self):
         key = pwm.config.Key("", pwm.commands.test, 33, a=66)
