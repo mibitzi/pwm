@@ -17,3 +17,8 @@ def quit():
 
 def switch_workspace(index):
     pwm.workspaces.switch(index)
+
+
+def kill():
+    if pwm.windows.focused:
+        pwm.windows.kill(pwm.windows.focused.wid)

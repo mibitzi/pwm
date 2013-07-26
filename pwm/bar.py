@@ -215,4 +215,7 @@ class Bar:
     def handle_window_unmapped(self, window):
         if window == self.focused:
             self.focused = None
-            self.update()
+
+        # Even if it was not the focused window, closing this window
+        # might have caused a workspace to be closed
+        self.update()

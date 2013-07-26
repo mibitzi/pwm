@@ -42,7 +42,7 @@ class TestLayouts(unittest.TestCase):
 
             for s in self.layout.stacked:
                 self.assertEqual(s.width, self.workspace.width / 2)
-                self.assertEqual(s.height, self.workspace.height / i)
+                self.assertEqual(s.height, round(self.workspace.height / i))
 
     def test_default_remove(self):
         for w in self.windows:

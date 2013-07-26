@@ -35,11 +35,13 @@ window = Values(
     unfocused="#222222",
     urgent="#900000")
 
-workspaces = 10
-
 keys = [
-    Key("Mod4-q", cmd.quit)
+    Key("Mod4-a", cmd.kill),
+    Key("Mod4-x", cmd.quit)
 ]
 
+workspaces = 10
+
 for i in range(1, 10):
-    keys.append(Key("Mod4-%d" % i, cmd.switch_workspace, i-1))
+    keys.append(Key("Mod4-%d" % i, cmd.switch_workspace, (i-1)))
+keys.append(Key("Mod4-0", cmd.switch_workspace, 9))

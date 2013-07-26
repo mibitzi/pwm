@@ -2,8 +2,9 @@
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
 from __future__ import division, absolute_import
-from __future__ import print_function, unicode_literals
+from __future__ import print_function  # , unicode_literals
 
+import struct
 import xcb.xproto as xproto
 
 from pwm.config import config
@@ -45,7 +46,10 @@ class Window:
         pwm.xcb.core.ChangeWindowAttributes(self.wid, mask, values)
 
     def get_name(self):
-        return pwm.xcb.get_property_string(self.wid, xproto.Atom.WM_NAME)
+        name = pwm.xcb.get_property_value(
+            pwm.xcb.get_property(self.wid, xproto.Atom.WM_NAME).reply())
+
+        return name or ""
 
     def configure(self, **kwargs):
         """Configure the window and set the given variables.
@@ -131,3 +135,43 @@ def find(wid):
     """
 
     return windows.get(wid, (None, None))
+
+
+def get_wm_protocols(wid):
+    """Return the protocols supported by this window."""
+
+    return pwm.xcb.get_property_value(
+        pwm.xcb.get_property(wid, "WM_PROTOCOLS").reply())
+
+
+def kill(wid, kill_client=False):
+    """Kill the window with wid.
+
+    wid:         Id of the window to be killed
+    kill_client: If set to True, the client will be force-fully killed with
+                 xcb_kill_client.
+                 Otherwise the window will be closed with xcb_destroy_window
+    """
+
+    # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
+    # the hard way.
+    if "WM_DELETE_WINDOW" in get_wm_protocols(wid):
+        vals = [
+            33,  # ClientMessageEvent
+            32,  # Format
+            0,
+            wid,
+            pwm.xcb.get_atom("WM_PROTOCOLS"),
+            pwm.xcb.get_atom("WM_DELETE_WINDOW"),
+            xproto.Time.CurrentTime,
+            0,
+            0,
+            0,
+        ]
+
+        event = struct.pack('BBHII5I', *vals)
+
+        pwm.xcb.core.SendEvent(False, wid, xproto.EventMask.NoEvent, event)
+
+    else:
+        pwm.xcb.core.KillClient(wid)

@@ -71,10 +71,10 @@ class TestWorkspaces(unittest.TestCase):
         self.assertEqual(pwm.workspaces.current(),
                          pwm.workspaces.workspaces[1])
 
-    def test_active(self):
+    def test_opened(self):
         pwm.workspaces.switch(5)
 
-        active = [i for i in pwm.workspaces.active()]
+        active = [i for i in pwm.workspaces.opened()]
 
         self.assertEqual(len(active), 2)
         self.assertEqual(active[0][0], 0)
