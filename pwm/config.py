@@ -10,6 +10,7 @@ import pwm.keybind
 import pwm.xcb
 
 config = None
+grabbed_keys = {}
 
 
 class Key:
@@ -20,18 +21,31 @@ class Key:
         self.args = args
         self.kwargs = kwargs
 
-        # Will be set in setup_keys
-        self.mods = None
-        self.keycode = None
-
     def call(self):
         return self.command(*self.args, **self.kwargs)
 
 
 def setup_keys():
+    """Parse and grab all keys defined in the configuration."""
+
     for key in config.keys:
-        key.mods, key.keycode = pwm.keybind.parse_keystring(key.keystr)
-        pwm.keybind.grab_key(pwm.xcb.screen.root, key.mods, key.keycode)
+        mods, keycode = pwm.keybind.parse_keystring(key.keystr)
+        pwm.keybind.grab_key(pwm.xcb.screen.root, mods, keycode)
+
+        grabbed_keys[(mods, keycode)] = key
+
+
+def handle_key_press_event(event):
+    """Search for a command to handle this KeyPressEvent and call it."""
+
+    # Strip out all trivial modifiers such as capslock or numlock.
+    # Then check if the key was grabbed
+    mods, keycode = event.state, event.detail
+    mods = pwm.keybind.strip_trivial(mods)
+
+    key = grabbed_keys.get((mods, keycode))
+    if key:
+        key.call()
 
 
 class Config:

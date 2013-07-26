@@ -46,7 +46,7 @@ class Bar:
         wid = pwm.xcb.conn.generate_id()
 
         mask, values = pwm.xcb.attribute_mask(
-            backpixel=pwm.xcb.screen.black_pixel,
+            backpixel=pwm.color.get_pixel(config.bar.background),
             eventmask=xproto.EventMask.Exposure)
 
         pwm.xcb.core.CreateWindow(
