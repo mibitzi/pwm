@@ -31,8 +31,6 @@ class TestWorkspaces(unittest.TestCase):
         self.assertEqual(pwm.workspaces.current(),
                          pwm.workspaces.workspaces[0])
 
-        self.assertTrue(pwm.workspaces.current().active)
-
     def test_destroy(self):
         pwm.workspaces.destroy()
         self.assertEqual(len(pwm.workspaces.workspaces), 0)
@@ -62,17 +60,22 @@ class TestWorkspaces(unittest.TestCase):
 
     def test_show(self):
         self.workspace.show()
-
-        self.assertTrue(self.workspace.active)
         self.assertTrue(self.window.visible)
 
     def test_hide(self):
         self.workspace.hide()
-
-        self.assertFalse(self.workspace.active)
         self.assertFalse(self.window.visible)
 
     def test_switch_workspace(self):
         pwm.workspaces.switch(1)
         self.assertEqual(pwm.workspaces.current(),
                          pwm.workspaces.workspaces[1])
+
+    def test_active(self):
+        pwm.workspaces.switch(5)
+
+        active = [i for i in pwm.workspaces.active()]
+
+        self.assertEqual(len(active), 2)
+        self.assertEqual(active[0][0], 0)
+        self.assertEqual(active[1][0], 5)

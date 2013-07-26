@@ -10,13 +10,27 @@ class Values(dict):
 loglevel = "debug"
 
 bar = Values(
-    height=18,
+    height=22,
+    font=Values(face="DejaVu Sans Mono", size=12),
+
     background="#222222",
     foreground="#ffffff",
-    font=Values(face="DejaVu Sans Mono", size=12))
+
+    active_workspace_foreground="#ffffff",
+    active_workspace_background="#285577",
+    active_workspace_border="#4c7899",
+
+    inactive_workspace_foreground="#888888",
+    inactive_workspace_background="#222222",
+    inactive_workspace_border="#333333",
+
+    urgent_workspace_foreground="#ffffff",
+    urgent_workspace_background="#900000",
+    urgent_workspace_border="#2f343a")
+
 
 window = Values(
-    border=3,
+    border=2,
     focused="#1793D1",
     unfocused="#222222",
     urgent="#900000")

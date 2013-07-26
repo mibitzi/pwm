@@ -15,18 +15,17 @@ import pwm.events
 
 class Bar:
     def __init__(self):
-        self.visible = False
         self.focused = None
 
         self.width = pwm.xcb.screen.width_in_pixels
         self.height = config.bar.height
 
+        self.workspaces_end = 0
+
         self.wid = self.create_window()
         self.pixmap = self.create_pixmap()
         self.gc = pwm.xcb.create_gc()
         (self.surface, self.ctx) = self.create_cairo_context()
-
-        self.draw_pixmap()
 
         pwm.events.focus_changed.add(self.handle_focus_changed)
         pwm.events.window_property_changed.add(
@@ -77,10 +76,10 @@ class Bar:
         return pixmap
 
     def find_root_visual(self):
-        for i in pwm.xcb.screen.allowed_depths:
-            for v in i.visuals:
-                if v.visual_id == pwm.xcb.screen.root_visual:
-                    return v
+        for depth in pwm.xcb.screen.allowed_depths:
+            for visual in depth.visuals:
+                if visual.visual_id == pwm.xcb.screen.root_visual:
+                    return visual
 
     def create_cairo_context(self):
         surface = cairo.XCBSurface(
@@ -92,12 +91,77 @@ class Bar:
 
         ctx = cairo.Context(surface)
 
+        ctx.select_font_face(config.bar.font.face)
+        ctx.set_font_size(config.bar.font.size)
+
         return (surface, ctx)
 
     def draw_background(self):
         self.ctx.set_source_rgb(*color.get_rgb(config.bar.background))
         self.ctx.set_operator(cairo.OPERATOR_SOURCE)
         self.ctx.paint()
+
+    def draw_open_workspaces(self):
+        """Draw indicators for all open workspaces.
+
+        Each open workspace is represented by a little box with
+        a number in it.
+        """
+
+        # Figure out how big the boxes should be
+        # Take the size of the text and add padding
+        # Note that we have to align everything on 0.5 to avoid blurring
+        extents = self.ctx.text_extents(
+            "%d" % (len(pwm.workspaces.workspaces)-1))
+        padding_left = 5
+        box_width = extents[2] + 2*padding_left
+        padding_top = 0.5
+        box_height = self.height - 2*padding_top
+
+        left = 0.5
+        for widx, _ in pwm.workspaces.opened():
+            fg = None
+            bg = None
+            border = None
+
+            if widx == pwm.workspaces.current_workspace_index:
+                fg = config.bar.active_workspace_foreground
+                bg = config.bar.active_workspace_background
+                border = config.bar.active_workspace_border
+            else:
+                fg = config.bar.inactive_workspace_foreground
+                bg = config.bar.inactive_workspace_background
+                border = config.bar.inactive_workspace_border
+
+            # Draw the box
+            self.ctx.set_source_rgb(*color.get_rgb(bg))
+            self.ctx.rectangle(left, padding_top, box_width, box_height)
+            self.ctx.fill()
+
+            # Draw a border around the box
+            self.ctx.set_source_rgb(*color.get_rgb(border))
+            self.ctx.rectangle(left, padding_top,
+                               box_width, box_height)
+            self.ctx.set_line_width(1)
+            self.ctx.stroke()
+
+            # Draw the text
+            text = "%d" % (widx+1)
+
+            extents = self.ctx.text_extents(text)
+            x_bearing, y_bearing, width, height, _, _ = extents
+
+            center_x = left + box_width / 2
+            center_y = padding_top + box_height/2
+            self.ctx.move_to(center_x - x_bearing - width/2,
+                             center_y - y_bearing - height/2)
+            self.ctx.set_source_rgb(*color.get_rgb(fg))
+            self.ctx.show_text(text)
+
+            # Advance to the next position
+            left += box_width + 2
+
+        self.workspaces_end = left
 
     def draw_window_text(self):
         if not self.focused:
@@ -108,37 +172,37 @@ class Bar:
             return
 
         self.ctx.set_source_rgb(1, 1, 1)
-        self.ctx.select_font_face(config.bar.font.face)
-        self.ctx.set_font_size(config.bar.font.size)
+        self.show_text(self.workspaces_end + 10, text)
 
-        _, y_bearing, _, height, _, _ = self.ctx.text_extents(text)
+    def show_text(self, x, text):
+        """Show text at the given x coordinate and vertically center it.
 
-        self.ctx.move_to(10, self.height/2 - (y_bearing + height/2))
+        Set font face and size as defined in the configuration.
+        Return the used text extents.
+        """
+
+        extents = self.ctx.text_extents(text)
+        _, y_bearing, _, height, _, _ = extents
+
+        self.ctx.move_to(x, self.height/2 - (y_bearing + height/2))
         self.ctx.show_text(text)
+
+        return extents
 
     def copy_pixmap(self):
         pwm.xcb.core.CopyArea(self.pixmap, self.wid, self.gc,
                               0, 0, 0, 0, self.width, self.height)
 
-    def draw_pixmap(self):
-        self.draw_background()
-        self.draw_window_text()
-
     def update(self):
-        self.draw_pixmap()
+        self.draw_background()
+        self.draw_open_workspaces()
+        self.draw_window_text()
         self.copy_pixmap()
 
     def show(self):
-        """Renders the bar"""
-        self.visible = True
-
+        """Map the bar and update it."""
         pwm.xcb.core.MapWindow(self.wid)
         self.update()
-
-    def hide(self):
-        """Hides the bar"""
-        self.visible = False
-        pwm.xcb.core.UnmapWindow(self.wid)
 
     def handle_focus_changed(self, window):
         self.focused = window

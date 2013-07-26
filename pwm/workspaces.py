@@ -19,7 +19,6 @@ bar = None
 
 class Workspace:
     def __init__(self):
-        self.active = False
         self.windows = []
 
         self.x = 0
@@ -31,12 +30,10 @@ class Workspace:
         self.layout = pwm.layouts.Default(self)
 
     def hide(self):
-        self.active = False
         for w in self.windows:
             w.hide()
 
     def show(self):
-        self.active = True
         for w in self.windows:
             w.show()
 
@@ -54,16 +51,16 @@ def setup():
     """
     Set up all workspaces.
     """
-    global bar
-    bar = pwm.bar.Bar()
-    bar.show()
-
     global workspaces
     workspaces = [Workspace() for i in range(0, config.workspaces)]
 
     global current_workspace_index
     current_workspace_index = 0
     current().show()
+
+    global bar
+    bar = pwm.bar.Bar()
+    bar.show()
 
 
 def destroy():
@@ -103,3 +100,19 @@ def switch(index):
     current().hide()
 
     current_workspace_index = index
+
+    bar.update()
+
+
+def opened():
+    """
+    Return a generator which yields all open workspaces.
+
+    yield (index, workspace)
+    A workspace is considered open if it has any windows on it or if it's
+    the current workspace.
+    """
+
+    for i in range(0, config.workspaces):
+        if i == current_workspace_index or workspaces[i].windows:
+            yield i, workspaces[i]

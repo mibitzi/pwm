@@ -23,17 +23,6 @@ class TestBar(unittest.TestCase):
         util.tear_down()
 
     def test_show(self):
-        self.bar.hide()
-        self.bar.show()
-
-        self.assertTrue(self.bar.visible)
-
+        # show() should already have been called in setUp
         attr = pwm.xcb.core.GetWindowAttributes(self.bar.wid).reply()
         self.assertEqual(attr.map_state, xproto.MapState.Viewable)
-
-    def test_hide(self):
-        self.bar.hide()
-        self.assertFalse(self.bar.visible)
-
-        attr = pwm.xcb.core.GetWindowAttributes(self.bar.wid).reply()
-        self.assertEqual(attr.map_state, xproto.MapState.Unmapped)

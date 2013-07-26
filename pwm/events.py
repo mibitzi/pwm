@@ -71,6 +71,7 @@ def handle(event):
             window_unmapped(win)
 
     elif isinstance(event, xp.EnterNotifyEvent):
+        logging.debug("EnterNotifyEvent")
         pwm.windows.handle_focus(event.event)
 
     elif isinstance(event, xp.PropertyNotifyEvent):

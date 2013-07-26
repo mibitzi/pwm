@@ -48,7 +48,9 @@ class Window:
         return pwm.xcb.get_property_string(self.wid, xproto.Atom.WM_NAME)
 
     def configure(self, **kwargs):
-        """Arguments can be: x, y, width, height
+        """Configure the window and set the given variables.
+
+        Arguments can be: x, y, width, height
         All changes to these variables should be done by calling this method.
         """
 
@@ -99,20 +101,33 @@ def handle_unmap_notification(win):
 
 
 def handle_focus(wid):
+    """Focus the window with the given wid.
+
+    events.focus_changed will be fired with the new focused window as
+    parameter. If no window was focused or the window was not found
+    the event will be fired with None as parameter.
+    """
+
     global focused
 
     (win, ws) = windows.get(wid, (None, None))
-    if not win or focused == win:
+    if focused == win:
         return
 
     if focused:
         focused.handle_focus(False)
 
     focused = win
-    focused.handle_focus(True)
+    if focused:
+        focused.handle_focus(True)
 
     pwm.events.focus_changed(win)
 
 
 def find(wid):
+    """Find the window with the given wid.
+
+    Return a (window, workspace) tuple if found, otherwise (None, None).
+    """
+
     return windows.get(wid, (None, None))
