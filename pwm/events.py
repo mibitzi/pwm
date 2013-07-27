@@ -50,14 +50,15 @@ def loop():
 
 def handle(event):
     if isinstance(event, xp.MapRequestEvent):
+        logging.debug("MapRequestEvent")
         pwm.windows.handle_map_request(event.window)
 
     elif isinstance(event, xp.UnmapNotifyEvent):
         if event.event != pwm.xcb.screen.root:
+            logging.debug("UnmapNotifyEvent")
             (win, ws) = pwm.windows.find(event.window)
 
             if win and ws:
-                logging.debug("UnmapNotifyEvent")
                 pwm.windows.handle_unmap_notification(win)
                 window_unmapped(win)
 
@@ -67,12 +68,15 @@ def handle(event):
             logging.debug("DestroyNotifyEvent")
             ws.remove_window(win)
             window_unmapped(win)
+        else:
+            logging.debug("DestroyNotifyEvent - window not found")
 
     elif isinstance(event, xp.EnterNotifyEvent):
         logging.debug("EnterNotifyEvent")
         pwm.windows.handle_focus(event.event)
 
     elif isinstance(event, xp.PropertyNotifyEvent):
+        logging.debug("PropertyNotifyEvent")
         (win, ws) = pwm.windows.find(event.window)
         if win and ws:
             window_property_changed(win)

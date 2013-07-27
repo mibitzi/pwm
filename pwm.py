@@ -22,7 +22,7 @@ def main():
         logging.info("Changed to loglevel %s" % loglevel)
 
     pwm.xcb.connect()
-    pwm.xcb.setup_screens()
+    pwm.xcb.setup_root_window()
     pwm.workspaces.setup()
 
     pwm.keybind.update_keyboard_mapping(None)

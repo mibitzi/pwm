@@ -16,10 +16,7 @@ import test.util as util
 class TestWorkspaces(unittest.TestCase):
     def setUp(self):
         util.setup()
-
-        self.window = pwm.windows.Window(pwm.xcb.screen.root)
         self.workspace = pwm.workspaces.current()
-        self.workspace.add_window(self.window)
 
     def tearDown(self):
         util.tear_down()
@@ -44,27 +41,30 @@ class TestWorkspaces(unittest.TestCase):
             pwm.xcb.screen.height_in_pixels - pwm.workspaces.bar.height)
 
     def test_add_window(self):
-        # Window already added
+        window = util.create_window()
         self.assertEqual(len(self.workspace.windows), 1)
-        self.assertTrue(self.window in self.workspace.windows)
+        self.assertTrue(window in self.workspace.windows)
 
     def test_remove_window(self):
-        win = pwm.windows.Window(pwm.xcb.screen.root)
-        self.workspace.add_window(win)
-
-        self.workspace.remove_window(self.window)
-        self.assertEqual(len(self.workspace.windows), 1)
-
+        win = util.create_window()
         self.workspace.remove_window(win)
         self.assertEqual(len(self.workspace.windows), 0)
 
+        # Add window again to not screw up util.tear_down
+        self.workspace.add_window(win)
+
     def test_show(self):
+        wid = util.create_window()
+
+        self.workspace.hide()
         self.workspace.show()
-        self.assertTrue(self.window.visible)
+        self.assertTrue(pwm.windows.is_mapped(wid))
 
     def test_hide(self):
+        wid = util.create_window()
+
         self.workspace.hide()
-        self.assertFalse(self.window.visible)
+        self.assertFalse(pwm.windows.is_mapped(wid))
 
     def test_switch_workspace(self):
         pwm.workspaces.switch(1)
@@ -72,6 +72,9 @@ class TestWorkspaces(unittest.TestCase):
                          pwm.workspaces.workspaces[1])
 
     def test_opened(self):
+        # Create window on current workspace (idx=0)
+        util.create_window()
+
         pwm.workspaces.switch(5)
 
         active = [i for i in pwm.workspaces.opened()]

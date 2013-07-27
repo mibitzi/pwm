@@ -8,6 +8,7 @@ import pwm.xcb
 import pwm.workspaces
 
 connected = False
+created_windows = []
 
 
 def setup():
@@ -15,11 +16,29 @@ def setup():
     global connected
     if not connected:
         pwm.xcb.connect()
-        pwm.xcb.setup_screens()
+        pwm.xcb.setup_root_window()
         connected = True
 
     pwm.workspaces.setup()
 
 
 def tear_down():
+    global created_windows
+    for wid in created_windows:
+        pwm.windows.unmanage(wid)
+        pwm.windows.destroy(wid)
+    created_windows = []
+
     pwm.workspaces.destroy()
+
+
+def create_window():
+    """Create a new window and manage it."""
+
+    wid = pwm.windows.create(0, 0, 100, 100)
+    pwm.windows.manage(wid)
+
+    global created_windows
+    created_windows.append(wid)
+
+    return wid

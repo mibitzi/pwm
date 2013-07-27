@@ -45,9 +45,10 @@ workspaces = 10
 # The second argument is the function to execute.
 # All following arguments will be passed to that function.
 keys = [
-    Key("Mod4-a", cmd.kill),
-    Key("Mod4-x", cmd.quit),
-    Key("Mod4-Return", cmd.spawn, "urxvt")
+    Key("Mod4-Shift-q", cmd.quit),
+    Key("Mod4-q", cmd.kill),
+    Key("Mod4-Return", cmd.spawn, "urxvt"),
+    Key("Mod4-p", cmd.spawn, "dmenu_run")
 ]
 
 

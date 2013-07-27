@@ -4,13 +4,13 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-import xcb.xproto as xproto
 import cairo
 
 from pwm.config import config
 import pwm.xcb
 import pwm.color as color
 import pwm.events
+import pwm.windows
 
 
 class Bar:
@@ -38,30 +38,12 @@ class Bar:
             self.handle_window_property_changed)
         pwm.events.window_unmapped.remove(self.handle_window_unmapped)
 
-        pwm.xcb.core.DestroyWindow(self.wid)
+        pwm.windows.destroy(self.wid)
         pwm.xcb.core.FreePixmap(self.pixmap)
         pwm.xcb.core.FreeGC(self.gc)
 
     def create_window(self):
-        wid = pwm.xcb.conn.generate_id()
-
-        mask, values = pwm.xcb.attribute_mask(
-            backpixel=pwm.color.get_pixel(config.bar.background),
-            eventmask=xproto.EventMask.Exposure)
-
-        pwm.xcb.core.CreateWindow(
-            pwm.xcb.screen.root_depth,
-            wid,
-            pwm.xcb.screen.root,
-            0, 0,  # x y
-            self.width,
-            self.height,
-            0,  # border
-            xproto.WindowClass.InputOutput,
-            pwm.xcb.screen.root_visual,
-            mask, values)
-
-        return wid
+        return pwm.windows.create(0, 0, self.width, self.height)
 
     def create_pixmap(self):
         pixmap = pwm.xcb.conn.generate_id()
@@ -167,7 +149,7 @@ class Bar:
         if not self.focused:
             return
 
-        text = self.focused.get_name()
+        text = pwm.windows.get_name(self.focused)
         if text == "":
             return
 
@@ -204,16 +186,16 @@ class Bar:
         pwm.xcb.core.MapWindow(self.wid)
         self.update()
 
-    def handle_focus_changed(self, window):
-        self.focused = window
+    def handle_focus_changed(self, wid):
+        self.focused = wid
         self.update()
 
-    def handle_window_property_changed(self, window):
-        if window == self.focused:
+    def handle_window_property_changed(self, wid):
+        if wid == self.focused:
             self.update()
 
-    def handle_window_unmapped(self, window):
-        if window == self.focused:
+    def handle_window_unmapped(self, wid):
+        if wid == self.focused:
             self.focused = None
 
         # Even if it was not the focused window, closing this window

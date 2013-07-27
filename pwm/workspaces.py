@@ -9,6 +9,7 @@ import logging
 from pwm.config import config
 import pwm.xcb
 import pwm.bar
+import pwm.windows
 import pwm.layouts
 import pwm.events
 
@@ -31,20 +32,20 @@ class Workspace:
 
     def hide(self):
         for w in self.windows:
-            w.hide()
+            pwm.windows.hide(w)
 
     def show(self):
         for w in self.windows:
-            w.show()
+            pwm.windows.show(w)
 
-    def add_window(self, window):
-        self.windows.append(window)
-        self.layout.add(window)
-        window.show()
+    def add_window(self, wid):
+        self.windows.append(wid)
+        self.layout.add(wid)
+        pwm.windows.show(wid)
 
-    def remove_window(self, window):
-        self.windows.remove(window)
-        self.layout.remove(window)
+    def remove_window(self, wid):
+        self.windows.remove(wid)
+        self.layout.remove(wid)
 
 
 def setup():

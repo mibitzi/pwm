@@ -2,42 +2,39 @@
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
 from __future__ import division, absolute_import
-from __future__ import print_function  # , unicode_literals
+from __future__ import print_function, unicode_literals
 
 import struct
 import xcb
 import xcb.xproto as xproto
 
 conn = None
-
-# Shortcut for conn.core
 core = None
-
 screen = None
 
 
-def connect():
-    """Connect to the X server"""
+def connect(display=None):
+    """Connect to the X server."""
 
     global conn
-    conn = xcb.connect(display=":1")
+    conn = xcb.connect(display)
 
     global core
     core = conn.core
-
-
-def disconnect():
-    """Disconnect from the X server"""
-    conn.disconnect()
-
-
-def setup_screens():
-    """Set up screens and root windows"""
 
     setup = conn.get_setup()
 
     global screen
     screen = setup.roots[0]
+
+
+def disconnect():
+    """Disconnect from the X server."""
+    conn.disconnect()
+
+
+def setup_root_window():
+    """Set up the root window."""
 
     root_event_mask = (xproto.EventMask.StructureNotify |
                        xproto.EventMask.SubstructureNotify |

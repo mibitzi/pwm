@@ -13,128 +13,126 @@ import pwm.color
 import pwm.workspaces
 import pwm.events
 
-# wid: (window, workspace)
-windows = {}
-
+managed = {}
 focused = None
 
 
-class Window:
-    def __init__(self, wid):
-        self.wid = wid
-        self.x = 0
-        self.y = 0
-        self.width = 0
-        self.height = 0
-        self.visible = False
+def create(x, y, width, height):
+    """Create a new window and return its id."""
 
-        self.change_attributes(
-            eventmask=(xproto.EventMask.EnterWindow |
-                       xproto.EventMask.FocusChange |
-                       xproto.EventMask.PropertyChange))
+    wid = pwm.xcb.conn.generate_id()
 
-    def show(self):
-        self.visible = True
-        pwm.xcb.core.MapWindow(self.wid)
+    mask, values = pwm.xcb.attribute_mask(
+        backpixel=pwm.xcb.screen.black_pixel,
+        eventmask=xproto.EventMask.Exposure)
 
-    def hide(self):
-        self.visible = False
-        pwm.xcb.core.UnmapWindow(self.wid)
+    pwm.xcb.core.CreateWindow(
+        pwm.xcb.screen.root_depth,
+        wid,
+        pwm.xcb.screen.root,
+        x, y,
+        width,
+        height,
+        0,  # border
+        xproto.WindowClass.InputOutput,
+        pwm.xcb.screen.root_visual,
+        mask, values)
 
-    def change_attributes(self, **kwargs):
-        mask, values = pwm.xcb.attribute_mask(**kwargs)
-        pwm.xcb.core.ChangeWindowAttributes(self.wid, mask, values)
-
-    def get_name(self):
-        name = pwm.xcb.get_property_value(
-            pwm.xcb.get_property(self.wid, xproto.Atom.WM_NAME).reply())
-
-        return name or ""
-
-    def configure(self, **kwargs):
-        """Configure the window and set the given variables.
-
-        Arguments can be: x, y, width, height
-        All changes to these variables should be done by calling this method.
-        """
-
-        self.x = int(kwargs.get("x", self.x))
-        self.y = int(kwargs.get("y", self.y))
-        self.width = int(kwargs.get("width", self.width))
-        self.height = int(kwargs.get("height", self.height))
-
-        workspace = pwm.workspaces.current()
-
-        mask, values = pwm.xcb.configure_mask(
-            x=workspace.x + self.x,
-            y=workspace.y + self.y,
-            width=self.width - 2*config.window.border,
-            height=self.height - 2*config.window.border,
-            borderwidth=config.window.border)
-        pwm.xcb.core.ConfigureWindow(self.wid, mask, values)
-
-    def handle_focus(self, focused):
-        """Set border color and input focus according to focus."""
-
-        border = None
-        if focused:
-            border = pwm.color.get_pixel(config.window.focused)
-        else:
-            border = pwm.color.get_pixel(config.window.unfocused)
-
-        self.change_attributes(borderpixel=border)
-
-        if focused:
-            pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
-                                       self.wid,
-                                       xproto.Time.CurrentTime)
+    return wid
 
 
-def handle_map_request(wid):
-    win = Window(wid)
-    ws = pwm.workspaces.current()
-
-    ws.add_window(win)
-    windows[wid] = (win, ws)
+def destroy(wid):
+    """Destroy the window."""
+    pwm.xcb.core.DestroyWindow(wid)
 
 
-def handle_unmap_notification(win):
-    _, ws = find(win.wid)
-    ws.remove_window(win)
-    del windows[win.wid]
-
-
-def handle_focus(wid):
-    """Focus the window with the given wid.
-
-    events.focus_changed will be fired with the new focused window as
-    parameter. If no window was focused or the window was not found
-    the event will be fired with None as parameter.
-    """
-
-    global focused
-
-    (win, ws) = windows.get(wid, (None, None))
-    if focused == win:
+def manage(wid):
+    if wid in managed:
         return
 
-    if focused:
-        focused.handle_focus(False)
+    change_attributes(
+        wid,
+        eventmask=(xproto.EventMask.EnterWindow |
+                   xproto.EventMask.FocusChange |
+                   xproto.EventMask.PropertyChange))
 
-    focused = win
-    if focused:
-        focused.handle_focus(True)
-
-    pwm.events.focus_changed(win)
+    managed[wid] = pwm.workspaces.current()
+    pwm.workspaces.current().add_window(wid)
 
 
-def find(wid):
-    """Find the window with the given wid.
+def unmanage(wid):
+    if wid not in managed:
+        return
 
-    Return a (window, workspace) tuple if found, otherwise (None, None).
+    ws = managed[wid]
+    ws.remove_window(wid)
+    del managed[wid]
+
+
+def show(wid):
+    """Map the given window."""
+    pwm.xcb.core.MapWindow(wid)
+
+
+def hide(wid):
+    """Unmap the given window."""
+    pwm.xcb.core.UnmapWindow(wid)
+
+
+def is_mapped(wid):
+    """Return True if the window is mapped, otherwise False."""
+    attr = pwm.xcb.core.GetWindowAttributes(wid).reply()
+    return attr.map_state == xproto.MapState.Viewable
+
+
+def change_attributes(wid, **kwargs):
+    """Set attributes for the given window."""
+
+    mask, values = pwm.xcb.attribute_mask(**kwargs)
+    pwm.xcb.core.ChangeWindowAttributes(wid, mask, values)
+
+
+def get_name(wid):
+    """Get the window name."""
+
+    name = pwm.xcb.get_property_value(
+        pwm.xcb.get_property(wid, xproto.Atom.WM_NAME).reply())
+
+    return name or ""
+
+
+def configure(wid, **kwargs):
+    """Configure the window and set the given variables.
+
+    Arguments can be: x, y, width, height
     """
 
-    return windows.get(wid, (None, None))
+    workspace = pwm.workspaces.current()
+
+    if "x" in kwargs:
+        kwargs["x"] = int(workspace.x + kwargs["x"])
+    if "y" in kwargs:
+        kwargs["y"] = int(workspace.y + kwargs["y"])
+
+    if "width" in kwargs:
+        kwargs["width"] = int(kwargs["width"] - 2*config.window.border)
+    if "height" in kwargs:
+        kwargs["height"] = int(kwargs["height"] - 2*config.window.border)
+
+    kwargs["borderwidth"] = config.window.border
+
+    mask, values = pwm.xcb.configure_mask(**kwargs)
+    pwm.xcb.core.ConfigureWindow(wid, mask, values)
+
+
+def get_geometry(wid):
+    """Get geometry information for the given window.
+
+    Return a tuple(x, y, width, height).
+    """
+
+    geo = pwm.xcb.core.GetGeometry(wid).reply()
+    return (geo.x, geo.y, geo.width, geo.height)
 
 
 def get_wm_protocols(wid):
@@ -169,3 +167,53 @@ def kill(wid):
 
     else:
         pwm.xcb.core.KillClient(wid)
+
+
+def handle_map_request(wid):
+    manage(wid)
+
+
+def handle_unmap_notification(wid):
+    unmanage(wid)
+
+
+def handle_focus(wid):
+    """Focus the window with the given wid.
+
+    events.focus_changed will be fired with the new focused window as
+    parameter. If no window was focused or the window was not found
+    the event will be fired with None as parameter.
+    """
+
+    global focused
+
+    win = wid if wid in managed else None
+
+    if focused == win:
+        return
+
+    if focused:
+        _handle_focus(focused, False)
+
+    focused = win
+    if focused:
+        _handle_focus(focused, True)
+
+    pwm.events.focus_changed(win)
+
+
+def _handle_focus(wid, focused):
+    """Set border color and input focus according to focus."""
+
+    border = None
+    if focused:
+        border = pwm.color.get_pixel(config.window.focused)
+    else:
+        border = pwm.color.get_pixel(config.window.unfocused)
+
+    change_attributes(wid, borderpixel=border)
+
+    if focused:
+        pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
+                                   wid,
+                                   xproto.Time.CurrentTime)

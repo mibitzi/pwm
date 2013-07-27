@@ -6,6 +6,7 @@ from __future__ import print_function, unicode_literals
 
 import unittest
 
+from pwm.config import config
 import pwm.xcb
 import pwm.workspaces
 import pwm.windows
@@ -15,51 +16,42 @@ import test.util as util
 class TestWindow(unittest.TestCase):
     def setUp(self):
         util.setup()
-
-        # TODO: create real window to test with
-        pwm.windows.handle_map_request(pwm.xcb.screen.root)
-        (self.window, _) = pwm.windows.find(pwm.xcb.screen.root)
+        self.wid = util.create_window()
 
     def tearDown(self):
         util.tear_down()
 
-    def test_configure(self):
-        self.window.configure(x=100, y=200, width=300, height=400)
+    def test_configure_geometry(self):
+        pwm.windows.configure(self.wid, x=100, y=200, width=300, height=400)
+        x, y, width, height = pwm.windows.get_geometry(self.wid)
 
-        self.assertEqual(self.window.x, 100)
-        self.assertEqual(self.window.y, 200)
-        self.assertEqual(self.window.width, 300)
-        self.assertEqual(self.window.height, 400)
+        self.assertEqual(x, 100)
+        self.assertEqual(y, 200 + pwm.workspaces.current().y)
+        self.assertEqual(width, 300 - 2*config.window.border)
+        self.assertEqual(height, 400 - 2*config.window.border)
 
     def test_show(self):
-        self.window.show()
+        pwm.windows.hide(self.wid)
+        pwm.windows.show(self.wid)
 
-        self.assertTrue(self.window.visible)
-
-        # TODO: create a real window to test
-        #attr = pwm.xcb.core.GetWindowAttributes(self.window.wid).reply()
-        #self.assertEqual(attr.map_state, xproto.MapState.Viewable)
+        self.assertTrue(pwm.windows.is_mapped(self.wid))
 
     def test_hide(self):
-        self.window.hide()
-
-        self.assertFalse(self.window.visible)
-
-        # TODO: create a real window to test
-        #attr = pwm.xcb.core.GetWindowAttributes(self.window.wid).reply()
-        #self.assertEqual(attr.map_state, xproto.MapState.Unmapped)
+        pwm.windows.hide(self.wid)
+        self.assertFalse(pwm.windows.is_mapped(self.wid))
 
     def test_handle_unmap_notification(self):
-        pwm.windows.handle_unmap_notification(self.window)
-        win, ws = pwm.windows.find(self.window.wid)
-        self.assertIsNone(win)
-        self.assertNotIn(win, pwm.workspaces.current().windows)
+        pwm.windows.handle_unmap_notification(self.wid)
+        self.assertNotIn(self.wid, pwm.windows.managed)
+        self.assertNotIn(self.wid, pwm.workspaces.current().windows)
 
     def test_handle_focus(self):
-        # TODO: create real windows to test
-        pwm.windows.handle_focus(self.window.wid)
-        self.assertEqual(pwm.windows.focused, self.window)
+        wid2 = util.create_window()
+        pwm.windows.handle_focus(wid2)
+        self.assertEqual(pwm.windows.focused, wid2)
 
-    def test_find(self):
-        win, _ = pwm.windows.find(self.window.wid)
-        self.assertEqual(win, self.window)
+        pwm.windows.handle_focus(self.wid)
+        self.assertEqual(pwm.windows.focused, self.wid)
+
+        pwm.windows.handle_focus(None)
+        self.assertEqual(pwm.windows.focused, None)

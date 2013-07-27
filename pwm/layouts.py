@@ -4,6 +4,8 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import pwm.windows
+
 
 class Default:
     def __init__(self, workspace):
@@ -36,17 +38,20 @@ class Default:
             return
 
         if not self.stacked:
-            self.master.configure(x=0, y=0, width=self.workspace.width,
+            pwm.windows.configure(self.master,
+                                  x=0, y=0, width=self.workspace.width,
                                   height=self.workspace.height)
             return
 
         center = round(self.workspace.width / 2)
-        self.master.configure(x=0, y=0, width=center,
+        pwm.windows.configure(self.master,
+                              x=0, y=0, width=center,
                               height=self.workspace.height)
 
         height = self.workspace.height / len(self.stacked)
         top = 0
         for w in self.stacked:
-            w.configure(x=center, y=round(top), width=center,
-                        height=round(height))
+            pwm.windows.configure(w,
+                                  x=center, y=round(top), width=center,
+                                  height=round(height))
             top += height

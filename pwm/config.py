@@ -14,6 +14,22 @@ config = None
 grabbed_keys = {}
 
 
+class Config:
+    def __init__(self):
+        self.loaded = False
+        self.data = None
+
+    def load(self):
+        self.loaded = True
+        self.data = imp.load_source("config", "config.py")
+
+    def __getattr__(self, name):
+        if not self.loaded:
+            self.load()
+
+        return getattr(self.data, name)
+
+
 class Key:
     """Class to store a command and the keys which it responds to."""
     def __init__(self, keystr, command, *args, **kwargs):
@@ -53,20 +69,5 @@ def handle_key_press_event(event):
     if key:
         key.call()
 
-
-class Config:
-    def __init__(self):
-        self.loaded = False
-        self.data = None
-
-    def load(self):
-        self.loaded = True
-        self.data = imp.load_source("config", "config.py")
-
-    def __getattr__(self, name):
-        if not self.loaded:
-            self.load()
-
-        return getattr(self.data, name)
 
 config = Config()
