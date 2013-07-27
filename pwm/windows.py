@@ -4,6 +4,7 @@
 from __future__ import division, absolute_import
 from __future__ import print_function  # , unicode_literals
 
+from contextlib import contextmanager
 import struct
 import xcb.xproto as xproto
 
@@ -15,6 +16,11 @@ import pwm.events
 
 managed = {}
 focused = None
+focus_history = []
+
+MANAGED_EVENT_MASK = (xproto.EventMask.EnterWindow |
+                      xproto.EventMask.FocusChange |
+                      xproto.EventMask.PropertyChange)
 
 
 def create(x, y, width, height):
@@ -50,14 +56,12 @@ def manage(wid):
     if wid in managed:
         return
 
-    change_attributes(
-        wid,
-        eventmask=(xproto.EventMask.EnterWindow |
-                   xproto.EventMask.FocusChange |
-                   xproto.EventMask.PropertyChange))
+    change_attributes(wid, eventmask=MANAGED_EVENT_MASK)
 
     managed[wid] = pwm.workspaces.current()
     pwm.workspaces.current().add_window(wid)
+
+    handle_focus(wid)
 
 
 def unmanage(wid):
@@ -67,6 +71,13 @@ def unmanage(wid):
     ws = managed[wid]
     ws.remove_window(wid)
     del managed[wid]
+
+    global focus_history
+    focus_history = [w for w in focus_history if w != wid]
+
+    if focused == wid:
+        if focus_history:
+            handle_focus(focus_history.pop())
 
 
 def show(wid):
@@ -169,14 +180,6 @@ def kill(wid):
         pwm.xcb.core.KillClient(wid)
 
 
-def handle_map_request(wid):
-    manage(wid)
-
-
-def handle_unmap_notification(wid):
-    unmanage(wid)
-
-
 def handle_focus(wid):
     """Focus the window with the given wid.
 
@@ -217,3 +220,22 @@ def _handle_focus(wid, focused):
         pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
                                    wid,
                                    xproto.Time.CurrentTime)
+
+        global focus_history
+        focus_history.append(wid)
+
+
+@contextmanager
+def no_enter_notify_event():
+    """Prevent all managed windows from sending EnterNotifyEvent."""
+
+    eventmask = MANAGED_EVENT_MASK
+    eventmask &= ~xproto.EventMask.EnterWindow
+
+    for wid in managed:
+        change_attributes(wid, eventmask=eventmask)
+
+    yield
+
+    for wid in managed:
+        change_attributes(wid, eventmask=MANAGED_EVENT_MASK)

@@ -18,7 +18,10 @@ def main():
     loglevel = config.loglevel.upper()
 
     if loglevel != "INFO":
-        logging.basicConfig(level=getattr(logging, loglevel, None))
+        logging.basicConfig(
+            level=getattr(logging, loglevel, None),
+            format='%(asctime)s:%(levelname)s:%(message)s',
+            datefmt='%m-%d %H:%M:%S')
         logging.info("Changed to loglevel %s" % loglevel)
 
     pwm.xcb.connect()

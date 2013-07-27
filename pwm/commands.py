@@ -35,7 +35,7 @@ def kill():
     """Kill the currently active window."""
 
     if pwm.windows.focused:
-        pwm.windows.kill(pwm.windows.focused.wid)
+        pwm.windows.kill(pwm.windows.focused)
 
 
 def spawn(cmd):

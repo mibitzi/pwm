@@ -40,10 +40,18 @@ class TestWindow(unittest.TestCase):
         pwm.windows.hide(self.wid)
         self.assertFalse(pwm.windows.is_mapped(self.wid))
 
-    def test_handle_unmap_notification(self):
-        pwm.windows.handle_unmap_notification(self.wid)
-        self.assertNotIn(self.wid, pwm.windows.managed)
-        self.assertNotIn(self.wid, pwm.workspaces.current().windows)
+    def test_manage(self):
+        win = util.create_window()
+        self.assertIn(win, pwm.windows.managed)
+        self.assertIn(win, pwm.workspaces.current().windows)
+        self.assertEqual(win, pwm.windows.focused)
+
+    def test_unmanage(self):
+        wid = util.create_window()
+        pwm.windows.unmanage(wid)
+        self.assertNotIn(wid, pwm.windows.managed)
+        self.assertNotIn(wid, pwm.workspaces.current().windows)
+        self.assertNotEqual(wid, pwm.windows.focused)
 
     def test_handle_focus(self):
         wid2 = util.create_window()
@@ -55,3 +63,13 @@ class TestWindow(unittest.TestCase):
 
         pwm.windows.handle_focus(None)
         self.assertEqual(pwm.windows.focused, None)
+
+    def test_focus_history(self):
+        wid2 = util.create_window()
+        wid3 = util.create_window()
+
+        self.assertEqual(pwm.windows.focus_history, [self.wid, wid2, wid3])
+
+        pwm.windows.unmanage(wid3)
+        self.assertEqual(pwm.windows.focused, wid2)
+        self.assertEqual(pwm.windows.focus_history, [self.wid, wid2])

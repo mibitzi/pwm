@@ -39,13 +39,15 @@ class Workspace:
             pwm.windows.show(w)
 
     def add_window(self, wid):
-        self.windows.append(wid)
-        self.layout.add(wid)
-        pwm.windows.show(wid)
+        with pwm.windows.no_enter_notify_event():
+            self.windows.append(wid)
+            self.layout.add(wid)
+            pwm.windows.show(wid)
 
     def remove_window(self, wid):
-        self.windows.remove(wid)
-        self.layout.remove(wid)
+        with pwm.windows.no_enter_notify_event():
+            self.windows.remove(wid)
+            self.layout.remove(wid)
 
 
 def setup():
