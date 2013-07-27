@@ -4,6 +4,8 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import os
+import time
 import unittest
 
 import pwm.commands
@@ -22,3 +24,16 @@ class TestCommands(unittest.TestCase):
 
         self.assertEqual(pwm.workspaces.current(),
                          pwm.workspaces.workspaces[1])
+
+    def test_spawn(self):
+        tmp_file = "/tmp/test_spawn"
+
+        if os.path.isfile(tmp_file):
+            os.unlink(tmp_file)
+
+        pwm.commands.spawn("touch %s" % tmp_file)
+        time.sleep(0.05)
+
+        self.assertTrue(os.path.isfile(tmp_file))
+
+        os.unlink(tmp_file)

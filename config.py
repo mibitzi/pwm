@@ -36,10 +36,18 @@ window = Values(
 
 workspaces = 10
 
-
+# The first argument should be a string describing the key.
+# It should start with one or more modifiers following exactly one key.
+# Avaliable modifiers are:
+#    Control, Shift, Mod1, Mod2, Mod3, Mod4, Mod5
+# Whereas Mod4 is usually the Super/Windows key
+#
+# The second argument is the function to execute.
+# All following arguments will be passed to that function.
 keys = [
     Key("Mod4-a", cmd.kill),
-    Key("Mod4-x", cmd.quit)
+    Key("Mod4-x", cmd.quit),
+    Key("Mod4-Return", cmd.spawn, "urxvt")
 ]
 
 

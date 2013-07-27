@@ -5,6 +5,7 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
 import imp
+import logging
 
 import pwm.keybind
 import pwm.xcb
@@ -30,9 +31,14 @@ def setup_keys():
 
     for key in config.keys:
         mods, keycode = pwm.keybind.parse_keystring(key.keystr)
-        pwm.keybind.grab_key(pwm.xcb.screen.root, mods, keycode)
 
-        grabbed_keys[(mods, keycode)] = key
+        if mods != 0 and keycode:
+            pwm.keybind.grab_key(pwm.xcb.screen.root, mods, keycode)
+
+            grabbed_keys[(mods, keycode)] = key
+        else:
+            # This is not a critical error, we just can't respond to that key
+            logging.error("Could not parse keybinding: {}".format(key.keystr))
 
 
 def handle_key_press_event(event):
