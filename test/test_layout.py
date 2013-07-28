@@ -152,3 +152,51 @@ class TestLayout(unittest.TestCase):
         self.layout.add_window(self.wid[1], 1)
         self.layout.move_right(self.wid[0])
         self.assertEqual(len(self.layout.columns), 1)
+
+    def test_above_topmost(self):
+        self.layout.add_window(self.wid[0])
+        self.assertEqual(self.layout.above(self.wid[0]), self.wid[0])
+
+    def test_above(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1])
+        self.assertEqual(self.layout.above(self.wid[1]), self.wid[0])
+
+    def test_below_bottommost(self):
+        self.layout.add_window(self.wid[0])
+        self.assertEqual(self.layout.below(self.wid[0]), self.wid[0])
+
+    def test_below(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1])
+        self.assertEqual(self.layout.below(self.wid[0]), self.wid[1])
+
+    def test_left_leftmost(self):
+        self.layout.add_window(self.wid[0])
+        self.assertEqual(self.layout.left(self.wid[0]), self.wid[0])
+
+    def test_left(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.assertEqual(self.layout.left(self.wid[1]), self.wid[0])
+
+    def test_left_uneven(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.layout.add_window(self.wid[2], 1)
+        self.assertEqual(self.layout.left(self.wid[2]), self.wid[0])
+
+    def test_right_rightmost(self):
+        self.layout.add_window(self.wid[0])
+        self.assertEqual(self.layout.right(self.wid[0]), self.wid[0])
+
+    def test_right(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.assertEqual(self.layout.right(self.wid[0]), self.wid[1])
+
+    def test_right_uneven(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1])
+        self.layout.add_window(self.wid[2], 1)
+        self.assertEqual(self.layout.right(self.wid[0]), self.wid[2])

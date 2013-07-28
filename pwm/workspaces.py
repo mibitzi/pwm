@@ -48,6 +48,7 @@ class Workspace:
             focused = pwm.windows.focused
             if focused and focused in self.windows:
                 column, row = self.layout.path(focused)
+                row += 1
 
             self.layout.add_window(wid, column, row)
 

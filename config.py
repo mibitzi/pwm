@@ -61,6 +61,11 @@ keys = [
     ("Mod4-Return", ft.partial(cmd.spawn, "urxvt")),
     ("Mod4-p", ft.partial(cmd.spawn, "dmenu_run")),
 
+    ("Mod4-h", cmd.focus_left),
+    ("Mod4-j", cmd.focus_below),
+    ("Mod4-k", cmd.focus_above),
+    ("Mod4-l", cmd.focus_right),
+
     ("Shift-Mod4-h", cmd.move_left),
     ("Shift-Mod4-j", cmd.move_down),
     ("Shift-Mod4-k", cmd.move_up),

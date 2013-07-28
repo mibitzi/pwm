@@ -128,8 +128,51 @@ class Layout:
 
         self.arrange()
 
+    def above(self, wid):
+        """Find the window above the given wid.
+
+        If this window is the topmost window, return its wid.
+        """
+        column, row = self.path(wid)
+        return wid if row == 0 else self.columns[column].windows[row-1].wid
+
+    def below(self, wid):
+        """Find the window below the given wid.
+
+        If this window is the bottommost window, return its wid.
+        """
+        column, row = self.path(wid)
+        return (wid if row == len(self.columns[column].windows)-1
+                else self.columns[column].windows[row-1].wid)
+
+    def left(self, wid):
+        """Find the window left of the given wid.
+
+        If the window is the leftmost window, return its wid.
+        """
+        column, row = self.path(wid)
+
+        if column == 0:
+            return wid
+        else:
+            left_col = self.columns[column-1]
+            return left_col.windows[min(row, len(left_col.windows)-1)].wid
+
+    def right(self, wid):
+        """Find the window right of the given wid.
+
+        If this window is the rightmost window, return its wid.
+        """
+        column, row = self.path(wid)
+
+        if column == len(self.columns)-1:
+            return wid
+        else:
+            right_col = self.columns[column+1]
+            return right_col.windows[min(row, len(right_col.windows)-1)].wid
+
     def arrange(self):
-        """Apply layout structure to windows. Use boundaries from workspace."""
+        """Apply layout structure to windows. Use geometry from workspace."""
 
         for col in self.columns:
             col.size = round(1.0 / len(self.columns), 3)

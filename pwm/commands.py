@@ -218,3 +218,27 @@ def move_right():
         return
 
     pwm.workspaces.current().move_right(focused)
+
+
+def focus_left():
+    if pwm.windows.focused:
+        pwm.windows.handle_focus(
+            pwm.workspaces.current().layout.left(pwm.windows.focused))
+
+
+def focus_below():
+    if pwm.windows.focused:
+        pwm.windows.handle_focus(
+            pwm.workspaces.current().layout.below(pwm.windows.focused))
+
+
+def focus_above():
+    if pwm.windows.focused:
+        pwm.windows.handle_focus(
+            pwm.workspaces.current().layout.above(pwm.windows.focused))
+
+
+def focus_right():
+    if pwm.windows.focused:
+        pwm.windows.handle_focus(
+            pwm.workspaces.current().layout.right(pwm.windows.focused))
