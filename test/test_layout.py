@@ -33,24 +33,44 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(len(self.layout.columns[0].windows), 1)
         self.assertEqual(self.layout.columns[0].windows[0].wid, wid)
 
-    def test_remove_window(self):
+    def test_add_window_set_column(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.assertEqual(self.layout.path(self.wid[1]), (1, 0))
+
+    def test_add_window_set_row(self):
         self.layout.add_window(self.wid[0])
         self.layout.add_window(self.wid[1])
-        self.layout.move_right(self.wid[1])
+        self.layout.add_window(self.wid[2], 0, 1)
+        self.assertEqual(self.layout.path(self.wid[2]), (0, 1))
 
+    def test_add_window_set_last_row(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1])
+        self.layout.add_window(self.wid[2], 0, -1)
+        self.assertEqual(self.layout.path(self.wid[2]), (0, 2))
+
+    def test_remove_window(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.remove_window(self.wid[0])
+        self.assertEqual(len(self.layout.columns[0].windows), 0)
+
+    def test_remove_window_remove_column(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
         self.layout.remove_window(self.wid[1])
         self.assertEqual(len(self.layout.columns), 1)
-        self.assertEqual(len(self.layout.columns[0].windows), 1)
-        self.assertEqual(self.layout.columns[0].windows[0].wid, self.wid[0])
+
+    def test_remove_window_remove_last_column(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.remove_window(self.wid[0])
+        self.assertEqual(len(self.layout.columns), 1)
 
     def test_path(self):
         self.layout.add_window(self.wid[0])
-        self.layout.add_window(self.wid[1])
-        self.layout.add_window(self.wid[2])
-
-        self.assertEqual(self.layout.path(self.wid[0]), (0, 0))
-        self.assertEqual(self.layout.path(self.wid[1]), (0, 1))
-        self.assertEqual(self.layout.path(self.wid[2]), (0, 2))
+        self.layout.add_window(self.wid[1], 1)
+        self.layout.add_window(self.wid[2], 1)
+        self.assertEqual(self.layout.path(self.wid[2]), (1, 1))
 
     def test_move_up(self):
         self.layout.add_window(self.wid[0])
@@ -60,9 +80,11 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(self.layout.path(self.wid[1]), (0, 0))
         self.assertEqual(self.layout.path(self.wid[0]), (0, 1))
 
-        # Already on top
-        self.layout.move_up(self.wid[1])
-        self.assertEqual(self.layout.path(self.wid[1]), (0, 0))
+    def test_move_up_top(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1])
+        self.layout.move_up(self.wid[0])
+        self.assertEqual(self.layout.path(self.wid[0]), (0, 0))
 
     def test_move_down(self):
         self.layout.add_window(self.wid[0])
@@ -72,44 +94,61 @@ class TestLayout(unittest.TestCase):
         self.assertEqual(self.layout.path(self.wid[1]), (0, 0))
         self.assertEqual(self.layout.path(self.wid[0]), (0, 1))
 
-        # Already at bottom
-        self.layout.move_down(self.wid[0])
-        self.assertEqual(self.layout.path(self.wid[0]), (0, 1))
+    def test_move_down_bottom(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1])
+
+        self.layout.move_down(self.wid[1])
+        self.assertEqual(self.layout.path(self.wid[1]), (0, 1))
 
     def test_move_left(self):
         self.layout.add_window(self.wid[0])
         self.layout.add_window(self.wid[1])
-
         self.layout.move_left(self.wid[0])
         self.assertEqual(self.layout.path(self.wid[0]), (0, 0))
         self.assertEqual(self.layout.path(self.wid[1]), (1, 0))
 
-        # Already alone on the left
+    def test_move_left_at_border(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
         self.layout.move_left(self.wid[0])
         self.assertEqual(self.layout.path(self.wid[0]), (0, 0))
-        self.assertEqual(self.layout.path(self.wid[1]), (1, 0))
 
-        # Merge
+    def test_move_left_merge(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
         self.layout.move_left(self.wid[1])
         self.assertEqual(self.layout.path(self.wid[0]), (0, 0))
         self.assertEqual(self.layout.path(self.wid[1]), (0, 1))
         self.assertEqual(len(self.layout.columns), 1)
 
+    def test_move_left_merge_remove_column(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.layout.move_left(self.wid[1])
+
     def test_move_right(self):
         self.layout.add_window(self.wid[0])
         self.layout.add_window(self.wid[1])
-
         self.layout.move_right(self.wid[0])
         self.assertEqual(self.layout.path(self.wid[0]), (1, 0))
         self.assertEqual(self.layout.path(self.wid[1]), (0, 0))
 
-        # Already alone on the right
-        self.layout.move_right(self.wid[0])
-        self.assertEqual(self.layout.path(self.wid[0]), (1, 0))
-        self.assertEqual(self.layout.path(self.wid[1]), (0, 0))
-
-        # Merge
+    def test_move_right_at_border(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
         self.layout.move_right(self.wid[1])
-        self.assertEqual(self.layout.path(self.wid[0]), (0, 0))
-        self.assertEqual(self.layout.path(self.wid[1]), (0, 1))
+        self.assertEqual(self.layout.path(self.wid[1]), (1, 0))
+
+    def test_move_right_merge(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.layout.move_right(self.wid[0])
+        self.assertEqual(self.layout.path(self.wid[0]), (0, 1))
+        self.assertEqual(self.layout.path(self.wid[1]), (0, 0))
+
+    def test_move_right_merge_remove_column(self):
+        self.layout.add_window(self.wid[0])
+        self.layout.add_window(self.wid[1], 1)
+        self.layout.move_right(self.wid[0])
         self.assertEqual(len(self.layout.columns), 1)

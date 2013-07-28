@@ -41,7 +41,16 @@ class Workspace:
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
             self.windows.append(wid)
-            self.layout.add_window(wid)
+
+            # Place new window below the currently focused
+            column = 0
+            row = -1
+            focused = pwm.windows.focused
+            if focused and focused in self.windows:
+                column, row = self.layout.path(focused)
+
+            self.layout.add_window(wid, column, row)
+
             pwm.windows.show(wid)
 
     def remove_window(self, wid):

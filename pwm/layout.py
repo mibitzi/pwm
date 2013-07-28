@@ -24,8 +24,14 @@ class Layout:
         self.columns = [Column(1.0, [])]
         self.workspace = workspace
 
-    def add_window(self, wid, column=0):
-        self.columns[column].windows.append(Window(1.0, wid))
+    def add_window(self, wid, column=0, row=-1):
+        if column >= len(self.columns):
+            self.columns.append(Column(1.0, [Window(1.0, wid)]))
+        else:
+            if row == -1:
+                row = len(self.columns[column].windows)
+            self.columns[column].windows.insert(row, Window(1.0, wid))
+
         self.arrange()
 
     def remove_window(self, wid):
@@ -33,7 +39,7 @@ class Layout:
         del self.columns[column].windows[row]
 
         # Don't leave empty columns behind
-        if not self.columns[column].windows:
+        if len(self.columns) > 1 and not self.columns[column].windows:
             del self.columns[column]
 
         self.arrange()
