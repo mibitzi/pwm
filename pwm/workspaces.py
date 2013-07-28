@@ -10,7 +10,7 @@ from pwm.config import config
 import pwm.xcb
 import pwm.bar
 import pwm.windows
-import pwm.layouts
+import pwm.layout
 import pwm.events
 
 workspaces = []
@@ -28,7 +28,7 @@ class Workspace:
         self.width = pwm.xcb.screen.width_in_pixels
         self.height = pwm.xcb.screen.height_in_pixels - self.y
 
-        self.layout = pwm.layouts.Default(self)
+        self.layout = pwm.layout.Layout(self)
 
     def hide(self):
         for w in self.windows:
@@ -41,13 +41,29 @@ class Workspace:
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
             self.windows.append(wid)
-            self.layout.add(wid)
+            self.layout.add_window(wid)
             pwm.windows.show(wid)
 
     def remove_window(self, wid):
         with pwm.windows.no_enter_notify_event():
             self.windows.remove(wid)
-            self.layout.remove(wid)
+            self.layout.remove_window(wid)
+
+    def move_down(self, wid):
+        with pwm.windows.no_enter_notify_event():
+            self.layout.move_down(wid)
+
+    def move_up(self, wid):
+        with pwm.windows.no_enter_notify_event():
+            self.layout.move_up(wid)
+
+    def move_left(self, wid):
+        with pwm.windows.no_enter_notify_event():
+            self.layout.move_left(wid)
+
+    def move_right(self, wid):
+        with pwm.windows.no_enter_notify_event():
+            self.layout.move_right(wid)
 
     def top_focus_priority(self):
         """Return the window which is on top of the focus priority list.

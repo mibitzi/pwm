@@ -59,7 +59,12 @@ keys = [
     ("Mod4-Shift-q", cmd.quit),
     ("Mod4-q", cmd.kill),
     ("Mod4-Return", ft.partial(cmd.spawn, "urxvt")),
-    ("Mod4-p", ft.partial(cmd.spawn, "dmenu_run"))
+    ("Mod4-p", ft.partial(cmd.spawn, "dmenu_run")),
+
+    ("Shift-Mod4-h", cmd.move_left),
+    ("Shift-Mod4-j", cmd.move_down),
+    ("Shift-Mod4-k", cmd.move_up),
+    ("Shift-Mod4-l", cmd.move_right)
 ]
 
 # Keys for every workspace

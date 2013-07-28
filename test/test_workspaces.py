@@ -46,12 +46,10 @@ class TestWorkspaces(unittest.TestCase):
         self.assertTrue(window in self.workspace.windows)
 
     def test_remove_window(self):
-        win = util.create_window()
+        win = util.create_window(manage=False)
+        self.workspace.add_window(win)
         self.workspace.remove_window(win)
         self.assertEqual(len(self.workspace.windows), 0)
-
-        # Add window again to not screw up util.tear_down
-        self.workspace.add_window(win)
 
     def test_show(self):
         wid = util.create_window()

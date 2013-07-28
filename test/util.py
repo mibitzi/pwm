@@ -24,21 +24,24 @@ def setup():
 
 def tear_down():
     global created_windows
-    for wid in created_windows:
-        pwm.windows.unmanage(wid)
+    for wid, managed in created_windows:
+        if managed:
+            pwm.windows.unmanage(wid)
         pwm.windows.destroy(wid)
     created_windows = []
 
     pwm.workspaces.destroy()
 
 
-def create_window():
+def create_window(manage=True):
     """Create a new window and manage it."""
 
     wid = pwm.windows.create(0, 0, 100, 100)
-    pwm.windows.manage(wid)
+
+    if manage:
+        pwm.windows.manage(wid)
 
     global created_windows
-    created_windows.append(wid)
+    created_windows.append((wid, manage))
 
     return wid

@@ -178,3 +178,43 @@ def spawn(cmd):
     except Exception:
         logging.exception("Error while executing command: {}".format(cmd))
         os._exit(255)
+
+
+def move_down():
+    """Move the currently focused window one row down."""
+
+    focused = pwm.windows.focused
+    if not focused:
+        return
+
+    pwm.workspaces.current().move_down(focused)
+
+
+def move_up():
+    """Move the currently focused window one row up."""
+
+    focused = pwm.windows.focused
+    if not focused:
+        return
+
+    pwm.workspaces.current().move_up(focused)
+
+
+def move_left():
+    """Move the currently focused window one column to the left."""
+
+    focused = pwm.windows.focused
+    if not focused:
+        return
+
+    pwm.workspaces.current().move_left(focused)
+
+
+def move_right():
+    """Move the currently focused window one column to the right."""
+
+    focused = pwm.windows.focused
+    if not focused:
+        return
+
+    pwm.workspaces.current().move_right(focused)
