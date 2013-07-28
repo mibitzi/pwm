@@ -118,10 +118,12 @@ def switch(index):
 
     logging.debug("Switching to workspace {}".format(index))
 
-    new_ws = workspaces[index]
-    new_ws.show()
+    with pwm.windows.no_enter_notify_event():
+        new_ws = workspaces[index]
+        new_ws.show()
+        current().hide()
 
-    current().hide()
+    pwm.windows.handle_focus(current().top_focus_priority())
 
     current_workspace_index = index
 
