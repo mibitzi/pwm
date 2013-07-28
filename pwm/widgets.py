@@ -4,8 +4,7 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-import unittest
 
-
-class TestConfig(unittest.TestCase):
-    pass
+def time(fmt="%Y-%m-%d %H:%M:%S", color=None):
+    import time
+    return (color, time.strftime(fmt))

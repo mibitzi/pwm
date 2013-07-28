@@ -156,6 +156,24 @@ class Bar:
         self.ctx.set_source_rgb(1, 1, 1)
         self.show_text(self.workspaces_end + 10, text)
 
+    def draw_widgets(self):
+        offset = 2
+        for widget in reversed(config.bar.widgets):
+            col, text = widget()
+
+            if not col:
+                col = config.bar.foreground
+
+            extents = self.ctx.text_extents(text)
+            x_bearing, y_bearing, width, height, _, _ = extents
+
+            self.ctx.move_to(self.width - offset - width - x_bearing,
+                             self.height/2 - y_bearing - height/2)
+            self.ctx.set_source_rgb(*color.get_rgb(col))
+            self.ctx.show_text(text)
+
+            offset += width + 2
+
     def show_text(self, x, text):
         """Show text at the given x coordinate and vertically center it.
 
@@ -178,6 +196,7 @@ class Bar:
     def update(self):
         self.draw_background()
         self.draw_open_workspaces()
+        self.draw_widgets()
         self.draw_window_text()
         self.copy_pixmap()
 

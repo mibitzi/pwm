@@ -30,23 +30,12 @@ class Config:
         return getattr(self.data, name)
 
 
-class Key:
-    """Class to store a command and the keys which it responds to."""
-    def __init__(self, keystr, command, *args, **kwargs):
-        self.keystr = keystr
-        self.command = command
-        self.args = args
-        self.kwargs = kwargs
-
-    def call(self):
-        return self.command(*self.args, **self.kwargs)
-
-
 def setup_keys():
     """Parse and grab all keys defined in the configuration."""
 
     for key in config.keys:
-        mods, keycode = pwm.keybind.parse_keystring(key.keystr)
+        keystr = key[0]
+        mods, keycode = pwm.keybind.parse_keystring(keystr)
 
         if mods != 0 and keycode:
             pwm.keybind.grab_key(pwm.xcb.screen.root, mods, keycode)
@@ -54,7 +43,7 @@ def setup_keys():
             grabbed_keys[(mods, keycode)] = key
         else:
             # This is not a critical error, we just can't respond to that key
-            logging.error("Could not parse keybinding: {}".format(key.keystr))
+            logging.error("Could not parse keybinding: {}".format(keystr))
 
 
 def handle_key_press_event(event):
@@ -67,7 +56,7 @@ def handle_key_press_event(event):
 
     key = grabbed_keys.get((mods, keycode))
     if key:
-        key.call()
+        key[1]()
 
 
 config = Config()

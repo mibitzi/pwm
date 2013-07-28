@@ -1,5 +1,6 @@
-from pwm.config import Key
+import functools as ft
 import pwm.commands as cmd
+import pwm.widgets as widgets
 
 
 class Values():
@@ -24,7 +25,16 @@ bar = Values(
 
     urgent_workspace_foreground="#ffffff",
     urgent_workspace_background="#900000",
-    urgent_workspace_border="#2f343a")
+    urgent_workspace_border="#2f343a",
+
+    # Widgets are defined as a list of functions
+    # Every widget function should return a tuple like:
+    #     (color, text)
+    # Where color is a hex value such as #ffffff. If color is None the default
+    # foreground color will be used.
+    widgets=[
+        widgets.time
+    ])
 
 
 window = Values(
@@ -36,22 +46,23 @@ window = Values(
 
 workspaces = 10
 
-# The first argument should be a string describing the key.
+# Keys are described as tuples.
+# The first value should be a string describing the key.
 # It should start with one or more modifiers following exactly one key.
 # Avaliable modifiers are:
 #    Control, Shift, Mod1, Mod2, Mod3, Mod4, Mod5
 # Whereas Mod4 is usually the Super/Windows key
 #
-# The second argument is the function to execute.
-# All following arguments will be passed to that function.
+# The second value is the function to execute.
+# functools.partial can be used to pass a function with parameters
 keys = [
-    Key("Mod4-Shift-q", cmd.quit),
-    Key("Mod4-q", cmd.kill),
-    Key("Mod4-Return", cmd.spawn, "urxvt"),
-    Key("Mod4-p", cmd.spawn, "dmenu_run")
+    ("Mod4-Shift-q", cmd.quit),
+    ("Mod4-q", cmd.kill),
+    ("Mod4-Return", ft.partial(cmd.spawn, "urxvt")),
+    ("Mod4-p", ft.partial(cmd.spawn, "dmenu_run"))
 ]
 
-
+# Keys for every workspace
 for i in range(1, 10):
-    keys.append(Key("Mod4-%d" % i, cmd.switch_workspace, (i-1)))
-keys.append(Key("Mod4-0", cmd.switch_workspace, 9))
+    keys.append(("Mod4-%d" % i, ft.partial(cmd.switch_workspace, (i-1))))
+keys.append(("Mod4-0", ft.partial(cmd.switch_workspace, 9)))
