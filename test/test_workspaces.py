@@ -66,6 +66,30 @@ class TestWorkspaces(unittest.TestCase):
         self.workspace.hide()
         self.assertFalse(pwm.windows.is_mapped(wid))
 
+    def test_top_focus_priority(self):
+        wid1 = util.create_window()
+        wid2 = util.create_window()
+        wid3 = util.create_window()
+
+        self.workspace.handle_focus(wid1)
+        self.workspace.handle_focus(wid2)
+        self.workspace.handle_focus(wid3)
+        self.assertEqual(self.workspace.top_focus_priority(), wid3)
+
+        self.workspace.handle_focus(wid2)
+        self.assertEqual(self.workspace.top_focus_priority(), wid2)
+
+    def test_handle_focus(self):
+        wid1 = util.create_window()
+        wid2 = util.create_window()
+        wid3 = util.create_window()
+
+        self.workspace.handle_focus(wid1)
+        self.assertEqual(self.workspace.windows, [wid2, wid3, wid1])
+
+        self.workspace.handle_focus(wid3)
+        self.assertEqual(self.workspace.windows, [wid2, wid1, wid3])
+
     def test_switch_workspace(self):
         pwm.workspaces.switch(1)
         self.assertEqual(pwm.workspaces.current(),

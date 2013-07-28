@@ -50,39 +50,22 @@ def loop():
 
 def handle(event):
     if isinstance(event, xp.MapRequestEvent):
-        logging.debug("MapRequestEvent")
         pwm.windows.manage(event.window)
 
     elif isinstance(event, xp.MapNotifyEvent):
-        logging.debug("MapNotifyEvent")
-        win = event.window
-        if win in pwm.windows.managed:
-            pwm.windows.handle_focus(win)
+        handle_focus(event.window)
 
     elif isinstance(event, xp.UnmapNotifyEvent):
         if event.event != pwm.xcb.screen.root:
-            logging.debug("UnmapNotifyEvent")
-            win = event.window
-            if win in pwm.windows.managed:
-                pwm.windows.unmanage(win)
-                window_unmapped(win)
+            handle_unmap(event.window)
 
     elif isinstance(event, xp.DestroyNotifyEvent):
-        win = event.window
-        if win in pwm.windows.managed:
-            logging.debug("DestroyNotifyEvent")
-            pwm.windows.unmanage(win)
-            window_unmapped(win)
-        else:
-            logging.debug("DestroyNotifyEvent - window not found")
+        handle_unmap(event.window)
 
     elif isinstance(event, xp.EnterNotifyEvent):
-        if event.event in pwm.windows.managed:
-            logging.debug("EnterNotifyEvent")
-            pwm.windows.handle_focus(event.event)
+        handle_focus(event.event)
 
     elif isinstance(event, xp.PropertyNotifyEvent):
-        logging.debug("PropertyNotifyEvent")
         win = event.window
         if win in pwm.windows.managed:
             window_property_changed(win)
@@ -95,3 +78,15 @@ def handle(event):
 
     elif event:
         logging.debug("Unhandled event: %s" % event.__class__.__name__)
+
+
+def handle_focus(wid):
+    if wid in pwm.windows.managed:
+        pwm.windows.handle_focus(wid)
+        pwm.workspaces.current().handle_focus(wid)
+
+
+def handle_unmap(wid):
+    if wid in pwm.windows.managed:
+        pwm.windows.unmanage(wid)
+        window_unmapped(wid)

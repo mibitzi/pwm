@@ -49,6 +49,27 @@ class Workspace:
             self.windows.remove(wid)
             self.layout.remove(wid)
 
+    def top_focus_priority(self):
+        """Return the window which is on top of the focus priority list.
+
+        If there are no windows, return None.
+        """
+        if self.windows:
+            return self.windows[-1]
+        return None
+
+    def handle_focus(self, wid):
+        """Handle focus and rearrange the focus priority list accordingly."""
+
+        if wid not in self.windows:
+            return
+
+        # Simply remove the window from the list and append it at the end.
+        # This way all windows will be sorted by how recently they were
+        # focused.
+        self.windows.remove(wid)
+        self.windows.append(wid)
+
 
 def setup():
     """

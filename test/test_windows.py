@@ -63,13 +63,3 @@ class TestWindow(unittest.TestCase):
 
         pwm.windows.handle_focus(None)
         self.assertEqual(pwm.windows.focused, None)
-
-    def test_focus_history(self):
-        wid2 = util.create_window()
-        wid3 = util.create_window()
-
-        self.assertEqual(pwm.windows.focus_history, [self.wid, wid2, wid3])
-
-        pwm.windows.unmanage(wid3)
-        self.assertEqual(pwm.windows.focused, wid2)
-        self.assertEqual(pwm.windows.focus_history, [self.wid, wid2])

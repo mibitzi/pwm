@@ -16,7 +16,6 @@ import pwm.events
 
 managed = {}
 focused = None
-focus_history = []
 
 MANAGED_EVENT_MASK = (xproto.EventMask.EnterWindow |
                       xproto.EventMask.FocusChange |
@@ -72,12 +71,8 @@ def unmanage(wid):
     ws.remove_window(wid)
     del managed[wid]
 
-    global focus_history
-    focus_history = [w for w in focus_history if w != wid]
-
     if focused == wid:
-        if focus_history:
-            handle_focus(focus_history.pop())
+        handle_focus(pwm.workspaces.current().top_focus_priority())
 
 
 def show(wid):
@@ -221,9 +216,6 @@ def _handle_focus(wid, focused):
                                    wid,
                                    xproto.Time.CurrentTime)
 
-        global focus_history
-        focus_history.append(wid)
-
 
 @contextmanager
 def no_enter_notify_event():
@@ -231,7 +223,6 @@ def no_enter_notify_event():
 
     eventmask = MANAGED_EVENT_MASK
     eventmask &= ~xproto.EventMask.EnterWindow
-
     for wid in managed:
         change_attributes(wid, eventmask=eventmask)
 
