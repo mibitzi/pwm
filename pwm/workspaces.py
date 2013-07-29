@@ -58,22 +58,6 @@ class Workspace:
             self.windows.remove(wid)
             self.layout.remove_window(wid)
 
-    def move_down(self, wid):
-        with pwm.windows.no_enter_notify_event():
-            self.layout.move_down(wid)
-
-    def move_up(self, wid):
-        with pwm.windows.no_enter_notify_event():
-            self.layout.move_up(wid)
-
-    def move_left(self, wid):
-        with pwm.windows.no_enter_notify_event():
-            self.layout.move_left(wid)
-
-    def move_right(self, wid):
-        with pwm.windows.no_enter_notify_event():
-            self.layout.move_right(wid)
-
     def top_focus_priority(self):
         """Return the window which is on top of the focus priority list.
 

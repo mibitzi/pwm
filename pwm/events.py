@@ -47,7 +47,6 @@ def poll():
             if not event:
                 break
             handle(event)
-            pwm.xcb.conn.flush()
         except xcb.Error:
             logging.exception("XCB Error")
 
@@ -60,6 +59,7 @@ def loop():
             # Wait until there is actually something to do, then poll
             select.select([fd], [], [])
             poll()
+            pwm.xcb.conn.flush()
 
     except (KeyboardInterrupt, SystemExit):
         pass

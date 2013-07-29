@@ -180,65 +180,26 @@ def spawn(cmd):
         os._exit(255)
 
 
-def move_down():
-    """Move the currently focused window one row down."""
+def move(direction):
+    """Move the currently focused window in the given direction.
 
+    direction is a string, one of: up down left right
+    """
     focused = pwm.windows.focused
     if not focused:
         return
 
-    pwm.workspaces.current().move_down(focused)
+    with pwm.windows.no_enter_notify_event():
+        getattr(pwm.workspaces.current().layout,
+                "move_%s" % direction)(focused)
 
 
-def move_up():
-    """Move the currently focused window one row up."""
+def focus(window):
+    """Focus another window.
 
-    focused = pwm.windows.focused
-    if not focused:
-        return
+    window is a string, one of: above, below, left, right
+    """
 
-    pwm.workspaces.current().move_up(focused)
-
-
-def move_left():
-    """Move the currently focused window one column to the left."""
-
-    focused = pwm.windows.focused
-    if not focused:
-        return
-
-    pwm.workspaces.current().move_left(focused)
-
-
-def move_right():
-    """Move the currently focused window one column to the right."""
-
-    focused = pwm.windows.focused
-    if not focused:
-        return
-
-    pwm.workspaces.current().move_right(focused)
-
-
-def focus_left():
     if pwm.windows.focused:
-        pwm.windows.handle_focus(
-            pwm.workspaces.current().layout.left(pwm.windows.focused))
-
-
-def focus_below():
-    if pwm.windows.focused:
-        pwm.windows.handle_focus(
-            pwm.workspaces.current().layout.below(pwm.windows.focused))
-
-
-def focus_above():
-    if pwm.windows.focused:
-        pwm.windows.handle_focus(
-            pwm.workspaces.current().layout.above(pwm.windows.focused))
-
-
-def focus_right():
-    if pwm.windows.focused:
-        pwm.windows.handle_focus(
-            pwm.workspaces.current().layout.right(pwm.windows.focused))
+        attr = getattr(pwm.workspaces.current().layout, window)
+        pwm.windows.handle_focus(attr(pwm.windows.focused))

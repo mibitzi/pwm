@@ -62,15 +62,15 @@ keys = [
     ("Mod4-Return", ft.partial(cmd.spawn, "urxvt")),
     ("Mod4-p", ft.partial(cmd.spawn, "dmenu_run")),
 
-    ("Mod4-h", cmd.focus_left),
-    ("Mod4-j", cmd.focus_below),
-    ("Mod4-k", cmd.focus_above),
-    ("Mod4-l", cmd.focus_right),
+    ("Mod4-h", ft.partial(cmd.focus, "left")),
+    ("Mod4-j", ft.partial(cmd.focus, "below")),
+    ("Mod4-k", ft.partial(cmd.focus, "above")),
+    ("Mod4-l", ft.partial(cmd.focus, "right")),
 
-    ("Shift-Mod4-h", cmd.move_left),
-    ("Shift-Mod4-j", cmd.move_down),
-    ("Shift-Mod4-k", cmd.move_up),
-    ("Shift-Mod4-l", cmd.move_right)
+    ("Shift-Mod4-h", ft.partial(cmd.move, "left")),
+    ("Shift-Mod4-j", ft.partial(cmd.move, "down")),
+    ("Shift-Mod4-k", ft.partial(cmd.move, "up")),
+    ("Shift-Mod4-l", ft.partial(cmd.move, "right"))
 ]
 
 # Keys for every workspace
