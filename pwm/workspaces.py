@@ -39,19 +39,19 @@ class Workspace:
 
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
-            self.windows.append(wid)
-
-            # Place new window below the currently focused
+            # Place new window below the one with the highest priority
             column = 0
             row = -1
-            focused = pwm.windows.focused
-            if focused and focused in self.windows:
-                column, row = self.layout.path(focused)
+            priority = self.top_focus_priority()
+            if priority:
+                column, row = self.layout.path(priority)
                 row += 1
 
+            self.windows.append(wid)
             self.layout.add_window(wid, column, row)
 
-            pwm.windows.show(wid)
+            if current() == self:
+                pwm.windows.show(wid)
 
     def remove_window(self, wid):
         with pwm.windows.no_enter_notify_event():

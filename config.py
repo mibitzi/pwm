@@ -32,11 +32,11 @@ bar = Values(
     urgent_workspace_background="#900000",
     urgent_workspace_border="#2f343a",
 
-    # Widgets are defined as a list of functions
+    # Widgets are defined as a list of functions.
     # Every widget function should return a tuple like:
     #     (color, text)
-    # Where color is a hex value such as #ffffff. If color is None the default
-    # foreground color will be used.
+    # Where color is a hex value string such as "#ffffff".
+    # If color is None the default foreground color will be used.
     widgets=[
         widgets.time
     ])
@@ -77,7 +77,10 @@ keys = [
     ("Shift-Mod4-l", func(cmd.move, "right"))
 ]
 
-# Keys for every workspace
+# Keys for every workspace.
+# Note that workspace indices are zero-based.
 for i in range(1, 10):
     keys.append(("Mod4-%d" % i, func(cmd.switch_workspace, (i-1))))
+    keys.append(("Shift-Mod4-%d" % i, func(cmd.send_to_workspace, (i-1))))
 keys.append(("Mod4-0", func(cmd.switch_workspace, 9)))
+keys.append(("Shift-Mod4-0", func(cmd.send_to_workspace, 9)))

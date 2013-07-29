@@ -34,6 +34,7 @@ def main():
     pwm.config.setup_keys()
     pwm.events.loop()
 
+    logging.info("Exiting")
     pwm.bar.destroy()
     pwm.workspaces.destroy()
     pwm.xcb.disconnect()

@@ -183,7 +183,8 @@ def spawn(cmd):
 def move(direction):
     """Move the currently focused window in the given direction.
 
-    direction: Can be "up", "down", "left" or "right"
+    Args:
+        direction: Can be "up", "down", "left" or "right"
     """
     focused = pwm.windows.focused
     if not focused:
@@ -197,9 +198,31 @@ def move(direction):
 def focus(window):
     """Focus another window.
 
-    window: Can be "above", "below", "left" or "right"
+    Args:
+        window: Can be "above", "below", "left" or "right"
     """
 
     if pwm.windows.focused:
         attr = getattr(pwm.workspaces.current().layout, window)
         pwm.windows.handle_focus(attr(pwm.windows.focused))
+
+
+def send_to_workspace(workspace):
+    """Send the currently focused window to another workspace.
+
+    Args:
+        workspace: A workspace index
+    """
+
+    wid = pwm.windows.focused
+
+    if not wid:
+        return
+
+    pwm.workspaces.current().remove_window(wid)
+    pwm.windows.hide(wid)
+    new_ws = pwm.workspaces.workspaces[workspace]
+    new_ws.add_window(wid)
+    pwm.windows.managed[wid] = new_ws
+
+    pwm.windows.handle_focus(pwm.workspaces.current().top_focus_priority())

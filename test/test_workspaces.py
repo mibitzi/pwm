@@ -46,6 +46,15 @@ class TestWorkspaces(unittest.TestCase):
         self.assertEqual(len(self.workspace.windows), 1)
         self.assertTrue(window in self.workspace.windows)
 
+    def test_add_window_show(self):
+        window = util.create_window()
+        self.assertTrue(pwm.windows.is_mapped(window))
+
+    def test_add_window_show_not_current(self):
+        wid = util.create_window(manage=False)
+        pwm.workspaces.workspaces[1].add_window(wid)
+        self.assertFalse(pwm.windows.is_mapped(wid))
+
     def test_remove_window(self):
         win = util.create_window(manage=False)
         self.workspace.add_window(win)

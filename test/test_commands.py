@@ -37,3 +37,18 @@ class TestCommands(unittest.TestCase):
         self.assertTrue(os.path.isfile(tmp_file))
 
         os.unlink(tmp_file)
+
+    def test_send_to_workspace(self):
+        wid = util.create_window()
+        pwm.commands.send_to_workspace(1)
+        self.assertIn(wid, pwm.workspaces.workspaces[1].windows)
+
+    def test_send_to_workspace_focus(self):
+        util.create_window()
+        pwm.commands.send_to_workspace(1)
+        self.assertIsNone(pwm.windows.focused)
+
+    def test_send_to_workspace_unmap(self):
+        wid = util.create_window()
+        pwm.commands.send_to_workspace(1)
+        self.assertFalse(pwm.windows.is_mapped(wid))
