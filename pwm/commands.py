@@ -183,7 +183,7 @@ def spawn(cmd):
 def move(direction):
     """Move the currently focused window in the given direction.
 
-    direction is a string, one of: up down left right
+    direction: Can be "up", "down", "left" or "right"
     """
     focused = pwm.windows.focused
     if not focused:
@@ -197,7 +197,7 @@ def move(direction):
 def focus(window):
     """Focus another window.
 
-    window is a string, one of: above, below, left, right
+    window: Can be "above", "below", "left" or "right"
     """
 
     if pwm.windows.focused:

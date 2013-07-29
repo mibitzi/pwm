@@ -1,11 +1,15 @@
-import functools as ft
+import functools
 import pwm.commands as cmd
 import pwm.widgets as widgets
+
+
+func = functools.partial
 
 
 class Values():
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
 
 loglevel = "debug"
 
@@ -55,25 +59,25 @@ workspaces = 10
 # Whereas Mod4 is usually the Super/Windows key
 #
 # The second value is the function to execute.
-# functools.partial can be used to pass a function with parameters
+# func(...) can be used to pass a function with parameters
 keys = [
     ("Mod4-Shift-q", cmd.quit),
     ("Mod4-q", cmd.kill),
-    ("Mod4-Return", ft.partial(cmd.spawn, "urxvt")),
-    ("Mod4-p", ft.partial(cmd.spawn, "dmenu_run")),
+    ("Mod4-Return", func(cmd.spawn, "urxvt")),
+    ("Mod4-p", func(cmd.spawn, "dmenu_run")),
 
-    ("Mod4-h", ft.partial(cmd.focus, "left")),
-    ("Mod4-j", ft.partial(cmd.focus, "below")),
-    ("Mod4-k", ft.partial(cmd.focus, "above")),
-    ("Mod4-l", ft.partial(cmd.focus, "right")),
+    ("Mod4-h", func(cmd.focus, "left")),
+    ("Mod4-j", func(cmd.focus, "below")),
+    ("Mod4-k", func(cmd.focus, "above")),
+    ("Mod4-l", func(cmd.focus, "right")),
 
-    ("Shift-Mod4-h", ft.partial(cmd.move, "left")),
-    ("Shift-Mod4-j", ft.partial(cmd.move, "down")),
-    ("Shift-Mod4-k", ft.partial(cmd.move, "up")),
-    ("Shift-Mod4-l", ft.partial(cmd.move, "right"))
+    ("Shift-Mod4-h", func(cmd.move, "left")),
+    ("Shift-Mod4-j", func(cmd.move, "down")),
+    ("Shift-Mod4-k", func(cmd.move, "up")),
+    ("Shift-Mod4-l", func(cmd.move, "right"))
 ]
 
 # Keys for every workspace
 for i in range(1, 10):
-    keys.append(("Mod4-%d" % i, ft.partial(cmd.switch_workspace, (i-1))))
-keys.append(("Mod4-0", ft.partial(cmd.switch_workspace, 9)))
+    keys.append(("Mod4-%d" % i, func(cmd.switch_workspace, (i-1))))
+keys.append(("Mod4-0", func(cmd.switch_workspace, 9)))
