@@ -17,12 +17,11 @@ import test.util as util
 class TestBar(unittest.TestCase):
     def setUp(self):
         util.setup()
-        self.bar = pwm.workspaces.bar
 
     def tearDown(self):
         util.tear_down()
 
-    def test_show(self):
-        # show() should already have been called in setUp
-        attr = pwm.xcb.core.GetWindowAttributes(self.bar.wid).reply()
-        self.assertEqual(attr.map_state, xproto.MapState.Viewable)
+    #def test_show(self):
+    #    # show() should already have been called in setUp
+    #    attr = pwm.xcb.core.GetWindowAttributes(self.bar.wid).reply()
+    #    self.assertEqual(attr.map_state, xproto.MapState.Viewable)

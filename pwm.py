@@ -10,6 +10,7 @@ import logging
 from pwm.config import config
 import pwm.xcb
 import pwm.events
+import pwm.bar
 import pwm.workspaces
 import pwm.keybind
 
@@ -27,11 +28,14 @@ def main():
     pwm.xcb.connect()
     pwm.xcb.setup_root_window()
     pwm.workspaces.setup()
+    pwm.bar.setup()
 
     pwm.keybind.update_keyboard_mapping(None)
     pwm.config.setup_keys()
     pwm.events.loop()
 
+    pwm.bar.destroy()
+    pwm.workspaces.destroy()
     pwm.xcb.disconnect()
 
 if __name__ == "__main__":

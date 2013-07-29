@@ -15,7 +15,6 @@ import pwm.events
 
 workspaces = []
 current_workspace_index = 0
-bar = None
 
 
 class Workspace:
@@ -23,7 +22,7 @@ class Workspace:
         self.windows = []
 
         self.x = 0
-        self.y = pwm.bar.height()
+        self.y = pwm.bar.calculate_height()
 
         self.width = pwm.xcb.screen.width_in_pixels
         self.height = pwm.xcb.screen.height_in_pixels - self.y
@@ -108,10 +107,6 @@ def setup():
     current_workspace_index = 0
     current().show()
 
-    global bar
-    bar = pwm.bar.Bar()
-    bar.show()
-
 
 def destroy():
     """
@@ -120,11 +115,6 @@ def destroy():
 
     global workspaces
     workspaces = []
-
-    global bar
-    if bar:
-        bar.destroy()
-        bar = None
 
 
 def current():
@@ -149,11 +139,9 @@ def switch(index):
         new_ws.show()
         current().hide()
 
-    pwm.windows.handle_focus(current().top_focus_priority())
-
     current_workspace_index = index
-
-    bar.update()
+    pwm.windows.handle_focus(current().top_focus_priority())
+    pwm.events.workspace_switched(index)
 
 
 def opened():

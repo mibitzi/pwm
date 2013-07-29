@@ -7,6 +7,7 @@ from __future__ import print_function, unicode_literals
 import unittest
 
 import pwm.xcb
+import pwm.bar
 import pwm.workspaces
 import pwm.windows
 from pwm.config import config
@@ -34,11 +35,11 @@ class TestWorkspaces(unittest.TestCase):
 
     def test_geometry(self):
         self.assertEqual(self.workspace.x, 0)
-        self.assertEqual(self.workspace.y, pwm.workspaces.bar.height)
+        self.assertEqual(self.workspace.y, pwm.bar.primary.height)
         self.assertEqual(self.workspace.width, pwm.xcb.screen.width_in_pixels)
         self.assertEqual(
             self.workspace.height,
-            pwm.xcb.screen.height_in_pixels - pwm.workspaces.bar.height)
+            pwm.xcb.screen.height_in_pixels - pwm.bar.primary.height)
 
     def test_add_window(self):
         window = util.create_window()
@@ -92,6 +93,12 @@ class TestWorkspaces(unittest.TestCase):
         pwm.workspaces.switch(1)
         self.assertEqual(pwm.workspaces.current(),
                          pwm.workspaces.workspaces[1])
+
+    def test_switch_workspace_focus(self):
+        util.create_window()
+        pwm.workspaces.switch(1)
+
+        self.assertEqual(pwm.windows.focused, None)
 
     def test_opened(self):
         # Create window on current workspace (idx=0)

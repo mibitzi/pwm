@@ -5,6 +5,7 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
 import pwm.xcb
+import pwm.bar
 import pwm.workspaces
 
 connected = False
@@ -20,6 +21,7 @@ def setup():
         connected = True
 
     pwm.workspaces.setup()
+    pwm.bar.setup()
 
 
 def tear_down():
@@ -30,6 +32,7 @@ def tear_down():
         pwm.windows.destroy(wid)
     created_windows = []
 
+    pwm.bar.destroy()
     pwm.workspaces.destroy()
 
 

@@ -4,6 +4,7 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import select
 import logging
 import xcb
 import xcb.xproto as xp
@@ -35,48 +36,66 @@ window_property_changed = Event()
 # handler(window)
 window_unmapped = Event()
 
+# handler(index)
+workspace_switched = Event()
 
-def loop():
+
+def poll():
     while True:
         try:
             event = pwm.xcb.conn.poll_for_event()
+            if not event:
+                break
             handle(event)
             pwm.xcb.conn.flush()
         except xcb.Error:
             logging.exception("XCB Error")
-        except (KeyboardInterrupt, SystemExit):
-            break
+
+
+def loop():
+    fd = pwm.xcb.conn.get_file_descriptor()
+
+    try:
+        while True:
+            # Wait until there is actually something to do, then poll
+            select.select([fd], [], [])
+            poll()
+
+    except (KeyboardInterrupt, SystemExit):
+        pass
 
 
 def handle(event):
-    if isinstance(event, xp.MapRequestEvent):
+    etype = type(event)
+
+    if etype == xp.MapRequestEvent:
         pwm.windows.manage(event.window)
 
-    elif isinstance(event, xp.MapNotifyEvent):
+    elif etype == xp.MapNotifyEvent:
         handle_focus(event.window)
 
-    elif isinstance(event, xp.UnmapNotifyEvent):
+    elif etype == xp.UnmapNotifyEvent:
         if event.event != pwm.xcb.screen.root:
             handle_unmap(event.window)
 
-    elif isinstance(event, xp.DestroyNotifyEvent):
+    elif etype == xp.DestroyNotifyEvent:
         handle_unmap(event.window)
 
-    elif isinstance(event, xp.EnterNotifyEvent):
+    elif etype == xp.EnterNotifyEvent:
         handle_focus(event.event)
 
-    elif isinstance(event, xp.PropertyNotifyEvent):
+    elif etype == xp.PropertyNotifyEvent:
         win = event.window
         if win in pwm.windows.managed:
             window_property_changed(win)
 
-    elif isinstance(event, xp.MappingNotifyEvent):
+    elif etype == xp.MappingNotifyEvent:
         pwm.keybind.update_keyboard_mapping(event)
 
-    elif isinstance(event, xp.KeyPressEvent):
+    elif etype == xp.KeyPressEvent:
         pwm.config.handle_key_press_event(event)
 
-    elif event:
+    else:
         logging.debug("Unhandled event: %s" % event.__class__.__name__)
 
 

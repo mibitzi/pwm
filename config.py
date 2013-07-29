@@ -10,6 +10,7 @@ class Values():
 loglevel = "debug"
 
 bar = Values(
+    interval=1.0,
     font=Values(face="DejaVu Sans Mono", size=12),
 
     background="#222222",

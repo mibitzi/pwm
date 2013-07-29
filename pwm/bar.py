@@ -4,6 +4,8 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
+import logging
+import threading
 import cairo
 
 from pwm.config import config
@@ -12,13 +14,16 @@ import pwm.color as color
 import pwm.events
 import pwm.windows
 
+primary = None
+update_thread = None
+stop_update = None
+update_lock = None
+
 
 class Bar:
     def __init__(self):
-        self.focused = None
-
         self.width = pwm.xcb.screen.width_in_pixels
-        self.height = height()
+        self.height = calculate_height()
 
         self.workspaces_end = 0
 
@@ -27,17 +32,7 @@ class Bar:
         self.gc = pwm.xcb.create_gc()
         (self.surface, self.ctx) = self.create_cairo_context()
 
-        pwm.events.focus_changed.add(self.handle_focus_changed)
-        pwm.events.window_property_changed.add(
-            self.handle_window_property_changed)
-        pwm.events.window_unmapped.add(self.handle_window_unmapped)
-
     def destroy(self):
-        pwm.events.focus_changed.remove(self.handle_focus_changed)
-        pwm.events.window_property_changed.remove(
-            self.handle_window_property_changed)
-        pwm.events.window_unmapped.remove(self.handle_window_unmapped)
-
         pwm.windows.destroy(self.wid)
         pwm.xcb.core.FreePixmap(self.pixmap)
         pwm.xcb.core.FreeGC(self.gc)
@@ -146,10 +141,10 @@ class Bar:
         self.workspaces_end = left
 
     def draw_window_text(self):
-        if not self.focused:
+        if not pwm.windows.focused:
             return
 
-        text = pwm.windows.get_name(self.focused)
+        text = pwm.windows.get_name(pwm.windows.focused)
         if text == "":
             return
 
@@ -205,22 +200,77 @@ class Bar:
         pwm.xcb.core.MapWindow(self.wid)
         self.update()
 
-    def handle_focus_changed(self, wid):
-        self.focused = wid
-        self.update()
 
-    def handle_window_property_changed(self, wid):
-        if wid == self.focused:
-            self.update()
+def setup():
+    global primary
+    primary = Bar()
+    primary.show()
 
-    def handle_window_unmapped(self, wid):
-        if wid == self.focused:
-            self.focused = None
+    pwm.events.focus_changed.add(handle_focus_changed)
+    pwm.events.window_property_changed.add(handle_window_property_changed)
+    pwm.events.window_unmapped.add(handle_window_unmapped)
+    pwm.events.workspace_switched.add(handle_workspace_switched)
 
-        # Even if it was not the focused window, closing this window
-        # might have caused a workspace to be closed
-        self.update()
+    global stop_update
+    global update_lock
+    global update_thread
+    stop_update = threading.Event()
+    update_lock = threading.Lock()
+    update_thread = threading.Thread(target=update_loop)
+    update_thread.start()
 
 
-def height():
+def destroy():
+    stop_update.set()
+
+    update_thread.join(config.bar.interval*2)
+    if update_thread.is_alive():
+        logging.error("Bar updater did not stop, will be killed forcefully.")
+
+    pwm.events.focus_changed.remove(handle_focus_changed)
+    pwm.events.window_property_changed.remove(handle_window_property_changed)
+    pwm.events.window_unmapped.remove(handle_window_unmapped)
+    pwm.events.workspace_switched.remove(handle_workspace_switched)
+
+    primary.destroy()
+
+
+def update_loop():
+    """Loop and update the bar until stop_update is set."""
+    while True:
+        if stop_update.wait(config.bar.interval):
+            break
+        update()
+
+
+def update():
+    """Update the bar."""
+    if update_lock.acquire(False):
+        try:
+            primary.update()
+            pwm.xcb.conn.flush()
+        finally:
+            update_lock.release()
+
+
+def calculate_height():
     return config.bar.font.size + 8
+
+
+def handle_focus_changed(wid):
+    update()
+
+
+def handle_window_property_changed(wid):
+    if wid == pwm.windows.focused:
+        update()
+
+
+def handle_window_unmapped(wid):
+    # Even if it was not the focused window, closing this window
+    # might have caused a workspace to be closed
+    update()
+
+
+def handle_workspace_switched(idx):
+    update()
