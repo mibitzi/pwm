@@ -30,7 +30,7 @@ def main():
     pwm.workspaces.setup()
     pwm.bar.setup()
 
-    pwm.keybind.update_keyboard_mapping(None)
+    pwm.keybind.update_keyboard_mapping()
     pwm.config.setup_keys()
     pwm.events.loop()
 

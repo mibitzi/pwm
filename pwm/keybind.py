@@ -327,7 +327,7 @@ def ungrab_key(wid, modifiers, key):
         return False
 
 
-def update_keyboard_mapping(e):
+def update_keyboard_mapping(e=None):
     """
     Whenever the keyboard mapping is changed, this function needs to be called
     to update xpybutil's internal representing of the current keysym table.
