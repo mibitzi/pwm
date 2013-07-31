@@ -62,6 +62,7 @@ workspaces = 10
 # func(...) can be used to pass a function with parameters
 keys = [
     ("Mod4-Shift-q", cmd.quit),
+    ("Mod4-Shift-r", cmd.restart),
     ("Mod4-q", cmd.kill),
     ("Mod4-Return", func(cmd.spawn, "urxvt")),
     ("Mod4-p", func(cmd.spawn, "dmenu_run")),

@@ -7,6 +7,7 @@ from __future__ import print_function, unicode_literals
 import logging
 import os
 
+import pwm
 import pwm.workspaces
 
 
@@ -18,8 +19,13 @@ def test(*args, **kwargs):
 
 def quit():
     """Exit pwm."""
+    pwm.shutdown = True
 
-    exit()
+
+def restart():
+    """Restart pwm."""
+    pwm.restart = True
+    pwm.shutdown = True
 
 
 def switch_workspace(index):

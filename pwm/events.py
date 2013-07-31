@@ -9,6 +9,7 @@ import logging
 import xcb
 import xcb.xproto as xp
 
+import pwm
 import pwm.xcb
 import pwm.windows
 import pwm.workspaces
@@ -55,7 +56,7 @@ def loop():
     fd = pwm.xcb.conn.get_file_descriptor()
 
     try:
-        while True:
+        while not pwm.shutdown:
             # Wait until there is actually something to do, then poll
             select.select([fd], [], [])
             poll()

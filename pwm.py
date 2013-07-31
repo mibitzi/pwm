@@ -6,7 +6,10 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
 import logging
+import os
+import sys
 
+import pwm
 from pwm.config import config
 import pwm.xcb
 import pwm.events
@@ -34,10 +37,14 @@ def main():
     pwm.config.setup_keys()
     pwm.events.loop()
 
-    logging.info("Exiting")
+    logging.info("Shutting down...")
     pwm.bar.destroy()
     pwm.workspaces.destroy()
     pwm.xcb.disconnect()
+
+    if pwm.restart:
+        logging.info("Restarting...")
+        os.execv(sys.argv[0], sys.argv)
 
 if __name__ == "__main__":
     main()
