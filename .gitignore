@@ -1,7 +1,9 @@
 *.py[cod]
 
+__pycache__
+
 # virtualenv
-venv
+venv*
 
 # C extensions
 *.so

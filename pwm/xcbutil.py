@@ -1,103 +1,22 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-from __future__ import division, absolute_import
-from __future__ import print_function  # , unicode_literals
-
 import struct
-import xcb
-import xcb.xproto as xproto
-
-conn = None
-core = None
-screen = None
+from pwm.ffi.xcb import xcb
 
 
-def connect(display=None):
-    """Connect to the X server."""
-
-    global conn
-    conn = xcb.connect(display)
-
-    global core
-    core = conn.core
-
-    setup = conn.get_setup()
-
-    global screen
-    screen = setup.roots[0]
-
-
-def disconnect():
-    """Disconnect from the X server."""
-    conn.disconnect()
-
-
-def setup_root_window():
-    """Set up the root window."""
-
-    root_event_mask = (xproto.EventMask.StructureNotify |
-                       xproto.EventMask.SubstructureNotify |
-                       xproto.EventMask.SubstructureRedirect |
-                       xproto.EventMask.EnterWindow |
-                       xproto.EventMask.LeaveWindow)
-
-    cookie = core.ChangeWindowAttributesChecked(
-        screen.root,
-        xproto.CW.EventMask, [root_event_mask])
-    cookie.check()
-
-
+#def create_gc():
+#    """Create a new graphics context"""
+#    gc = conn.generate_id()
 #
-# From Qtile
+#    mask, values = gc_mask(
+#        foreground=screen.white_pixel,
+#        background=screen.black_pixel,
+#        graphicsexposures=0)
 #
-class MaskMap:
-    """A general utility class that encapsulates the way the mask/value idiom
-    works in xpyb. It understands a special attribute _maskvalue on
-    objects, which will be used instead of the object value if present.
-    This lets us passin a Font object, rather than Font.fid, for example.
-    """
-    def __init__(self, obj):
-        self.mmap = []
-        for i in dir(obj):
-            if not i.startswith("_"):
-                self.mmap.append((getattr(obj, i), i.lower()))
-        self.mmap.sort()
-
-    def __call__(self, **kwargs):
-        """kwargs: keys should be in the mmap name set
-        Returns a (mask, values) tuple.
-        """
-        mask = 0
-        values = []
-        for m, s in self.mmap:
-            if s in kwargs:
-                val = kwargs.get(s)
-                if val is not None:
-                    mask |= m
-                    values.append(getattr(val, "_maskvalue", val))
-                del kwargs[s]
-        if kwargs:
-            raise ValueError("Unknown mask names: %s" % kwargs.keys())
-        return mask, values
-
-configure_mask = MaskMap(xproto.ConfigWindow)
-attribute_mask = MaskMap(xproto.CW)
-gc_mask = MaskMap(xproto.GC)
-
-
-def create_gc():
-    """Create a new graphics context"""
-    gc = conn.generate_id()
-
-    mask, values = gc_mask(
-        foreground=screen.white_pixel,
-        background=screen.black_pixel,
-        graphicsexposures=0)
-
-    core.CreateGC(gc, screen.root, mask, values)
-
-    return gc
+#    core.CreateGC(gc, screen.root, mask, values)
+#
+#    return gc
 
 #
 # From xpybutil
@@ -221,7 +140,7 @@ def get_property(window, atom):
     :type atom: int OR str
     :rtype: xcb.xproto.GetPropertyCookie
     """
-    if isinstance(atom, basestring):
+    if isinstance(atom, str):
         atom = get_atom(atom)
     return core.GetProperty(False, window, atom,
                             xcb.xproto.GetPropertyType.Any, 0,
@@ -242,7 +161,7 @@ def get_property_unchecked(window, atom):
     :type atom: int OR str
     :rtype: xcb.xproto.GetPropertyCookie
     """
-    if isinstance(atom, basestring):
+    if isinstance(atom, str):
         atom = get_atom(atom)
     return core.GetPropertyUnchecked(False, window, atom,
                                      xcb.xproto.GetPropertyType.Any, 0,

@@ -6,10 +6,9 @@ from __future__ import print_function  # , unicode_literals
 
 from contextlib import contextmanager
 import struct
-import xcb.xproto as xproto
 
+from pwm.ffi.xcb import xcb
 from pwm.config import config
-import pwm.xcb
 import pwm.color
 import pwm.workspaces
 import pwm.events
@@ -17,45 +16,45 @@ import pwm.events
 managed = {}
 focused = None
 
-MANAGED_EVENT_MASK = (xproto.EventMask.EnterWindow |
-                      xproto.EventMask.FocusChange |
-                      xproto.EventMask.PropertyChange)
+MANAGED_EVENT_MASK = (xcb.EVENT_MASK_ENTER_WINDOW |
+                      xcb.EVENT_MASK_FOCUS_CHANGE |
+                      xcb.EVENT_MASK_PROPERTY_CHANGE)
 
 
-def create(x, y, width, height):
-    """Create a new window and return its id."""
-
-    wid = pwm.xcb.conn.generate_id()
-
-    mask, values = pwm.xcb.attribute_mask(
-        backpixel=pwm.xcb.screen.black_pixel,
-        eventmask=xproto.EventMask.Exposure)
-
-    pwm.xcb.core.CreateWindow(
-        pwm.xcb.screen.root_depth,
-        wid,
-        pwm.xcb.screen.root,
-        x, y,
-        width,
-        height,
-        0,  # border
-        xproto.WindowClass.InputOutput,
-        pwm.xcb.screen.root_visual,
-        mask, values)
-
-    return wid
-
-
-def destroy(wid):
-    """Destroy the window."""
-    pwm.xcb.core.DestroyWindow(wid)
-
-
+#def create(x, y, width, height):
+#    """Create a new window and return its id."""
+#
+#    wid = pwm.xcb.conn.generate_id()
+#
+#    mask, values = pwm.xcb.attribute_mask(
+#        backpixel=pwm.xcb.screen.black_pixel,
+#        eventmask=xproto.EventMask.Exposure)
+#
+#    pwm.xcb.core.CreateWindow(
+#        pwm.xcb.screen.root_depth,
+#        wid,
+#        pwm.xcb.screen.root,
+#        x, y,
+#        width,
+#        height,
+#        0,  # border
+#        xproto.WindowClass.InputOutput,
+#        pwm.xcb.screen.root_visual,
+#        mask, values)
+#
+#    return wid
+#
+#
+#def destroy(wid):
+#    """Destroy the window."""
+#    pwm.xcb.core.DestroyWindow(wid)
+#
+#
 def manage(wid):
     if wid in managed:
         return
 
-    change_attributes(wid, eventmask=MANAGED_EVENT_MASK)
+    change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
 
     managed[wid] = pwm.workspaces.current()
     pwm.workspaces.current().add_window(wid)
@@ -77,34 +76,32 @@ def unmanage(wid):
 
 def show(wid):
     """Map the given window."""
-    pwm.xcb.core.MapWindow(wid)
+    xcb.core.map_window(wid)
 
 
 def hide(wid):
     """Unmap the given window."""
-    pwm.xcb.core.UnmapWindow(wid)
+    xcb.core.unmap_window(wid)
 
 
-def is_mapped(wid):
-    """Return True if the window is mapped, otherwise False."""
-    attr = pwm.xcb.core.GetWindowAttributes(wid).reply()
-    return attr.map_state == xproto.MapState.Viewable
-
-
-def change_attributes(wid, **kwargs):
+#def is_mapped(wid):
+#    """Return True if the window is mapped, otherwise False."""
+#    attr = pwm.xcb.core.GetWindowAttributes(wid).reply()
+#    return attr.map_state == xproto.MapState.Viewable
+#
+#
+def change_attributes(wid, masks):
     """Set attributes for the given window."""
-
-    mask, values = pwm.xcb.attribute_mask(**kwargs)
-    pwm.xcb.core.ChangeWindowAttributes(wid, mask, values)
+    xcb.core.change_window_attributes(wid, *xcb.mask(masks))
 
 
-def get_name(wid):
-    """Get the window name."""
-
-    name = pwm.xcb.get_property_value(
-        pwm.xcb.get_property(wid, xproto.Atom.WM_NAME).reply())
-
-    return name or ""
+#def get_name(wid):
+#    """Get the window name."""
+#
+#    name = pwm.xcb.get_property_value(
+#        pwm.xcb.get_property(wid, xproto.Atom.WM_NAME).reply())
+#
+#    return name or ""
 
 
 def configure(wid, **kwargs):
@@ -114,67 +111,67 @@ def configure(wid, **kwargs):
     """
 
     workspace = pwm.workspaces.current()
+    values = [(xcb.CONFIG_WINDOW_BORDER_WIDTH, config.window.border)]
 
     if "x" in kwargs:
-        kwargs["x"] = int(workspace.x + kwargs["x"])
+        values.append((xcb.CONFIG_WINDOW_X, int(workspace.x + kwargs["x"])))
     if "y" in kwargs:
-        kwargs["y"] = int(workspace.y + kwargs["y"])
+        values.append((xcb.CONFIG_WINDOW_Y, int(workspace.y + kwargs["y"])))
 
     if "width" in kwargs:
-        kwargs["width"] = int(kwargs["width"] - 2*config.window.border)
+        values.append((xcb.CONFIG_WINDOW_WIDTH,
+                       int(kwargs["width"] - 2*config.window.border)))
     if "height" in kwargs:
-        kwargs["height"] = int(kwargs["height"] - 2*config.window.border)
+        values.append((xcb.CONFIG_WINDOW_HEIGHT,
+                       int(kwargs["height"] - 2*config.window.border)))
 
-    kwargs["borderwidth"] = config.window.border
-
-    mask, values = pwm.xcb.configure_mask(**kwargs)
-    pwm.xcb.core.ConfigureWindow(wid, mask, values)
+    xcb.core.configure_window(wid, *xcb.mask(values))
 
 
-def get_geometry(wid):
-    """Get geometry information for the given window.
-
-    Return a tuple(x, y, width, height).
-    """
-
-    geo = pwm.xcb.core.GetGeometry(wid).reply()
-    return (geo.x, geo.y, geo.width, geo.height)
-
-
-def get_wm_protocols(wid):
-    """Return the protocols supported by this window."""
-
-    return pwm.xcb.get_property_value(
-        pwm.xcb.get_property(wid, "WM_PROTOCOLS").reply())
-
-
-def kill(wid):
-    """Kill the window with wid."""
-
-    # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
-    # the hard way.
-    if "WM_DELETE_WINDOW" in get_wm_protocols(wid):
-        vals = [
-            33,  # ClientMessageEvent
-            32,  # Format
-            0,
-            wid,
-            pwm.xcb.get_atom("WM_PROTOCOLS"),
-            pwm.xcb.get_atom("WM_DELETE_WINDOW"),
-            xproto.Time.CurrentTime,
-            0,
-            0,
-            0,
-        ]
-
-        event = struct.pack('BBHII5I', *vals)
-
-        pwm.xcb.core.SendEvent(False, wid, xproto.EventMask.NoEvent, event)
-
-    else:
-        pwm.xcb.core.KillClient(wid)
-
-
+#def get_geometry(wid):
+#    """Get geometry information for the given window.
+#
+#    Return a tuple(x, y, width, height).
+#    """
+#
+#    geo = pwm.xcb.core.GetGeometry(wid).reply()
+#    return (geo.x, geo.y, geo.width, geo.height)
+#
+#
+#def get_wm_protocols(wid):
+#    """Return the protocols supported by this window."""
+#
+#    return pwm.xcb.get_property_value(
+#        pwm.xcb.get_property(wid, "WM_PROTOCOLS").reply())
+#
+#
+#def kill(wid):
+#    """Kill the window with wid."""
+#
+#    # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
+#    # the hard way.
+#    if "WM_DELETE_WINDOW" in get_wm_protocols(wid):
+#        vals = [
+#            33,  # ClientMessageEvent
+#            32,  # Format
+#            0,
+#            wid,
+#            pwm.xcb.get_atom("WM_PROTOCOLS"),
+#            pwm.xcb.get_atom("WM_DELETE_WINDOW"),
+#            xproto.Time.CurrentTime,
+#            0,
+#            0,
+#            0,
+#        ]
+#
+#        event = struct.pack('BBHII5I', *vals)
+#
+#        pwm.xcb.core.SendEvent(False, wid, xproto.EventMask.NoEvent, event)
+#
+#    else:
+#        pwm.xcb.core.KillClient(wid)
+#
+#
 def handle_focus(wid):
     """Focus the window with the given wid.
 
@@ -209,12 +206,12 @@ def _handle_focus(wid, focused):
     else:
         border = pwm.color.get_pixel(config.window.unfocused)
 
-    change_attributes(wid, borderpixel=border)
+    change_attributes(wid, [(xcb.CW_BORDER_PIXEL, border)])
 
     if focused:
-        pwm.xcb.core.SetInputFocus(xproto.InputFocus.PointerRoot,
-                                   wid,
-                                   xproto.Time.CurrentTime)
+        xcb.core.set_input_focus(xcb.INPUT_FOCUS_POINTER_ROOT,
+                                 wid,
+                                 xcb.TIME_CURRENT_TIME)
 
 
 @contextmanager
@@ -222,11 +219,11 @@ def no_enter_notify_event():
     """Prevent all managed windows from sending EnterNotifyEvent."""
 
     eventmask = MANAGED_EVENT_MASK
-    eventmask &= ~xproto.EventMask.EnterWindow
+    eventmask &= ~xcb.EVENT_MASK_ENTER_WINDOW
     for wid in managed:
-        change_attributes(wid, eventmask=eventmask)
+        change_attributes(wid, [(xcb.CW_EVENT_MASK, eventmask)])
 
     yield
 
     for wid in managed:
-        change_attributes(wid, eventmask=MANAGED_EVENT_MASK)
+        change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
