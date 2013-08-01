@@ -75,7 +75,12 @@ keys = [
     ("Shift-Mod4-h", func(cmd.move, "left")),
     ("Shift-Mod4-j", func(cmd.move, "down")),
     ("Shift-Mod4-k", func(cmd.move, "up")),
-    ("Shift-Mod4-l", func(cmd.move, "right"))
+    ("Shift-Mod4-l", func(cmd.move, "right")),
+
+    ("Control-Mod4-h", func(cmd.resize, (-0.02, 0))),
+    ("Control-Mod4-j", func(cmd.resize, (0, 0.02))),
+    ("Control-Mod4-k", func(cmd.resize, (0, -0.02))),
+    ("Control-Mod4-l", func(cmd.resize, (0.02, 0)))
 ]
 
 # Keys for every workspace.

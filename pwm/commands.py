@@ -24,8 +24,8 @@ def quit():
 
 def restart():
     """Restart pwm."""
-    pwm.restart = True
     pwm.shutdown = True
+    pwm.restart = True
 
 
 def switch_workspace(index):
@@ -211,6 +211,23 @@ def focus(window):
     if pwm.windows.focused:
         attr = getattr(pwm.workspaces.current().layout, window)
         pwm.windows.handle_focus(attr(pwm.windows.focused))
+
+
+def resize(delta):
+    """Resize the currently focused window.
+
+    Args:
+        delta: A tuple with two values describing the change in size.
+               Each value should be in range [0,1] where as 1 equals
+               the size of the screen.
+    """
+    focused = pwm.windows.focused
+
+    if not focused:
+        return
+
+    with pwm.windows.no_enter_notify_event():
+        pwm.workspaces.current().layout.resize(focused, delta)
 
 
 def send_to_workspace(workspace):
