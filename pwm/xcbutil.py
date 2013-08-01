@@ -1,22 +1,23 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-import struct
+#import struct
 from pwm.ffi.xcb import xcb
 
 
-#def create_gc():
-#    """Create a new graphics context"""
-#    gc = conn.generate_id()
-#
-#    mask, values = gc_mask(
-#        foreground=screen.white_pixel,
-#        background=screen.black_pixel,
-#        graphicsexposures=0)
-#
-#    core.CreateGC(gc, screen.root, mask, values)
-#
-#    return gc
+def setup_root_window():
+    mask_values = (xcb.EVENT_MASK_STRUCTURE_NOTIFY |
+                   xcb.EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+                   xcb.EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+                   xcb.EVENT_MASK_ENTER_WINDOW |
+                   xcb.EVENT_MASK_LEAVE_WINDOW)
+
+    cookie = xcb.core.change_window_attributes_checked(
+        xcb.screen.root,
+        *xcb.mask([(xcb.CW_EVENT_MASK, mask_values)]))
+
+    cookie.check()
+
 
 #
 # From xpybutil
@@ -103,25 +104,27 @@ def get_property_value(property_reply):
     :return: Either a string, a list of strings or a list of integers depending
              upon the format of the property reply.
     """
+    value = xcb.get_property_value(property_reply)
+
     if property_reply.format == 8:
-        if 0 in property_reply.value[:-1]:
-            ret = []
-            s = []
-            for o in property_reply.value:
-                if o == 0:
-                    ret.append(''.join(s))
-                    s = []
-                else:
-                    s.append(chr(o))
-        else:
-            ret = str(property_reply.value.buf())
-            if len(property_reply.value) > 0 and 0 == property_reply.value[-1]:
-                ret = ret[:-1]
+        value = xcb.ffi.cast("char*", value)
+
+        #if 0 in value[:-1]:
+        #    ret = []
+        #    s = []
+        #    for o in value:
+        #        if o == 0:
+        #            ret.append(''.join(s))
+        #            s = []
+        #        else:
+        #            s.append(chr(o))
+        #else:
+        ret = xcb.ffi.string(value)
 
         return ret
     elif property_reply.format in (16, 32):
-        return list(struct.unpack('I' * property_reply.value_len,
-                                  property_reply.value.buf()))
+        value = xcb.ffi.cast("uint%d_t*" % property_reply.format, value)
+        return [value[i] for i in range(property_reply.value_len)]
 
     return None
 
@@ -142,30 +145,9 @@ def get_property(window, atom):
     """
     if isinstance(atom, str):
         atom = get_atom(atom)
-    return core.GetProperty(False, window, atom,
-                            xcb.xproto.GetPropertyType.Any, 0,
-                            2 ** 32 - 1)
-
-
-def get_property_unchecked(window, atom):
-    """
-    Abstracts the process of issuing a GetPropertyUnchecked request.
-
-    You'll typically want to call the ``reply`` method on the return value of
-    this function, and pass that result to
-    'get_property_value' so that the data is nicely formatted.
-
-    :param window: A window identifier.
-    :type window: int
-    :param atom: An atom identifier.
-    :type atom: int OR str
-    :rtype: xcb.xproto.GetPropertyCookie
-    """
-    if isinstance(atom, str):
-        atom = get_atom(atom)
-    return core.GetPropertyUnchecked(False, window, atom,
-                                     xcb.xproto.GetPropertyType.Any, 0,
-                                     2 ** 32 - 1)
+    return xcb.core.get_property(False, window, atom,
+                                 xcb.GET_PROPERTY_TYPE_ANY, 0,
+                                 2 ** 32 - 1)
 
 
 def build_atom_cache(atoms):
@@ -249,8 +231,8 @@ def __get_atom_cookie(atom_name, only_if_exists=False):
     :type only_if_exists: bool
     :rtype: xcb.xproto.InternAtomCookie
     """
-    atom = core.InternAtomUnchecked(only_if_exists, len(atom_name),
-                                    atom_name)
+    atom = xcb.core.intern_atom_unchecked(only_if_exists, len(atom_name),
+                                          atom_name.encode("UTF-8"))
     return AtomCookie(atom)
 
 
@@ -262,4 +244,4 @@ def __get_atom_name_cookie(atom):
     :type atom: int
     :rtype: xcb.xproto.GetAtomNameCookie
     """
-    return AtomNameCookie(core.GetAtomNameUnchecked(atom))
+    return AtomNameCookie(xcb.core.get_atom_name_unchecked(atom))

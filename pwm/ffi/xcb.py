@@ -3,6 +3,7 @@
 
 import cffi
 import functools
+import re
 
 import pwm.ffi.headers as headers
 
@@ -20,6 +21,8 @@ class Cookie:
     def __init__(self, name, value):
         self.name = name
         self.value = value
+
+        self.name = re.sub("_unchecked$", "", self.name)
 
     def __getattr__(self, name):
         return getattr(self.value, name)

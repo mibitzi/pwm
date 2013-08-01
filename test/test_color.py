@@ -6,7 +6,7 @@ from __future__ import print_function, unicode_literals
 
 import unittest
 
-import pwm.xcb
+from pwm.ffi.xcb import xcb
 import pwm.color
 import test.util as util
 
@@ -20,10 +20,10 @@ class TestColor(unittest.TestCase):
 
     def test_get_pixl(self):
         self.assertEqual(pwm.color.get_pixel("#000000"),
-                         pwm.xcb.screen.black_pixel)
+                         xcb.screen.black_pixel)
 
         self.assertEqual(pwm.color.get_pixel("#ffffff"),
-                         pwm.xcb.screen.white_pixel)
+                         xcb.screen.white_pixel)
 
     def test_get_rgb(self):
         self.assertEqual(pwm.color.get_rgb("#000000"), (0, 0, 0))

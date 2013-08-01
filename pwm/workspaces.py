@@ -5,7 +5,7 @@ import logging
 
 from pwm.config import config
 from pwm.ffi.xcb import xcb
-#import pwm.bar
+import pwm.bar
 import pwm.windows
 import pwm.layout
 import pwm.events
@@ -19,7 +19,7 @@ class Workspace:
         self.windows = []
 
         self.x = 0
-        self.y = 0#pwm.bar.calculate_height()
+        self.y = pwm.bar.calculate_height()
 
         self.width = xcb.screen.width_in_pixels
         self.height = xcb.screen.height_in_pixels - self.y

@@ -4,7 +4,8 @@
 from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
-import pwm.xcb
+from pwm.ffi.xcb import xcb
+import pwm.xcbutil
 import pwm.bar
 import pwm.workspaces
 
@@ -16,8 +17,8 @@ def setup():
     # To increase test speed we only want to connect once
     global connected
     if not connected:
-        pwm.xcb.connect()
-        pwm.xcb.setup_root_window()
+        xcb.connect()
+        pwm.xcbutil.setup_root_window()
         connected = True
 
     pwm.workspaces.setup()

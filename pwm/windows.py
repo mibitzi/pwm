@@ -12,6 +12,7 @@ from pwm.config import config
 import pwm.color
 import pwm.workspaces
 import pwm.events
+import pwm.xcbutil
 
 managed = {}
 focused = None
@@ -21,35 +22,32 @@ MANAGED_EVENT_MASK = (xcb.EVENT_MASK_ENTER_WINDOW |
                       xcb.EVENT_MASK_PROPERTY_CHANGE)
 
 
-#def create(x, y, width, height):
-#    """Create a new window and return its id."""
-#
-#    wid = pwm.xcb.conn.generate_id()
-#
-#    mask, values = pwm.xcb.attribute_mask(
-#        backpixel=pwm.xcb.screen.black_pixel,
-#        eventmask=xproto.EventMask.Exposure)
-#
-#    pwm.xcb.core.CreateWindow(
-#        pwm.xcb.screen.root_depth,
-#        wid,
-#        pwm.xcb.screen.root,
-#        x, y,
-#        width,
-#        height,
-#        0,  # border
-#        xproto.WindowClass.InputOutput,
-#        pwm.xcb.screen.root_visual,
-#        mask, values)
-#
-#    return wid
-#
-#
-#def destroy(wid):
-#    """Destroy the window."""
-#    pwm.xcb.core.DestroyWindow(wid)
-#
-#
+def create(x, y, width, height):
+    """Create a new window and return its id."""
+
+    wid = xcb.core.generate_id()
+
+    xcb.core.create_window(
+        xcb.screen.root_depth,
+        wid,
+        xcb.screen.root,
+        x, y,
+        width,
+        height,
+        0,  # border
+        xcb.WINDOW_CLASS_INPUT_OUTPUT,
+        xcb.screen.root_visual,
+        *xcb.mask([(xcb.CW_BACK_PIXEL, xcb.screen.black_pixel),
+                  (xcb.CW_EVENT_MASK, xcb.EVENT_MASK_EXPOSURE)]))
+
+    return wid
+
+
+def destroy(wid):
+    """Destroy the window."""
+    xcb.core.destroy_window(wid)
+
+
 def manage(wid):
     if wid in managed:
         return
@@ -84,24 +82,24 @@ def hide(wid):
     xcb.core.unmap_window(wid)
 
 
-#def is_mapped(wid):
-#    """Return True if the window is mapped, otherwise False."""
-#    attr = pwm.xcb.core.GetWindowAttributes(wid).reply()
-#    return attr.map_state == xproto.MapState.Viewable
-#
-#
+def is_mapped(wid):
+    """Return True if the window is mapped, otherwise False."""
+    attr = xcb.core.get_window_attributes(wid).reply()
+    return attr.map_state == xcb.MAP_STATE_VIEWABLE
+
+
 def change_attributes(wid, masks):
     """Set attributes for the given window."""
     xcb.core.change_window_attributes(wid, *xcb.mask(masks))
 
 
-#def get_name(wid):
-#    """Get the window name."""
-#
-#    name = pwm.xcb.get_property_value(
-#        pwm.xcb.get_property(wid, xproto.Atom.WM_NAME).reply())
-#
-#    return name or ""
+def get_name(wid):
+    """Get the window name."""
+
+    name = pwm.xcbutil.get_property_value(
+        pwm.xcbutil.get_property(wid, xcb.ATOM_WM_NAME).reply())
+
+    return name or ""
 
 
 def configure(wid, **kwargs):
@@ -128,50 +126,51 @@ def configure(wid, **kwargs):
     xcb.core.configure_window(wid, *xcb.mask(values))
 
 
-#def get_geometry(wid):
-#    """Get geometry information for the given window.
-#
-#    Return a tuple(x, y, width, height).
-#    """
-#
-#    geo = pwm.xcb.core.GetGeometry(wid).reply()
-#    return (geo.x, geo.y, geo.width, geo.height)
-#
-#
-#def get_wm_protocols(wid):
-#    """Return the protocols supported by this window."""
-#
-#    return pwm.xcb.get_property_value(
-#        pwm.xcb.get_property(wid, "WM_PROTOCOLS").reply())
-#
-#
-#def kill(wid):
-#    """Kill the window with wid."""
-#
-#    # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
-#    # the hard way.
-#    if "WM_DELETE_WINDOW" in get_wm_protocols(wid):
-#        vals = [
-#            33,  # ClientMessageEvent
-#            32,  # Format
-#            0,
-#            wid,
-#            pwm.xcb.get_atom("WM_PROTOCOLS"),
-#            pwm.xcb.get_atom("WM_DELETE_WINDOW"),
-#            xproto.Time.CurrentTime,
-#            0,
-#            0,
-#            0,
-#        ]
-#
-#        event = struct.pack('BBHII5I', *vals)
-#
-#        pwm.xcb.core.SendEvent(False, wid, xproto.EventMask.NoEvent, event)
-#
-#    else:
-#        pwm.xcb.core.KillClient(wid)
-#
-#
+def get_geometry(wid):
+    """Get geometry information for the given window.
+
+    Return a tuple(x, y, width, height).
+    """
+
+    geo = xcb.core.get_geometry(wid).reply()
+    return (geo.x, geo.y, geo.width, geo.height)
+
+
+def get_wm_protocols(wid):
+    """Return the protocols supported by this window."""
+
+    return pwm.xcbutil.get_property_value(
+        pwm.xcbutil.get_property(wid, "WM_PROTOCOLS").reply())
+
+
+def kill(wid):
+    """Kill the window with wid."""
+
+    # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
+    # the hard way.
+    atom = pwm.xcbutil.get_atom("WM_DELETE_WINDOW")
+    if atom in get_wm_protocols(wid):
+        vals = [
+            33,  # ClientMessageEvent
+            32,  # Format
+            0,
+            wid,
+            pwm.xcbutil.get_atom("WM_PROTOCOLS"),
+            atom,
+            xcb.TIME_CURRENT_TIME,
+            0,
+            0,
+            0,
+        ]
+
+        event = struct.pack('BBHII5I', *vals)
+
+        xcb.core.send_event(False, wid, xcb.EVENT_MASK_NO_EVENT, event)
+
+    else:
+        xcb.core.kill_client(wid)
+
+
 def handle_focus(wid):
     """Focus the window with the given wid.
 

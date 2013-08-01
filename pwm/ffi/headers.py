@@ -1089,6 +1089,145 @@ typedef struct xcb_ungrab_key_request_t {
 } xcb_ungrab_key_request_t;
 
 
+typedef enum xcb_map_state_t {
+    XCB_MAP_STATE_UNMAPPED = 0,
+    XCB_MAP_STATE_UNVIEWABLE = 1,
+    XCB_MAP_STATE_VIEWABLE = 2
+} xcb_map_state_t;
+
+/**
+ * @brief xcb_get_window_attributes_cookie_t
+ **/
+typedef struct xcb_get_window_attributes_cookie_t {
+    unsigned int sequence; /**<  */
+} xcb_get_window_attributes_cookie_t;
+
+
+/**
+ * @brief xcb_get_window_attributes_request_t
+ **/
+typedef struct xcb_get_window_attributes_request_t {
+    uint8_t      major_opcode; /**<  */
+    uint8_t      pad0; /**<  */
+    uint16_t     length; /**<  */
+    xcb_window_t window; /**<  */
+} xcb_get_window_attributes_request_t;
+
+/**
+ * @brief xcb_get_window_attributes_reply_t
+ **/
+typedef struct xcb_get_window_attributes_reply_t {
+    uint8_t        response_type; /**<  */
+    uint8_t        backing_store; /**<  */
+    uint16_t       sequence; /**<  */
+    uint32_t       length; /**<  */
+    xcb_visualid_t visual; /**<  */
+    uint16_t       _class; /**<  */
+    uint8_t        bit_gravity; /**<  */
+    uint8_t        win_gravity; /**<  */
+    uint32_t       backing_planes; /**<  */
+    uint32_t       backing_pixel; /**<  */
+    uint8_t        save_under; /**<  */
+    uint8_t        map_is_installed; /**<  */
+    uint8_t        map_state; /**<  */
+    uint8_t        override_redirect; /**<  */
+    xcb_colormap_t colormap; /**<  */
+    uint32_t       all_event_masks; /**<  */
+    uint32_t       your_event_mask; /**<  */
+    uint16_t       do_not_propagate_mask; /**<  */
+    uint8_t        pad0[2]; /**<  */
+} xcb_get_window_attributes_reply_t;
+
+
+/**
+ * @brief xcb_get_geometry_cookie_t
+ **/
+typedef struct xcb_get_geometry_cookie_t {
+    unsigned int sequence; /**<  */
+} xcb_get_geometry_cookie_t;
+
+/**
+ * @brief xcb_get_geometry_reply_t
+ **/
+typedef struct xcb_get_geometry_reply_t {
+    uint8_t      response_type; /**<  */
+    uint8_t      depth; /**<  */
+    uint16_t     sequence; /**<  */
+    uint32_t     length; /**<  */
+    xcb_window_t root; /**<  */
+    int16_t      x; /**<  */
+    int16_t      y; /**<  */
+    uint16_t     width; /**<  */
+    uint16_t     height; /**<  */
+    uint16_t     border_width; /**<  */
+    uint8_t      pad0[2]; /**<  */
+} xcb_get_geometry_reply_t;
+
+/**
+ * @brief xcb_intern_atom_cookie_t
+ **/
+typedef struct xcb_intern_atom_cookie_t {
+    unsigned int sequence; /**<  */
+} xcb_intern_atom_cookie_t;
+
+/** Opcode for xcb_intern_atom. */
+#define XCB_INTERN_ATOM ...
+
+/**
+ * @brief xcb_intern_atom_request_t
+ **/
+typedef struct xcb_intern_atom_request_t {
+    uint8_t  major_opcode; /**<  */
+    uint8_t  only_if_exists; /**<  */
+    uint16_t length; /**<  */
+    uint16_t name_len; /**<  */
+    uint8_t  pad0[2]; /**<  */
+} xcb_intern_atom_request_t;
+
+/**
+ * @brief xcb_intern_atom_reply_t
+ **/
+typedef struct xcb_intern_atom_reply_t {
+    uint8_t    response_type; /**<  */
+    uint8_t    pad0; /**<  */
+    uint16_t   sequence; /**<  */
+    uint32_t   length; /**<  */
+    xcb_atom_t atom; /**<  */
+} xcb_intern_atom_reply_t;
+
+/**
+ * @brief xcb_get_atom_name_cookie_t
+ **/
+typedef struct xcb_get_atom_name_cookie_t {
+    unsigned int sequence; /**<  */
+} xcb_get_atom_name_cookie_t;
+
+/** Opcode for xcb_get_atom_name. */
+#define XCB_GET_ATOM_NAME ...
+
+/**
+ * @brief xcb_get_atom_name_request_t
+ **/
+typedef struct xcb_get_atom_name_request_t {
+    uint8_t    major_opcode; /**<  */
+    uint8_t    pad0; /**<  */
+    uint16_t   length; /**<  */
+    xcb_atom_t atom; /**<  */
+} xcb_get_atom_name_request_t;
+
+/**
+ * @brief xcb_get_atom_name_reply_t
+ **/
+typedef struct xcb_get_atom_name_reply_t {
+    uint8_t  response_type; /**<  */
+    uint8_t  pad0; /**<  */
+    uint16_t sequence; /**<  */
+    uint32_t length; /**<  */
+    uint16_t name_len; /**<  */
+    uint8_t  pad1[22]; /**<  */
+} xcb_get_atom_name_reply_t;
+
+
 typedef struct xcb_screen_t {
     xcb_window_t   root; /**<  */
     xcb_colormap_t default_colormap; /**<  */
@@ -1158,6 +1297,13 @@ typedef struct xcb_setup_iterator_t {
     int          rem; /**<  */
     int          index; /**<  */
 } xcb_setup_iterator_t;
+
+typedef enum xcb_window_class_t {
+    XCB_WINDOW_CLASS_COPY_FROM_PARENT = 0,
+    XCB_WINDOW_CLASS_INPUT_OUTPUT = 1,
+    XCB_WINDOW_CLASS_INPUT_ONLY = 2
+} xcb_window_class_t;
+
 
 typedef enum xcb_cw_t {
     XCB_CW_BACK_PIXMAP = 1,
@@ -1260,6 +1406,155 @@ parent's cursor will cause an immediate change in the displayed cursor. */
 
 } xcb_cw_t;
 
+typedef enum xcb_gc_t {
+    XCB_GC_FUNCTION = 1,
+/**< TODO: Refer to GX */
+
+    XCB_GC_PLANE_MASK = 2,
+/**< In graphics operations, given a source and destination pixel, the result is
+computed bitwise on corresponding bits of the pixels; that is, a Boolean
+operation is performed in each bit plane. The plane-mask restricts the
+operation to a subset of planes, so the result is:
+
+        ((src FUNC dst) AND plane-mask) OR (dst AND (NOT plane-mask)) */
+
+    XCB_GC_FOREGROUND = 4,
+/**< Foreground colorpixel. */
+
+    XCB_GC_BACKGROUND = 8,
+/**< Background colorpixel. */
+
+    XCB_GC_LINE_WIDTH = 16,
+/**< The line-width is measured in pixels and can be greater than or equal to one, a wide line, or the
+special value zero, a thin line. */
+
+    XCB_GC_LINE_STYLE = 32,
+/**< The line-style defines which sections of a line are drawn:
+Solid                The full path of the line is drawn.
+DoubleDash           The full path of the line is drawn, but the even dashes are filled differently
+                     than the odd dashes (see fill-style), with Butt cap-style used where even and
+                     odd dashes meet.
+OnOffDash            Only the even dashes are drawn, and cap-style applies to all internal ends of
+                     the individual dashes (except NotLast is treated as Butt). */
+
+    XCB_GC_CAP_STYLE = 64,
+/**< The cap-style defines how the endpoints of a path are drawn:
+NotLast    The result is equivalent to Butt, except that for a line-width of zero the final
+           endpoint is not drawn.
+Butt       The result is square at the endpoint (perpendicular to the slope of the line)
+           with no projection beyond.
+Round      The result is a circular arc with its diameter equal to the line-width, centered
+           on the endpoint; it is equivalent to Butt for line-width zero.
+Projecting The result is square at the end, but the path continues beyond the endpoint for
+           a distance equal to half the line-width; it is equivalent to Butt for line-width
+           zero. */
+
+    XCB_GC_JOIN_STYLE = 128,
+/**< The join-style defines how corners are drawn for wide lines:
+Miter               The outer edges of the two lines extend to meet at an angle. However, if the
+                    angle is less than 11 degrees, a Bevel join-style is used instead.
+Round               The result is a circular arc with a diameter equal to the line-width, centered
+                    on the joinpoint.
+Bevel               The result is Butt endpoint styles, and then the triangular notch is filled. */
+
+    XCB_GC_FILL_STYLE = 256,
+/**< The fill-style defines the contents of the source for line, text, and fill requests. For all text and fill
+requests (for example, PolyText8, PolyText16, PolyFillRectangle, FillPoly, and PolyFillArc)
+as well as for line requests with line-style Solid, (for example, PolyLine, PolySegment,
+PolyRectangle, PolyArc) and for the even dashes for line requests with line-style OnOffDash
+or DoubleDash:
+Solid                     Foreground
+Tiled                     Tile
+OpaqueStippled            A tile with the same width and height as stipple but with background
+                          everywhere stipple has a zero and with foreground everywhere stipple
+                          has a one
+Stippled                  Foreground masked by stipple
+For the odd dashes for line requests with line-style DoubleDash:
+Solid                     Background
+Tiled                     Same as for even dashes
+OpaqueStippled            Same as for even dashes
+Stippled                  Background masked by stipple */
+
+    XCB_GC_FILL_RULE = 512,
+/**<  */
+
+    XCB_GC_TILE = 1024,
+/**< The tile/stipple represents an infinite two-dimensional plane with the tile/stipple replicated in all
+dimensions. When that plane is superimposed on the drawable for use in a graphics operation,
+the upper-left corner of some instance of the tile/stipple is at the coordinates within the drawable
+specified by the tile/stipple origin. The tile/stipple and clip origins are interpreted relative to the
+origin of whatever destination drawable is specified in a graphics request.
+The tile pixmap must have the same root and depth as the gcontext (or a Match error results).
+The stipple pixmap must have depth one and must have the same root as the gcontext (or a
+Match error results). For fill-style Stippled (but not fill-style
+OpaqueStippled), the stipple pattern is tiled in a single plane and acts as an
+additional clip mask to be ANDed with the clip-mask.
+Any size pixmap can be used for tiling or stippling, although some sizes may be faster to use than
+others. */
+
+    XCB_GC_STIPPLE = 2048,
+/**< The tile/stipple represents an infinite two-dimensional plane with the tile/stipple replicated in all
+dimensions. When that plane is superimposed on the drawable for use in a graphics operation,
+the upper-left corner of some instance of the tile/stipple is at the coordinates within the drawable
+specified by the tile/stipple origin. The tile/stipple and clip origins are interpreted relative to the
+origin of whatever destination drawable is specified in a graphics request.
+The tile pixmap must have the same root and depth as the gcontext (or a Match error results).
+The stipple pixmap must have depth one and must have the same root as the gcontext (or a
+Match error results). For fill-style Stippled (but not fill-style
+OpaqueStippled), the stipple pattern is tiled in a single plane and acts as an
+additional clip mask to be ANDed with the clip-mask.
+Any size pixmap can be used for tiling or stippling, although some sizes may be faster to use than
+others. */
+
+    XCB_GC_TILE_STIPPLE_ORIGIN_X = 4096,
+/**< TODO */
+
+    XCB_GC_TILE_STIPPLE_ORIGIN_Y = 8192,
+/**< TODO */
+
+    XCB_GC_FONT = 16384,
+/**< Which font to use for the `ImageText8` and `ImageText16` requests. */
+
+    XCB_GC_SUBWINDOW_MODE = 32768,
+/**< For ClipByChildren, both source and destination windows are additionally
+clipped by all viewable InputOutput children. For IncludeInferiors, neither
+source nor destination window is
+clipped by inferiors. This will result in including subwindow contents in the source and drawing
+through subwindow boundaries of the destination. The use of IncludeInferiors with a source or
+destination window of one depth with mapped inferiors of differing depth is not illegal, but the
+semantics is undefined by the core protocol. */
+
+    XCB_GC_GRAPHICS_EXPOSURES = 65536,
+/**< Whether ExposureEvents should be generated (1) or not (0).
+
+The default is 1. */
+
+    XCB_GC_CLIP_ORIGIN_X = 131072,
+/**< TODO */
+
+    XCB_GC_CLIP_ORIGIN_Y = 262144,
+/**< TODO */
+
+    XCB_GC_CLIP_MASK = 524288,
+/**< The clip-mask restricts writes to the destination drawable. Only pixels where the clip-mask has
+bits set to 1 are drawn. Pixels are not drawn outside the area covered by the clip-mask or where
+the clip-mask has bits set to 0. The clip-mask affects all graphics requests, but it does not clip
+sources. The clip-mask origin is interpreted relative to the origin of whatever destination drawable is specified in a graphics request. If a pixmap is specified as the clip-mask, it must have
+depth 1 and have the same root as the gcontext (or a Match error results). If clip-mask is None,
+then pixels are always drawn, regardless of the clip origin. The clip-mask can also be set with the
+SetClipRectangles request. */
+
+    XCB_GC_DASH_OFFSET = 1048576,
+/**< TODO */
+
+    XCB_GC_DASH_LIST = 2097152,
+/**< TODO */
+
+    XCB_GC_ARC_MODE = 4194304
+/**< TODO */
+
+} xcb_gc_t;
+
 
 
 int xcb_flush(xcb_connection_t *c);
@@ -1276,6 +1571,9 @@ uint32_t xcb_generate_id(xcb_connection_t *c);
 xcb_void_cookie_t
 xcb_map_window (xcb_connection_t *c  /**< */,
                 xcb_window_t      window  /**< */);
+xcb_void_cookie_t
+xcb_unmap_window (xcb_connection_t *c  /**< */,
+                  xcb_window_t      window  /**< */);
 
 
 xcb_void_cookie_t
@@ -1340,6 +1638,13 @@ xcb_get_property_reply (xcb_connection_t           *c  /**< */,
                         xcb_get_property_cookie_t   cookie  /**< */,
                         xcb_generic_error_t       **e  /**< */);
 
+void *
+xcb_get_property_value (const xcb_get_property_reply_t *R  /**< */);
+
+int
+xcb_get_property_value_length (const xcb_get_property_reply_t *R  /**< */);
+
+
 xcb_get_keyboard_mapping_cookie_t
 xcb_get_keyboard_mapping (xcb_connection_t *c  /**< */,
                           xcb_keycode_t     first_keycode  /**< */,
@@ -1379,6 +1684,117 @@ xcb_ungrab_key_checked (xcb_connection_t *c  /**< */,
                         xcb_window_t      grab_window  /**< */,
                         uint16_t          modifiers  /**< */);
 
+xcb_void_cookie_t
+xcb_create_window (xcb_connection_t *c  /**< */,
+                   uint8_t           depth  /**< */,
+                   xcb_window_t      wid  /**< */,
+                   xcb_window_t      parent  /**< */,
+                   int16_t           x  /**< */,
+                   int16_t           y  /**< */,
+                   uint16_t          width  /**< */,
+                   uint16_t          height  /**< */,
+                   uint16_t          border_width  /**< */,
+                   uint16_t          _class  /**< */,
+                   xcb_visualid_t    visual  /**< */,
+                   uint32_t          value_mask  /**< */,
+                   const uint32_t   *value_list  /**< */);
+
+xcb_void_cookie_t
+xcb_destroy_window (xcb_connection_t *c  /**< */,
+                    xcb_window_t      window  /**< */);
+
+xcb_get_window_attributes_cookie_t
+xcb_get_window_attributes (xcb_connection_t *c  /**< */,
+                           xcb_window_t      window  /**< */);
+
+xcb_get_window_attributes_reply_t *
+xcb_get_window_attributes_reply (xcb_connection_t                    *c  /**< */,
+                                 xcb_get_window_attributes_cookie_t   cookie  /**< */,
+                                 xcb_generic_error_t                **e  /**< */);
+
+xcb_get_geometry_cookie_t
+xcb_get_geometry (xcb_connection_t *c  /**< */,
+                  xcb_drawable_t    drawable  /**< */);
+
+xcb_get_geometry_reply_t *
+xcb_get_geometry_reply (xcb_connection_t           *c  /**< */,
+                        xcb_get_geometry_cookie_t   cookie  /**< */,
+                        xcb_generic_error_t       **e  /**< */);
+
+xcb_intern_atom_cookie_t
+xcb_intern_atom (xcb_connection_t *c  /**< */,
+                 uint8_t           only_if_exists  /**< */,
+                 uint16_t          name_len  /**< */,
+                 const char       *name  /**< */);
+
+xcb_intern_atom_cookie_t
+xcb_intern_atom_unchecked (xcb_connection_t *c  /**< */,
+                           uint8_t           only_if_exists  /**< */,
+                           uint16_t          name_len  /**< */,
+                           const char       *name  /**< */);
+
+xcb_intern_atom_reply_t *
+xcb_intern_atom_reply (xcb_connection_t          *c  /**< */,
+                       xcb_intern_atom_cookie_t   cookie  /**< */,
+                       xcb_generic_error_t      **e  /**< */);
+
+
+xcb_get_atom_name_cookie_t
+xcb_get_atom_name (xcb_connection_t *c  /**< */,
+                   xcb_atom_t        atom  /**< */);
+
+xcb_get_atom_name_cookie_t
+xcb_get_atom_name_unchecked (xcb_connection_t *c  /**< */,
+                             xcb_atom_t        atom  /**< */);
+
+xcb_void_cookie_t
+xcb_kill_client (xcb_connection_t *c  /**< */,
+                 uint32_t          resource  /**< */);
+
+xcb_void_cookie_t
+xcb_send_event (xcb_connection_t *c  /**< */,
+                uint8_t           propagate  /**< */,
+                xcb_window_t      destination  /**< */,
+                uint32_t          event_mask  /**< */,
+                const char       *event  /**< */);
+
+xcb_void_cookie_t
+xcb_create_pixmap (xcb_connection_t *c  /**< */,
+                   uint8_t           depth  /**< */,
+                   xcb_pixmap_t      pid  /**< */,
+                   xcb_drawable_t    drawable  /**< */,
+                   uint16_t          width  /**< */,
+                   uint16_t          height  /**< */);
+
+xcb_void_cookie_t
+xcb_create_gc (xcb_connection_t *c  /**< */,
+               xcb_gcontext_t    cid  /**< */,
+               xcb_drawable_t    drawable  /**< */,
+               uint32_t          value_mask  /**< */,
+               const uint32_t   *value_list  /**< */);
+
+
+xcb_void_cookie_t
+xcb_free_pixmap (xcb_connection_t *c  /**< */,
+                 xcb_pixmap_t      pixmap  /**< */);
+
+xcb_void_cookie_t
+xcb_free_gc (xcb_connection_t *c  /**< */,
+             xcb_gcontext_t    gc  /**< */);
+
+xcb_void_cookie_t
+xcb_copy_area (xcb_connection_t *c  /**< */,
+               xcb_drawable_t    src_drawable  /**< */,
+               xcb_drawable_t    dst_drawable  /**< */,
+               xcb_gcontext_t    gc  /**< */,
+               int16_t           src_x  /**< */,
+               int16_t           src_y  /**< */,
+               int16_t           dst_x  /**< */,
+               int16_t           dst_y  /**< */,
+               uint16_t          width  /**< */,
+               uint16_t          height  /**< */);
+
+
 /*
  * xcb/xcb_aux.h
  */
@@ -1403,4 +1819,138 @@ xcb_visualtype_t *
 xcb_aux_find_visual_by_attrs (xcb_screen_t *screen,
                   int8_t class_,
                   int8_t depth);
+"""
+
+cairo = """
+typedef struct _cairo cairo_t;
+
+typedef struct _cairo_surface cairo_surface_t;
+cairo_surface_t *
+cairo_xcb_surface_create (xcb_connection_t	*connection,
+			  xcb_drawable_t	 drawable,
+			  xcb_visualtype_t	*visual,
+			  int			 width,
+			  int			 height);
+
+cairo_t *
+cairo_create (cairo_surface_t *target);
+
+void
+cairo_destroy (cairo_t *cr);
+
+void
+cairo_surface_destroy (cairo_surface_t *surface);
+
+typedef enum _cairo_font_slant {
+    CAIRO_FONT_SLANT_NORMAL,
+    CAIRO_FONT_SLANT_ITALIC,
+    CAIRO_FONT_SLANT_OBLIQUE
+} cairo_font_slant_t;
+
+typedef enum _cairo_font_weight {
+    CAIRO_FONT_WEIGHT_NORMAL,
+    CAIRO_FONT_WEIGHT_BOLD
+} cairo_font_weight_t;
+
+
+void
+cairo_select_font_face (cairo_t              *cr,
+			const char           *family,
+			cairo_font_slant_t   slant,
+			cairo_font_weight_t  weight);
+
+void
+cairo_set_font_size (cairo_t *cr, double size);
+
+void
+cairo_set_source_rgb (cairo_t *cr, double red, double green, double blue);
+
+typedef enum _cairo_operator {
+    CAIRO_OPERATOR_CLEAR,
+
+    CAIRO_OPERATOR_SOURCE,
+    CAIRO_OPERATOR_OVER,
+    CAIRO_OPERATOR_IN,
+    CAIRO_OPERATOR_OUT,
+    CAIRO_OPERATOR_ATOP,
+
+    CAIRO_OPERATOR_DEST,
+    CAIRO_OPERATOR_DEST_OVER,
+    CAIRO_OPERATOR_DEST_IN,
+    CAIRO_OPERATOR_DEST_OUT,
+    CAIRO_OPERATOR_DEST_ATOP,
+
+    CAIRO_OPERATOR_XOR,
+    CAIRO_OPERATOR_ADD,
+    CAIRO_OPERATOR_SATURATE,
+
+    CAIRO_OPERATOR_MULTIPLY,
+    CAIRO_OPERATOR_SCREEN,
+    CAIRO_OPERATOR_OVERLAY,
+    CAIRO_OPERATOR_DARKEN,
+    CAIRO_OPERATOR_LIGHTEN,
+    CAIRO_OPERATOR_COLOR_DODGE,
+    CAIRO_OPERATOR_COLOR_BURN,
+    CAIRO_OPERATOR_HARD_LIGHT,
+    CAIRO_OPERATOR_SOFT_LIGHT,
+    CAIRO_OPERATOR_DIFFERENCE,
+    CAIRO_OPERATOR_EXCLUSION,
+    CAIRO_OPERATOR_HSL_HUE,
+    CAIRO_OPERATOR_HSL_SATURATION,
+    CAIRO_OPERATOR_HSL_COLOR,
+    CAIRO_OPERATOR_HSL_LUMINOSITY
+} cairo_operator_t;
+
+void
+cairo_set_operator (cairo_t *cr, cairo_operator_t op);
+
+void
+cairo_paint (cairo_t *cr);
+
+typedef struct {
+    double x_bearing;
+    double y_bearing;
+    double width;
+    double height;
+    double x_advance;
+    double y_advance;
+} cairo_text_extents_t;
+
+typedef struct {
+    double ascent;
+    double descent;
+    double height;
+    double max_x_advance;
+    double max_y_advance;
+} cairo_font_extents_t;
+
+void
+cairo_text_extents (cairo_t              *cr,
+		    const char    	 *utf8,
+		    cairo_text_extents_t *extents);
+
+void
+cairo_font_extents (cairo_t              *cr,
+		    cairo_font_extents_t *extents);
+
+void
+cairo_rectangle (cairo_t *cr,
+		 double x, double y,
+		 double width, double height);
+
+void
+cairo_stroke (cairo_t *cr);
+
+void
+cairo_fill (cairo_t *cr);
+
+void
+cairo_set_line_width (cairo_t *cr, double width);
+
+void
+cairo_move_to (cairo_t *cr, double x, double y);
+
+void
+cairo_show_text (cairo_t *cr, const char *utf8);
+
 """

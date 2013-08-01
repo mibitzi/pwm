@@ -6,9 +6,6 @@ from __future__ import print_function, unicode_literals
 
 import unittest
 
-import xcb.xproto as xproto
-
-import pwm.xcb
 import pwm.workspaces
 import pwm.bar
 import test.util as util
