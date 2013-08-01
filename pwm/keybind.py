@@ -5,9 +5,10 @@ from __future__ import division, absolute_import
 from __future__ import print_function, unicode_literals
 
 from collections import defaultdict
-import xcb.xproto as xproto
+import re
 
-import pwm.xcb
+from pwm.ffi.xcb import xcb
+from pwm.ffi.xcb import XcbError
 from pwm.keysyms import keysyms, keysym_strings
 
 #
@@ -20,13 +21,11 @@ __keysmods = None
 
 __keybinds = defaultdict(list)
 
-EM = xproto.EventMask
-GM = xproto.GrabMode
 TRIVIAL_MODS = [
     0,
-    xproto.ModMask.Lock,
-    xproto.ModMask._2,
-    xproto.ModMask.Lock | xproto.ModMask._2
+    xcb.MOD_MASK_LOCK,
+    xcb.MOD_MASK_2,
+    xcb.MOD_MASK_LOCK | xcb.MOD_MASK_2
 ]
 
 
@@ -57,12 +56,17 @@ def parse_keystring(key_string):
     keycode = None
 
     for part in key_string.split('-'):
-        if hasattr(xproto.KeyButMask, part):
-            modifiers |= getattr(xproto.KeyButMask, part)
-        else:
-            if len(part) == 1:
-                part = part.lower()
-            keycode = lookup_string(part)
+        try:
+            xcb_part = part.upper()
+            xcb_part = re.sub(r"(.)([0-9])", r"\1_\2", xcb_part)
+            modifiers |= getattr(xcb, "KEY_BUT_MASK_%s" % xcb_part)
+            continue
+        except:
+            pass
+
+        if len(part) == 1:
+            part = part.lower()
+        keycode = lookup_string(part)
 
     return modifiers, keycode
 
@@ -90,8 +94,7 @@ def get_min_max_keycode():
 
     :rtype: (int, int)
     """
-    return (pwm.xcb.conn.get_setup().min_keycode,
-            pwm.xcb.conn.get_setup().max_keycode)
+    return (xcb.setup.min_keycode, xcb.setup.max_keycode)
 
 
 def get_keyboard_mapping():
@@ -103,7 +106,7 @@ def get_keyboard_mapping():
     """
     mn, mx = get_min_max_keycode()
 
-    return pwm.xcb.core.GetKeyboardMapping(mn, mx - mn + 1)
+    return xcb.core.get_keyboard_mapping(mn, mx - mn + 1)
 
 
 def get_keysym(keycode, col=0, kbmap=None):
@@ -141,7 +144,7 @@ def get_keysym(keycode, col=0, kbmap=None):
     per = kbmap.keysyms_per_keycode
     ind = (keycode - mn) * per + col
 
-    return kbmap.keysyms[ind]
+    return xcb.get_keyboard_mapping_keysyms(kbmap)[ind]
 
 
 def get_keysym_string(keysym):
@@ -167,8 +170,8 @@ def get_keycode(keysym):
     """
     mn, mx = get_min_max_keycode()
     cols = __kbmap.keysyms_per_keycode
-    for i in xrange(mn, mx + 1):
-        for j in xrange(0, cols):
+    for i in range(mn, mx + 1):
+        for j in range(0, cols):
             ks = get_keysym(i, col=j)
             if ks == keysym:
                 return i
@@ -211,17 +214,18 @@ def get_keys_to_mods():
     :return: A dict mapping from keycode to modifier mask.
     :rtype: dict
     """
-    mm = xproto.ModMask
-    modmasks = [mm.Shift, mm.Lock, mm.Control,
-                mm._1, mm._2, mm._3, mm._4, mm._5]  # order matters
+    modmasks = [xcb.MOD_MASK_SHIFT, xcb.MOD_MASK_LOCK, xcb.MOD_MASK_CONTROL,
+                xcb.MOD_MASK_1, xcb.MOD_MASK_2, xcb.MOD_MASK_3,
+                xcb.MOD_MASK_4, xcb.MOD_MASK_5]  # order matters
 
-    mods = pwm.xcb.core.GetModifierMapping().reply()
+    mods = xcb.core.get_modifier_mapping().reply()
 
     res = {}
     keyspermod = mods.keycodes_per_modifier
-    for mmi in xrange(0, len(modmasks)):
+    keycodes = xcb.get_modifier_mapping_keycodes(mods)
+    for mmi in range(0, len(modmasks)):
         row = mmi * keyspermod
-        for kc in mods.keycodes[row:row + keyspermod]:
+        for kc in keycodes[row:row + keyspermod]:
             res[kc] = modmasks[mmi]
 
     return res
@@ -239,31 +243,31 @@ def get_modifiers(state):
     """
     ret = []
 
-    if state & xproto.ModMask.Shift:
+    if state & xcb.MOD_MASK_SHIFT:
         ret.append('Shift')
-    if state & xproto.ModMask.Lock:
+    if state & xcb.MOD_MASK_LOCK:
         ret.append('Lock')
-    if state & xproto.ModMask.Control:
+    if state & xcb.MOD_MASK_CONTROL:
         ret.append('Control')
-    if state & xproto.ModMask._1:
+    if state & xcb.MOD_MASK_1:
         ret.append('Mod1')
-    if state & xproto.ModMask._2:
+    if state & xcb.MOD_MASK_2:
         ret.append('Mod2')
-    if state & xproto.ModMask._3:
+    if state & xcb.MOD_MASK_3:
         ret.append('Mod3')
-    if state & xproto.ModMask._4:
+    if state & xcb.MOD_MASK_4:
         ret.append('Mod4')
-    if state & xproto.ModMask._5:
+    if state & xcb.MOD_MASK_5:
         ret.append('Mod5')
-    if state & xproto.KeyButMask.Button1:
+    if state & xcb.KEY_BUT_MASK_BUTTON1:
         ret.append('Button1')
-    if state & xproto.KeyButMask.Button2:
+    if state & xcb.KEY_BUT_MASK_BUTTON2:
         ret.append('Button2')
-    if state & xproto.KeyButMask.Button3:
+    if state & xcb.KEY_BUT_MASK_BUTTON3:
         ret.append('Button3')
-    if state & xproto.KeyButMask.Button4:
+    if state & xcb.KEY_BUT_MASK_BUTTON4:
         ret.append('Button4')
-    if state & xproto.KeyButMask.Button5:
+    if state & xcb.KEY_BUT_MASK_BUTTON5:
         ret.append('Button5')
 
     return ret
@@ -293,12 +297,13 @@ def grab_key(wid, modifiers, key):
     """
     try:
         for mod in TRIVIAL_MODS:
-            pwm.xcb.core.GrabKeyChecked(True, wid,
-                                        modifiers | mod, key, GM.Async,
-                                        GM.Async).check()
+            xcb.core.grab_key_checked(True, wid,
+                                      modifiers | mod, key,
+                                      xcb.GRAB_MODE_ASYNC,
+                                      xcb.GRAB_MODE_ASYNC).check()
 
         return True
-    except xproto.BadAccess:
+    except XcbError:
         return False
 
 
@@ -320,10 +325,9 @@ def ungrab_key(wid, modifiers, key):
     """
     try:
         for mod in TRIVIAL_MODS:
-            pwm.xcb.core.UngrabKeyChecked(key, wid, modifiers | mod).check()
-
+            xcb.core.ungrab_key_checked(key, wid, modifiers | mod).check()
         return True
-    except xproto.BadAccess:
+    except XcbError:
         return False
 
 
@@ -349,9 +353,9 @@ def update_keyboard_mapping(e=None):
         __keysmods = get_keys_to_mods()
         return
 
-    if e.request == xproto.Mapping.Keyboard:
+    if e.request == xcb.MAPPING_KEYBOARD:
         changes = {}
-        for kc in xrange(*get_min_max_keycode()):
+        for kc in range(*get_min_max_keycode()):
             knew = get_keysym(kc, kbmap=newmap)
             oldkc = get_keycode(knew)
             if oldkc != kc:
@@ -359,7 +363,7 @@ def update_keyboard_mapping(e=None):
 
         __kbmap = newmap
         __regrab(changes)
-    elif e.request == xproto.Mapping.Modifier:
+    elif e.request == xcb.MAPPING_MODIFIER:
         __keysmods = get_keys_to_mods()
 
 

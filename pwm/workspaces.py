@@ -1,13 +1,10 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-from __future__ import division, absolute_import
-from __future__ import print_function, unicode_literals
-
 import logging
 
 from pwm.config import config
-import pwm.xcb
+from pwm.ffi.xcb import xcb
 import pwm.bar
 import pwm.windows
 import pwm.layout
@@ -24,8 +21,8 @@ class Workspace:
         self.x = 0
         self.y = pwm.bar.calculate_height()
 
-        self.width = pwm.xcb.screen.width_in_pixels
-        self.height = pwm.xcb.screen.height_in_pixels - self.y
+        self.width = xcb.screen.width_in_pixels
+        self.height = xcb.screen.height_in_pixels - self.y
 
         self.layout = pwm.layout.Layout(self)
 

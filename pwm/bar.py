@@ -6,10 +6,10 @@ from __future__ import print_function, unicode_literals
 
 import logging
 import threading
-import cairo
 
 from pwm.config import config
-import pwm.xcb
+from pwm.ffi.xcb import xcb
+from pwm.ffi.cairo import cairo
 import pwm.color as color
 import pwm.events
 import pwm.windows
@@ -22,29 +22,31 @@ update_lock = None
 
 class Bar:
     def __init__(self):
-        self.width = pwm.xcb.screen.width_in_pixels
+        self.width = xcb.screen.width_in_pixels
         self.height = calculate_height()
 
         self.workspaces_end = 0
 
         self.wid = self.create_window()
         self.pixmap = self.create_pixmap()
-        self.gc = pwm.xcb.create_gc()
+        self.gc = self.create_gc()
         (self.surface, self.ctx) = self.create_cairo_context()
 
     def destroy(self):
         pwm.windows.destroy(self.wid)
-        pwm.xcb.core.FreePixmap(self.pixmap)
-        pwm.xcb.core.FreeGC(self.gc)
+        cairo.surface_destroy(self.surface)
+        self.ctx.destroy()
+        xcb.core.free_pixmap(self.pixmap)
+        xcb.core.free_gc(self.gc)
 
     def create_window(self):
         return pwm.windows.create(0, 0, self.width, self.height)
 
     def create_pixmap(self):
-        pixmap = pwm.xcb.conn.generate_id()
+        pixmap = xcb.core.generate_id()
 
-        pwm.xcb.core.CreatePixmap(
-            pwm.xcb.screen.root_depth,
+        xcb.core.create_pixmap(
+            xcb.screen.root_depth,
             pixmap,
             self.wid,
             self.width,
@@ -52,26 +54,38 @@ class Bar:
 
         return pixmap
 
-    def find_root_visual(self):
-        for depth in pwm.xcb.screen.allowed_depths:
-            for visual in depth.visuals:
-                if visual.visual_id == pwm.xcb.screen.root_visual:
-                    return visual
+    def create_gc(self):
+        gc = xcb.core.generate_id()
+
+        xcb.core.create_gc(
+            gc, xcb.screen.root,
+            *xcb.mask([(xcb.GC_FOREGROUND, xcb.screen.white_pixel),
+                       (xcb.GC_BACKGROUND, xcb.screen.black_pixel),
+                       (xcb.GC_GRAPHICS_EXPOSURES, 0)]))
+
+        return gc
 
     def create_cairo_context(self):
-        surface = cairo.XCBSurface(
-            pwm.xcb.conn,
+        surface = cairo.xcb_surface_create(
+            xcb.conn,
             self.pixmap,
-            self.find_root_visual(),
+            xcb.aux_find_visual_by_id(xcb.screen, xcb.screen.root_visual),
             self.width,
             self.height)
 
-        ctx = cairo.Context(surface)
+        ctx = cairo.create(surface)
 
-        ctx.select_font_face(config.bar.font.face)
+        ctx.select_font_face(config.bar.font.face,
+                             cairo.FONT_SLANT_NORMAL,
+                             cairo.FONT_WEIGHT_NORMAL)
         ctx.set_font_size(config.bar.font.size)
 
         return (surface, ctx)
+
+    def text_extents(self, text):
+        extents = cairo.ffi.new("cairo_text_extents_t*")
+        self.ctx.text_extents(text, extents)
+        return extents
 
     def draw_background(self):
         self.ctx.set_source_rgb(*color.get_rgb(config.bar.background))
@@ -88,10 +102,10 @@ class Bar:
         # Figure out how big the boxes should be
         # Take the size of the text and add padding
         # Note that we have to align everything on 0.5 to avoid blurring
-        extents = self.ctx.text_extents(
+        extents = self.text_extents(
             "%d" % (len(pwm.workspaces.workspaces)-1))
         padding_left = 5
-        box_width = extents[2] + 2*padding_left
+        box_width = extents.width + 2*padding_left
         padding_top = 0.5
         box_height = self.height - 2*padding_top
 
@@ -125,13 +139,12 @@ class Bar:
             # Draw the text
             text = "%d" % (widx+1)
 
-            extents = self.ctx.text_extents(text)
-            x_bearing, y_bearing, width, height, _, _ = extents
+            extents = self.text_extents(text)
 
             center_x = left + box_width / 2
             center_y = padding_top + box_height/2
-            self.ctx.move_to(center_x - x_bearing - width/2,
-                             center_y - y_bearing - height/2)
+            self.ctx.move_to(center_x - extents.x_bearing - extents.width/2,
+                             center_y - extents.y_bearing - extents.height/2)
             self.ctx.set_source_rgb(*color.get_rgb(fg))
             self.ctx.show_text(text)
 
@@ -159,15 +172,15 @@ class Bar:
             if not col:
                 col = config.bar.foreground
 
-            extents = self.ctx.text_extents(text)
-            x_bearing, y_bearing, width, height, _, _ = extents
+            extents = self.text_extents(text)
 
-            self.ctx.move_to(self.width - offset - width - x_bearing,
-                             self.height/2 - y_bearing - height/2)
+            self.ctx.move_to(
+                self.width - offset - extents.width - extents.x_bearing,
+                self.height/2 - extents.y_bearing - extents.height/2)
             self.ctx.set_source_rgb(*color.get_rgb(col))
             self.ctx.show_text(text)
 
-            offset += width + 2
+            offset += extents.width + 2
 
     def show_text(self, x, text):
         """Show text at the given x coordinate and vertically center it.
@@ -176,17 +189,18 @@ class Bar:
         Return the used text extents.
         """
 
-        extents = self.ctx.text_extents(text)
-        _, y_bearing, _, height, _, _ = extents
+        extents = self.text_extents(text)
 
-        self.ctx.move_to(x, self.height/2 - (y_bearing + height/2))
+        self.ctx.move_to(
+            x,
+            self.height/2 - (extents.y_bearing + extents.height/2))
         self.ctx.show_text(text)
 
         return extents
 
     def copy_pixmap(self):
-        pwm.xcb.core.CopyArea(self.pixmap, self.wid, self.gc,
-                              0, 0, 0, 0, self.width, self.height)
+        xcb.core.copy_area(self.pixmap, self.wid, self.gc,
+                           0, 0, 0, 0, self.width, self.height)
 
     def update(self):
         self.draw_background()
@@ -197,7 +211,7 @@ class Bar:
 
     def show(self):
         """Map the bar and update it."""
-        pwm.xcb.core.MapWindow(self.wid)
+        xcb.core.map_window(self.wid)
         self.update()
 
 
@@ -248,7 +262,7 @@ def update():
     if update_lock.acquire(False):
         try:
             primary.update()
-            pwm.xcb.conn.flush()
+            xcb.core.flush()
         finally:
             update_lock.release()
 

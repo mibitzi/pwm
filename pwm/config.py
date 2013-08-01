@@ -8,7 +8,7 @@ import imp
 import logging
 
 import pwm.keybind
-import pwm.xcb
+from pwm.ffi.xcb import xcb
 
 config = None
 grabbed_keys = {}
@@ -38,7 +38,7 @@ def setup_keys():
         mods, keycode = pwm.keybind.parse_keystring(keystr)
 
         if mods != 0 and keycode:
-            pwm.keybind.grab_key(pwm.xcb.screen.root, mods, keycode)
+            pwm.keybind.grab_key(xcb.screen.root, mods, keycode)
 
             grabbed_keys[(mods, keycode)] = key
         else:

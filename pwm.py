@@ -1,9 +1,6 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
-
-from __future__ import division, absolute_import
-from __future__ import print_function, unicode_literals
 
 import logging
 import os
@@ -11,7 +8,8 @@ import sys
 
 import pwm
 from pwm.config import config
-import pwm.xcb
+from pwm.ffi.xcb import xcb
+import pwm.xcbutil
 import pwm.events
 import pwm.bar
 import pwm.workspaces
@@ -28,8 +26,8 @@ def main():
             datefmt='%m-%d %H:%M:%S')
         logging.info("Changed to loglevel %s" % loglevel)
 
-    pwm.xcb.connect()
-    pwm.xcb.setup_root_window()
+    xcb.connect()
+    pwm.xcbutil.setup_root_window()
     pwm.workspaces.setup()
     pwm.bar.setup()
 
@@ -40,7 +38,8 @@ def main():
     logging.info("Shutting down...")
     pwm.bar.destroy()
     pwm.workspaces.destroy()
-    pwm.xcb.disconnect()
+    xcb.core.disconnect()
+
 
     if pwm.restart:
         logging.info("Restarting...")

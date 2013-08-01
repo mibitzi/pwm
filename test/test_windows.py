@@ -7,7 +7,6 @@ from __future__ import print_function, unicode_literals
 import unittest
 
 from pwm.config import config
-import pwm.xcb
 import pwm.workspaces
 import pwm.windows
 import test.util as util

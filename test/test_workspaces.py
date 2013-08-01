@@ -6,7 +6,7 @@ from __future__ import print_function, unicode_literals
 
 import unittest
 
-import pwm.xcb
+from pwm.ffi.xcb import xcb
 import pwm.bar
 import pwm.workspaces
 import pwm.windows
@@ -36,10 +36,10 @@ class TestWorkspaces(unittest.TestCase):
     def test_geometry(self):
         self.assertEqual(self.workspace.x, 0)
         self.assertEqual(self.workspace.y, pwm.bar.primary.height)
-        self.assertEqual(self.workspace.width, pwm.xcb.screen.width_in_pixels)
+        self.assertEqual(self.workspace.width, xcb.screen.width_in_pixels)
         self.assertEqual(
             self.workspace.height,
-            pwm.xcb.screen.height_in_pixels - pwm.bar.primary.height)
+            xcb.screen.height_in_pixels - pwm.bar.primary.height)
 
     def test_add_window(self):
         window = util.create_window()
