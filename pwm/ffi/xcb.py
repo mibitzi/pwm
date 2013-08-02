@@ -3,11 +3,10 @@
 
 from __future__ import division, absolute_import, print_function
 
-import cffi
 import functools
 import re
 
-import pwm.ffi.headers as headers
+import pwm.ffi.base
 
 
 class XcbError(Exception):
@@ -51,13 +50,8 @@ class Xcb:
     """
 
     def __init__(self):
-        self.ffi = cffi.FFI()
-        self.ffi.cdef(headers.xcb)
-        self.lib = self.ffi.verify("""
-            #include <xcb/xcb.h>
-            #include <xcb/xproto.h>
-            #include <xcb/xcb_aux.h>
-            """, libraries=["xcb", "xcb-util"])
+        self.ffi = pwm.ffi.base.ffi
+        self.lib = pwm.ffi.base.lib
 
         self.conn = None
         self.setup = None

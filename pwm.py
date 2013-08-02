@@ -40,7 +40,6 @@ def main():
     pwm.workspaces.destroy()
     xcb.core.disconnect()
 
-
     if pwm.restart:
         logging.info("Restarting...")
         os.execv(sys.argv[0], sys.argv)

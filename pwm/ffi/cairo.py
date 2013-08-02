@@ -3,11 +3,9 @@
 
 from __future__ import division, absolute_import, print_function
 
-import cffi
 import functools
 
-from pwm.ffi.xcb import xcb
-import pwm.ffi.headers as headers
+import pwm.ffi.base
 
 
 class CairoError(Exception):
@@ -47,14 +45,8 @@ class Cairo:
     """
 
     def __init__(self):
-        self.ffi = cffi.FFI()
-        self.ffi.include(xcb.ffi)
-        self.ffi.cdef(headers.cairo)
-        self.lib = self.ffi.verify("""
-            #include <cairo/cairo.h>
-            #include <cairo/cairo-xcb.h>
-            """, libraries=["cairo"])
-
+        self.ffi = pwm.ffi.base.ffi
+        self.lib = pwm.ffi.base.lib
         self.cairo = None
 
     def __getattr__(self, name):
