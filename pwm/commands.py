@@ -45,7 +45,7 @@ def kill():
 
 
 def spawn(cmd):
-    """Spawan a new shell process to execute the given command."""
+    """Spawn a new shell process to execute the given command."""
 
     # Based on
     # http://code.activestate.com/recipes/278731-creating-a-daemon-the-python-way/
