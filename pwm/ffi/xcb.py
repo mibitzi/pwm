@@ -14,8 +14,9 @@ class XcbError(Exception):
         self.error = error
 
     def __str__(self):
-        return "type %d code %d" % (self.error.response_type,
-                                    self.error.error_code)
+        return "type {}, code {}, major {}, minor {}".format(
+            self.error.response_type, self.error.error_code,
+            self.error.major_code, self.error.minor_code)
 
 
 class Cookie:
@@ -33,7 +34,7 @@ class Cookie:
 
         reply = getattr(xcb.core, "%s_reply" % self.name)(self.value, error)
         if reply == xcb.ffi.NULL:
-            raise XcbError(error)
+            raise XcbError(xcb.ffi.cast("xcb_generic_error_t*", error))
 
         return reply
 
@@ -55,6 +56,8 @@ class Xcb:
 
         self.conn = None
         self.setup = None
+        self.screen = None
+        self.screen_number = None
         self.call_core = False
 
     def __getattr__(self, name):
@@ -99,9 +102,13 @@ class Xcb:
         screen = self.ffi.new("int *")
         self.conn = self.lib.xcb_connect(display or self.ffi.NULL, screen)
         self.setup = self.core.get_setup()
-        self.screen = self.core.aux_get_screen(screen[0])
+        self.screen_number = screen[0]
+        self.screen = self.core.aux_get_screen(self.screen_number)
 
     def mask(self, masks):
+        if not isinstance(masks, list):
+            masks = [masks]
+
         # xcb requires mask-values to be sorted by their masks
         masks = sorted(masks, key=lambda m: m[0])
         values = self.ffi.new("uint32_t[]", [m[1] for m in masks])

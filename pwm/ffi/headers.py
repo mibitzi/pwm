@@ -2,6 +2,14 @@
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
 xcb = """
+#define XCB_NONE ...
+
+#define XCB_COPY_FROM_PARENT ...
+
+#define XCB_CURRENT_TIME ...
+
+#define XCB_NO_SYMBOL ...
+
 typedef struct xcb_connection_t xcb_connection_t;
 
 typedef struct {
@@ -224,13 +232,10 @@ typedef enum xcb_grab_mode_t {
     XCB_GRAB_MODE_SYNC = 0,
     XCB_GRAB_MODE_ASYNC = 1
 
-
 } xcb_grab_mode_t;
 
 
-
 #define XCB_KEY_PRESS ...
-
 
 typedef struct xcb_key_press_event_t {
     uint8_t         response_type;
@@ -249,7 +254,6 @@ typedef struct xcb_key_press_event_t {
     uint8_t         pad0;
 } xcb_key_press_event_t;
 
-
 #define XCB_KEY_RELEASE ...
 
 typedef xcb_key_press_event_t xcb_key_release_event_t;
@@ -263,9 +267,7 @@ typedef enum xcb_button_mask_t {
     XCB_BUTTON_MASK_ANY = 32768
 } xcb_button_mask_t;
 
-
 #define XCB_BUTTON_PRESS ...
-
 
 typedef struct xcb_button_press_event_t {
     uint8_t         response_type;
@@ -284,7 +286,6 @@ typedef struct xcb_button_press_event_t {
     uint8_t         pad0;
 } xcb_button_press_event_t;
 
-
 #define XCB_BUTTON_RELEASE ...
 
 typedef xcb_button_press_event_t xcb_button_release_event_t;
@@ -294,9 +295,7 @@ typedef enum xcb_motion_t {
     XCB_MOTION_HINT = 1
 } xcb_motion_t;
 
-
 #define XCB_MOTION_NOTIFY ...
-
 
 typedef struct xcb_motion_notify_event_t {
     uint8_t         response_type;
@@ -333,9 +332,7 @@ typedef enum xcb_notify_mode_t {
     XCB_NOTIFY_MODE_WHILE_GRABBED = 3
 } xcb_notify_mode_t;
 
-
 #define XCB_ENTER_NOTIFY ...
-
 
 typedef struct xcb_enter_notify_event_t {
     uint8_t         response_type;
@@ -354,14 +351,11 @@ typedef struct xcb_enter_notify_event_t {
     uint8_t         same_screen_focus;
 } xcb_enter_notify_event_t;
 
-
 #define XCB_LEAVE_NOTIFY ...
 
 typedef xcb_enter_notify_event_t xcb_leave_notify_event_t;
 
-
 #define XCB_FOCUS_IN ...
-
 
 typedef struct xcb_focus_in_event_t {
     uint8_t      response_type;
@@ -372,23 +366,18 @@ typedef struct xcb_focus_in_event_t {
     uint8_t      pad0[3];
 } xcb_focus_in_event_t;
 
-
 #define XCB_FOCUS_OUT ...
 
 typedef xcb_focus_in_event_t xcb_focus_out_event_t;
 
-
 #define XCB_KEYMAP_NOTIFY ...
-
 
 typedef struct xcb_keymap_notify_event_t {
     uint8_t response_type;
     uint8_t keys[31];
 } xcb_keymap_notify_event_t;
 
-
 #define XCB_EXPOSE ...
-
 
 typedef struct xcb_expose_event_t {
     uint8_t      response_type;
@@ -403,9 +392,7 @@ typedef struct xcb_expose_event_t {
     uint8_t      pad1[2];
 } xcb_expose_event_t;
 
-
 #define XCB_GRAPHICS_EXPOSURE ...
-
 
 typedef struct xcb_graphics_exposure_event_t {
     uint8_t        response_type;
@@ -422,9 +409,7 @@ typedef struct xcb_graphics_exposure_event_t {
     uint8_t        pad1[3];
 } xcb_graphics_exposure_event_t;
 
-
 #define XCB_NO_EXPOSURE ...
-
 
 typedef struct xcb_no_exposure_event_t {
     uint8_t        response_type;
@@ -442,9 +427,7 @@ typedef enum xcb_visibility_t {
     XCB_VISIBILITY_FULLY_OBSCURED = 2
 } xcb_visibility_t;
 
-
 #define XCB_VISIBILITY_NOTIFY ...
-
 
 typedef struct xcb_visibility_notify_event_t {
     uint8_t      response_type;
@@ -455,9 +438,7 @@ typedef struct xcb_visibility_notify_event_t {
     uint8_t      pad1[3];
 } xcb_visibility_notify_event_t;
 
-
 #define XCB_CREATE_NOTIFY ...
-
 
 typedef struct xcb_create_notify_event_t {
     uint8_t      response_type;
@@ -474,9 +455,7 @@ typedef struct xcb_create_notify_event_t {
     uint8_t      pad1;
 } xcb_create_notify_event_t;
 
-
 #define XCB_DESTROY_NOTIFY ...
-
 
 typedef struct xcb_destroy_notify_event_t {
     uint8_t      response_type;
@@ -486,9 +465,7 @@ typedef struct xcb_destroy_notify_event_t {
     xcb_window_t window;
 } xcb_destroy_notify_event_t;
 
-
 #define XCB_UNMAP_NOTIFY ...
-
 
 typedef struct xcb_unmap_notify_event_t {
     uint8_t      response_type;
@@ -500,9 +477,7 @@ typedef struct xcb_unmap_notify_event_t {
     uint8_t      pad1[3];
 } xcb_unmap_notify_event_t;
 
-
 #define XCB_MAP_NOTIFY ...
-
 
 typedef struct xcb_map_notify_event_t {
     uint8_t      response_type;
@@ -514,9 +489,7 @@ typedef struct xcb_map_notify_event_t {
     uint8_t      pad1[3];
 } xcb_map_notify_event_t;
 
-
 #define XCB_MAP_REQUEST ...
-
 
 typedef struct xcb_map_request_event_t {
     uint8_t      response_type;
@@ -526,9 +499,7 @@ typedef struct xcb_map_request_event_t {
     xcb_window_t window;
 } xcb_map_request_event_t;
 
-
 #define XCB_REPARENT_NOTIFY ...
-
 
 typedef struct xcb_reparent_notify_event_t {
     uint8_t      response_type;
@@ -543,9 +514,7 @@ typedef struct xcb_reparent_notify_event_t {
     uint8_t      pad1[3];
 } xcb_reparent_notify_event_t;
 
-
 #define XCB_CONFIGURE_NOTIFY ...
-
 
 typedef struct xcb_configure_notify_event_t {
     uint8_t      response_type;
@@ -563,9 +532,7 @@ typedef struct xcb_configure_notify_event_t {
     uint8_t      pad1;
 } xcb_configure_notify_event_t;
 
-
 #define XCB_CONFIGURE_REQUEST ...
-
 
 typedef struct xcb_configure_request_event_t {
     uint8_t      response_type;
@@ -582,9 +549,7 @@ typedef struct xcb_configure_request_event_t {
     uint16_t     value_mask;
 } xcb_configure_request_event_t;
 
-
 #define XCB_GRAVITY_NOTIFY ...
-
 
 typedef struct xcb_gravity_notify_event_t {
     uint8_t      response_type;
@@ -596,9 +561,7 @@ typedef struct xcb_gravity_notify_event_t {
     int16_t      y;
 } xcb_gravity_notify_event_t;
 
-
 #define XCB_RESIZE_REQUEST ...
-
 
 typedef struct xcb_resize_request_event_t {
     uint8_t      response_type;
@@ -613,12 +576,9 @@ typedef enum xcb_place_t {
     XCB_PLACE_ON_TOP = 0,
     XCB_PLACE_ON_BOTTOM = 1
 
-
 } xcb_place_t;
 
-
 #define XCB_CIRCULATE_NOTIFY ...
-
 
 typedef struct xcb_circulate_notify_event_t {
     uint8_t      response_type;
@@ -631,7 +591,6 @@ typedef struct xcb_circulate_notify_event_t {
     uint8_t      pad2[3];
 } xcb_circulate_notify_event_t;
 
-
 #define XCB_CIRCULATE_REQUEST ...
 
 typedef xcb_circulate_notify_event_t xcb_circulate_request_event_t;
@@ -641,9 +600,7 @@ typedef enum xcb_property_t {
     XCB_PROPERTY_DELETE = 1
 } xcb_property_t;
 
-
 #define XCB_PROPERTY_NOTIFY ...
-
 
 typedef struct xcb_property_notify_event_t {
     uint8_t         response_type;
@@ -656,9 +613,12 @@ typedef struct xcb_property_notify_event_t {
     uint8_t         pad1[3];
 } xcb_property_notify_event_t;
 
+typedef enum xcb_set_mode_t {
+    XCB_SET_MODE_INSERT = 0,
+    XCB_SET_MODE_DELETE = 1
+} xcb_set_mode_t;
 
 #define XCB_SELECTION_CLEAR ...
-
 
 typedef struct xcb_selection_clear_event_t {
     uint8_t         response_type;
@@ -669,9 +629,7 @@ typedef struct xcb_selection_clear_event_t {
     xcb_atom_t      selection;
 } xcb_selection_clear_event_t;
 
-
 #define XCB_SELECTION_REQUEST ...
-
 
 typedef struct xcb_selection_request_event_t {
     uint8_t         response_type;
@@ -685,9 +643,7 @@ typedef struct xcb_selection_request_event_t {
     xcb_atom_t      property;
 } xcb_selection_request_event_t;
 
-
 #define XCB_SELECTION_NOTIFY ...
-
 
 typedef struct xcb_selection_notify_event_t {
     uint8_t         response_type;
@@ -704,16 +660,13 @@ typedef enum xcb_colormap_state_t {
     XCB_COLORMAP_STATE_UNINSTALLED = 0,
     XCB_COLORMAP_STATE_INSTALLED = 1
 
-
 } xcb_colormap_state_t;
 
 typedef enum xcb_colormap_enum_t {
     XCB_COLORMAP_NONE = 0
 } xcb_colormap_enum_t;
 
-
 #define XCB_COLORMAP_NOTIFY ...
-
 
 typedef struct xcb_colormap_notify_event_t {
     uint8_t        response_type;
@@ -726,13 +679,11 @@ typedef struct xcb_colormap_notify_event_t {
     uint8_t        pad1[2];
 } xcb_colormap_notify_event_t;
 
-
 typedef union xcb_client_message_data_t {
     uint8_t  data8[20];
     uint16_t data16[10];
     uint32_t data32[5];
 } xcb_client_message_data_t;
-
 
 typedef struct xcb_client_message_data_iterator_t {
     xcb_client_message_data_t *data;
@@ -740,9 +691,7 @@ typedef struct xcb_client_message_data_iterator_t {
     int                        index;
 } xcb_client_message_data_iterator_t;
 
-
 #define XCB_CLIENT_MESSAGE ...
-
 
 typedef struct xcb_client_message_event_t {
     uint8_t                   response_type;
@@ -759,9 +708,7 @@ typedef enum xcb_mapping_t {
     XCB_MAPPING_POINTER = 2
 } xcb_mapping_t;
 
-
 #define XCB_MAPPING_NOTIFY ...
-
 
 typedef struct xcb_mapping_notify_event_t {
     uint8_t       response_type;
@@ -773,14 +720,11 @@ typedef struct xcb_mapping_notify_event_t {
     uint8_t       pad1;
 } xcb_mapping_notify_event_t;
 
-
 typedef struct xcb_alloc_color_cookie_t {
     unsigned int sequence;
 } xcb_alloc_color_cookie_t;
 
-
 #define XCB_ALLOC_COLOR ...
-
 
 typedef struct xcb_alloc_color_request_t {
     uint8_t        major_opcode;
@@ -792,7 +736,6 @@ typedef struct xcb_alloc_color_request_t {
     uint16_t       blue;
     uint8_t        pad1[2];
 } xcb_alloc_color_request_t;
-
 
 typedef struct xcb_alloc_color_reply_t {
     uint8_t  response_type;
@@ -806,14 +749,11 @@ typedef struct xcb_alloc_color_reply_t {
     uint32_t pixel;
 } xcb_alloc_color_reply_t;
 
-
 typedef struct xcb_alloc_named_color_cookie_t {
     unsigned int sequence;
 } xcb_alloc_named_color_cookie_t;
 
-
 #define XCB_ALLOC_NAMED_COLOR ...
-
 
 typedef struct xcb_alloc_named_color_request_t {
     uint8_t        major_opcode;
@@ -823,7 +763,6 @@ typedef struct xcb_alloc_named_color_request_t {
     uint16_t       name_len;
     uint8_t        pad1[2];
 } xcb_alloc_named_color_request_t;
-
 
 typedef struct xcb_alloc_named_color_reply_t {
     uint8_t  response_type;
@@ -839,14 +778,11 @@ typedef struct xcb_alloc_named_color_reply_t {
     uint16_t visual_blue;
 } xcb_alloc_named_color_reply_t;
 
-
 typedef struct xcb_get_property_cookie_t {
     unsigned int sequence;
 } xcb_get_property_cookie_t;
 
-
 #define XCB_GET_PROPERTY ...
-
 
 typedef struct xcb_get_property_request_t {
     uint8_t      major_opcode;
@@ -859,7 +795,6 @@ typedef struct xcb_get_property_request_t {
     uint32_t     long_length;
 } xcb_get_property_request_t;
 
-
 typedef struct xcb_get_property_reply_t {
     uint8_t    response_type;
     uint8_t    format;
@@ -871,14 +806,11 @@ typedef struct xcb_get_property_reply_t {
     uint8_t    pad0[12];
 } xcb_get_property_reply_t;
 
-
 typedef struct xcb_list_properties_cookie_t {
     unsigned int sequence;
 } xcb_list_properties_cookie_t;
 
-
 #define XCB_LIST_PROPERTIES ...
-
 
 typedef struct xcb_list_properties_request_t {
     uint8_t      major_opcode;
@@ -886,7 +818,6 @@ typedef struct xcb_list_properties_request_t {
     uint16_t     length;
     xcb_window_t window;
 } xcb_list_properties_request_t;
-
 
 typedef struct xcb_list_properties_reply_t {
     uint8_t  response_type;
@@ -897,14 +828,11 @@ typedef struct xcb_list_properties_reply_t {
     uint8_t  pad1[22];
 } xcb_list_properties_reply_t;
 
-
 typedef struct xcb_get_keyboard_mapping_cookie_t {
     unsigned int sequence;
 } xcb_get_keyboard_mapping_cookie_t;
 
-
 #define XCB_GET_KEYBOARD_MAPPING ...
-
 
 typedef struct xcb_get_keyboard_mapping_request_t {
     uint8_t       major_opcode;
@@ -914,7 +842,6 @@ typedef struct xcb_get_keyboard_mapping_request_t {
     uint8_t       count;
 } xcb_get_keyboard_mapping_request_t;
 
-
 typedef struct xcb_get_keyboard_mapping_reply_t {
     uint8_t  response_type;
     uint8_t  keysyms_per_keycode;
@@ -923,21 +850,17 @@ typedef struct xcb_get_keyboard_mapping_reply_t {
     uint8_t  pad0[24];
 } xcb_get_keyboard_mapping_reply_t;
 
-
 typedef struct xcb_get_modifier_mapping_cookie_t {
     unsigned int sequence;
 } xcb_get_modifier_mapping_cookie_t;
 
-
 #define XCB_GET_MODIFIER_MAPPING ...
-
 
 typedef struct xcb_get_modifier_mapping_request_t {
     uint8_t  major_opcode;
     uint8_t  pad0;
     uint16_t length;
 } xcb_get_modifier_mapping_request_t;
-
 
 typedef struct xcb_get_modifier_mapping_reply_t {
     uint8_t  response_type;
@@ -951,9 +874,7 @@ typedef enum xcb_grab_t {
     XCB_GRAB_ANY = 0
 } xcb_grab_t;
 
-
 #define XCB_GRAB_KEY ...
-
 
 typedef struct xcb_grab_key_request_t {
     uint8_t       major_opcode;
@@ -967,9 +888,7 @@ typedef struct xcb_grab_key_request_t {
     uint8_t       pad0[3];
 } xcb_grab_key_request_t;
 
-
 #define XCB_UNGRAB_KEY ...
-
 
 typedef struct xcb_ungrab_key_request_t {
     uint8_t       major_opcode;
@@ -980,18 +899,15 @@ typedef struct xcb_ungrab_key_request_t {
     uint8_t       pad0[2];
 } xcb_ungrab_key_request_t;
 
-
 typedef enum xcb_map_state_t {
     XCB_MAP_STATE_UNMAPPED = 0,
     XCB_MAP_STATE_UNVIEWABLE = 1,
     XCB_MAP_STATE_VIEWABLE = 2
 } xcb_map_state_t;
 
-
 typedef struct xcb_get_window_attributes_cookie_t {
     unsigned int sequence;
 } xcb_get_window_attributes_cookie_t;
-
 
 
 typedef struct xcb_get_window_attributes_request_t {
@@ -1000,7 +916,6 @@ typedef struct xcb_get_window_attributes_request_t {
     uint16_t     length;
     xcb_window_t window;
 } xcb_get_window_attributes_request_t;
-
 
 typedef struct xcb_get_window_attributes_reply_t {
     uint8_t        response_type;
@@ -1025,11 +940,9 @@ typedef struct xcb_get_window_attributes_reply_t {
 } xcb_get_window_attributes_reply_t;
 
 
-
 typedef struct xcb_get_geometry_cookie_t {
     unsigned int sequence;
 } xcb_get_geometry_cookie_t;
-
 
 typedef struct xcb_get_geometry_reply_t {
     uint8_t      response_type;
@@ -1045,14 +958,11 @@ typedef struct xcb_get_geometry_reply_t {
     uint8_t      pad0[2];
 } xcb_get_geometry_reply_t;
 
-
 typedef struct xcb_intern_atom_cookie_t {
     unsigned int sequence;
 } xcb_intern_atom_cookie_t;
 
-
 #define XCB_INTERN_ATOM ...
-
 
 typedef struct xcb_intern_atom_request_t {
     uint8_t  major_opcode;
@@ -1062,7 +972,6 @@ typedef struct xcb_intern_atom_request_t {
     uint8_t  pad0[2];
 } xcb_intern_atom_request_t;
 
-
 typedef struct xcb_intern_atom_reply_t {
     uint8_t    response_type;
     uint8_t    pad0;
@@ -1071,14 +980,11 @@ typedef struct xcb_intern_atom_reply_t {
     xcb_atom_t atom;
 } xcb_intern_atom_reply_t;
 
-
 typedef struct xcb_get_atom_name_cookie_t {
     unsigned int sequence;
 } xcb_get_atom_name_cookie_t;
 
-
 #define XCB_GET_ATOM_NAME ...
-
 
 typedef struct xcb_get_atom_name_request_t {
     uint8_t    major_opcode;
@@ -1086,7 +992,6 @@ typedef struct xcb_get_atom_name_request_t {
     uint16_t   length;
     xcb_atom_t atom;
 } xcb_get_atom_name_request_t;
-
 
 typedef struct xcb_get_atom_name_reply_t {
     uint8_t  response_type;
@@ -1096,7 +1001,6 @@ typedef struct xcb_get_atom_name_reply_t {
     uint16_t name_len;
     uint8_t  pad1[22];
 } xcb_get_atom_name_reply_t;
-
 
 typedef struct xcb_screen_t {
     xcb_window_t   root;
@@ -1174,7 +1078,6 @@ typedef enum xcb_window_class_t {
     XCB_WINDOW_CLASS_INPUT_ONLY = 2
 } xcb_window_class_t;
 
-
 typedef enum xcb_cw_t {
     XCB_CW_BACK_PIXMAP = 1,
     XCB_CW_BACK_PIXEL = 2,
@@ -1191,7 +1094,6 @@ typedef enum xcb_cw_t {
     XCB_CW_DONT_PROPAGATE = 4096,
     XCB_CW_COLORMAP = 8192,
     XCB_CW_CURSOR = 16384
-
 
 } xcb_cw_t;
 
@@ -1220,9 +1122,7 @@ typedef enum xcb_gc_t {
     XCB_GC_DASH_LIST = 2097152,
     XCB_GC_ARC_MODE = 4194304
 
-
 } xcb_gc_t;
-
 
 
 int xcb_flush(xcb_connection_t *c);
@@ -1242,7 +1142,6 @@ xcb_map_window (xcb_connection_t *c  ,
 xcb_void_cookie_t
 xcb_unmap_window (xcb_connection_t *c  ,
                   xcb_window_t      window  );
-
 
 xcb_void_cookie_t
 xcb_change_window_attributes_checked (xcb_connection_t *c  ,
@@ -1291,7 +1190,6 @@ xcb_set_input_focus (xcb_connection_t *c  ,
                      xcb_window_t      focus  ,
                      xcb_timestamp_t   time  );
 
-
 xcb_get_property_cookie_t
 xcb_get_property (xcb_connection_t *c  ,
                   uint8_t           _delete  ,
@@ -1311,7 +1209,6 @@ xcb_get_property_value (const xcb_get_property_reply_t *R  );
 
 int
 xcb_get_property_value_length (const xcb_get_property_reply_t *R  );
-
 
 xcb_get_keyboard_mapping_cookie_t
 xcb_get_keyboard_mapping (xcb_connection_t *c  ,
@@ -1406,7 +1303,6 @@ xcb_intern_atom_reply (xcb_connection_t          *c  ,
                        xcb_intern_atom_cookie_t   cookie  ,
                        xcb_generic_error_t      **e  );
 
-
 xcb_get_atom_name_cookie_t
 xcb_get_atom_name (xcb_connection_t *c  ,
                    xcb_atom_t        atom  );
@@ -1441,7 +1337,6 @@ xcb_create_gc (xcb_connection_t *c  ,
                uint32_t          value_mask  ,
                const uint32_t   *value_list  );
 
-
 xcb_void_cookie_t
 xcb_free_pixmap (xcb_connection_t *c  ,
                  xcb_pixmap_t      pixmap  );
@@ -1462,7 +1357,34 @@ xcb_copy_area (xcb_connection_t *c  ,
                uint16_t          width  ,
                uint16_t          height  );
 
+xcb_void_cookie_t
+xcb_set_selection_owner (xcb_connection_t *c  ,
+                         xcb_window_t      owner  ,
+                         xcb_atom_t        selection  ,
+                         xcb_timestamp_t   time  );
 
+xcb_void_cookie_t
+xcb_change_save_set (xcb_connection_t *c  ,
+                     uint8_t           mode  ,
+                     xcb_window_t      window  );
+
+
+
+xcb_void_cookie_t
+xcb_reparent_window_checked (xcb_connection_t *c  ,
+                             xcb_window_t      window  ,
+                             xcb_window_t      parent  ,
+                             int16_t           x  ,
+                             int16_t           y  );
+
+
+
+xcb_void_cookie_t
+xcb_reparent_window (xcb_connection_t *c  ,
+                     xcb_window_t      window  ,
+                     xcb_window_t      parent  ,
+                     int16_t           x  ,
+                     int16_t           y  );
 
 uint8_t          xcb_aux_get_depth       (xcb_connection_t *c,
                                           xcb_screen_t     *screen);
@@ -1517,7 +1439,6 @@ typedef enum _cairo_font_weight {
     CAIRO_FONT_WEIGHT_NORMAL,
     CAIRO_FONT_WEIGHT_BOLD
 } cairo_font_weight_t;
-
 
 void
 cairo_select_font_face (cairo_t              *cr,

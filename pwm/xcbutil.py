@@ -120,7 +120,7 @@ def get_property_value(property_reply):
         #        else:
         #            s.append(chr(o))
         #else:
-        ret = xcb.ffi.string(value)
+        ret = xcb.ffi.string(value, property_reply.value_len)
 
         return ret
     elif property_reply.format in (16, 32):

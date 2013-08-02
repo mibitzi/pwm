@@ -25,6 +25,7 @@ class Bar:
         self.height = calculate_height()
 
         self.workspaces_end = 0
+        self.systray_width = 0
 
         self.wid = self.create_window()
         self.pixmap = self.create_pixmap()
@@ -164,7 +165,7 @@ class Bar:
         self.show_text(self.workspaces_end + 10, text)
 
     def draw_widgets(self):
-        offset = 2
+        offset = self.systray_width + 5
         for widget in reversed(config.bar.widgets):
             col, text = widget()
 
@@ -208,13 +209,24 @@ class Bar:
         self.draw_window_text()
         self.copy_pixmap()
 
+    def update_systray(self, width):
+        self.systray_width = width
+        update()
+
     def show(self):
         """Map the bar and update it."""
         xcb.core.map_window(self.wid)
-        self.update()
+        update()
 
 
 def setup():
+    global stop_update
+    global update_lock
+    global update_thread
+    stop_update = threading.Event()
+    update_lock = threading.Lock()
+    update_thread = threading.Thread(target=update_loop)
+
     global primary
     primary = Bar()
     primary.show()
@@ -224,12 +236,6 @@ def setup():
     pwm.events.window_unmapped.add(handle_window_unmapped)
     pwm.events.workspace_switched.add(handle_workspace_switched)
 
-    global stop_update
-    global update_lock
-    global update_thread
-    stop_update = threading.Event()
-    update_lock = threading.Lock()
-    update_thread = threading.Thread(target=update_loop)
     update_thread.start()
 
 
@@ -262,6 +268,8 @@ def update():
         try:
             primary.update()
             xcb.core.flush()
+        except:
+            logging.exception("Bar update error")
         finally:
             update_lock.release()
 

@@ -21,10 +21,14 @@ MANAGED_EVENT_MASK = (xcb.EVENT_MASK_ENTER_WINDOW |
                       xcb.EVENT_MASK_PROPERTY_CHANGE)
 
 
-def create(x, y, width, height):
+def create(x, y, width, height, mask=None):
     """Create a new window and return its id."""
 
     wid = xcb.core.generate_id()
+
+    if not mask:
+        mask = xcb.mask([(xcb.CW_BACK_PIXEL, xcb.screen.black_pixel),
+                         (xcb.CW_EVENT_MASK, xcb.EVENT_MASK_EXPOSURE)])
 
     xcb.core.create_window(
         xcb.screen.root_depth,
@@ -36,8 +40,7 @@ def create(x, y, width, height):
         0,  # border
         xcb.WINDOW_CLASS_INPUT_OUTPUT,
         xcb.screen.root_visual,
-        *xcb.mask([(xcb.CW_BACK_PIXEL, xcb.screen.black_pixel),
-                  (xcb.CW_EVENT_MASK, xcb.EVENT_MASK_EXPOSURE)]))
+        *mask)
 
     return wid
 
@@ -102,7 +105,8 @@ def get_name(wid):
 
 
 def configure(wid, **kwargs):
-    """Configure the window and set the given variables.
+    """Configure the window and set the given variables in relation to the
+    workspace.
 
     Arguments can be: x, y, width, height
     """
@@ -135,6 +139,23 @@ def get_geometry(wid):
     return (geo.x, geo.y, geo.width, geo.height)
 
 
+def create_client_message(wid, atom, *data):
+    vals = [
+        xcb.CLIENT_MESSAGE,
+        32,  # Format
+        0,  # Sequence
+        wid,
+        atom
+    ]
+
+    # Every X11 event is 32 bytes long, of which 20 bytes (5 ints) are data.
+    # We need to fill up the bytes which *data did not use with zeros.
+    for i in range(5):
+        vals.append(data[i] if i < len(data) else 0)
+
+    return struct.pack("BBHII5I", *vals)
+
+
 def get_wm_protocols(wid):
     """Return the protocols supported by this window."""
 
@@ -149,20 +170,11 @@ def kill(wid):
     # the hard way.
     atom = pwm.xcbutil.get_atom("WM_DELETE_WINDOW")
     if atom in get_wm_protocols(wid):
-        vals = [
-            33,  # ClientMessageEvent
-            32,  # Format
-            0,
+        event = create_client_message(
             wid,
             pwm.xcbutil.get_atom("WM_PROTOCOLS"),
             atom,
-            xcb.TIME_CURRENT_TIME,
-            0,
-            0,
-            0,
-        ]
-
-        event = struct.pack('BBHII5I', *vals)
+            xcb.CURRENT_TIME)
 
         xcb.core.send_event(False, wid, xcb.EVENT_MASK_NO_EVENT, event)
 

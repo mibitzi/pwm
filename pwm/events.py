@@ -8,9 +8,11 @@ import logging
 
 import pwm
 from pwm.ffi.xcb import xcb, XcbError
+import pwm.xcbutil
 import pwm.windows
 import pwm.workspaces
 import pwm.keybind
+import pwm.systray
 
 
 class Event(set):
@@ -89,9 +91,13 @@ def handle(event):
 
     elif etype == xcb.PROPERTY_NOTIFY:
         event = xcb.ffi.cast("xcb_property_notify_event_t*", event)
-        win = event.window
-        if win in pwm.windows.managed:
-            window_property_changed(win)
+
+        if event.atom == pwm.xcbutil.get_atom("_XEMBED_INFO"):
+            pwm.systray.handle_property_notify(event)
+        else:
+            win = event.window
+            if win in pwm.windows.managed:
+                window_property_changed(win)
 
     elif etype == xcb.MAPPING_NOTIFY:
         event = xcb.ffi.cast("xcb_mapping_notify_event_t*", event)
@@ -101,8 +107,10 @@ def handle(event):
         event = xcb.ffi.cast("xcb_key_press_event_t*", event)
         pwm.config.handle_key_press_event(event)
 
-    else:
-        logging.debug("Unhandled event, type %d" % etype)
+    elif etype == xcb.CLIENT_MESSAGE:
+        event = xcb.ffi.cast("xcb_client_message_event_t*", event)
+        if event.type == pwm.xcbutil.get_atom("_NET_SYSTEM_TRAY_OPCODE"):
+            pwm.systray.handle_client_message(event)
 
 
 def handle_focus(wid):
@@ -115,3 +123,5 @@ def handle_unmap(wid):
     if wid in pwm.windows.managed:
         pwm.windows.unmanage(wid)
         window_unmapped(wid)
+    elif wid in pwm.systray.clients:
+        pwm.systray.handle_unmap(wid)
