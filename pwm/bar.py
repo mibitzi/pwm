@@ -40,7 +40,12 @@ class Bar:
         xcb.core.free_gc(self.gc)
 
     def create_window(self):
-        return pwm.windows.create(0, 0, self.width, self.height)
+        mask = [(xcb.CW_OVERRIDE_REDIRECT, 1),
+                (xcb.CW_BACK_PIXEL, color.get_pixel(config.bar.background)),
+                (xcb.CW_EVENT_MASK, xcb.EVENT_MASK_EXPOSURE)]
+
+        return pwm.windows.create(0, 0, self.width, self.height,
+                                  xcb.mask(mask))
 
     def create_pixmap(self):
         pixmap = xcb.core.generate_id()

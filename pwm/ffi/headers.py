@@ -1002,6 +1002,34 @@ typedef struct xcb_get_atom_name_reply_t {
     uint8_t  pad1[22];
 } xcb_get_atom_name_reply_t;
 
+
+typedef struct xcb_query_tree_cookie_t {
+    unsigned int sequence;
+} xcb_query_tree_cookie_t;
+
+
+#define XCB_QUERY_TREE ...
+
+
+typedef struct xcb_query_tree_request_t {
+    uint8_t      major_opcode;
+    uint8_t      pad0;
+    uint16_t     length;
+    xcb_window_t window;
+} xcb_query_tree_request_t;
+
+
+typedef struct xcb_query_tree_reply_t {
+    uint8_t      response_type;
+    uint8_t      pad0;
+    uint16_t     sequence;
+    uint32_t     length;
+    xcb_window_t root;
+    xcb_window_t parent;
+    uint16_t     children_len;
+    uint8_t      pad1[14];
+} xcb_query_tree_reply_t;
+
 typedef struct xcb_screen_t {
     xcb_window_t   root;
     xcb_colormap_t default_colormap;
@@ -1385,6 +1413,21 @@ xcb_reparent_window (xcb_connection_t *c  ,
                      xcb_window_t      parent  ,
                      int16_t           x  ,
                      int16_t           y  );
+
+xcb_query_tree_cookie_t
+xcb_query_tree (xcb_connection_t *c  ,
+                xcb_window_t      window  );
+
+xcb_window_t *
+xcb_query_tree_children (const xcb_query_tree_reply_t *R  );
+
+int
+xcb_query_tree_children_length (const xcb_query_tree_reply_t *R  );
+
+xcb_query_tree_reply_t *
+xcb_query_tree_reply (xcb_connection_t         *c  ,
+                      xcb_query_tree_cookie_t   cookie  ,
+                      xcb_generic_error_t     **e  );
 
 uint8_t          xcb_aux_get_depth       (xcb_connection_t *c,
                                           xcb_screen_t     *screen);

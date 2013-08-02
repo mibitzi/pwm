@@ -39,6 +39,7 @@ def main():
     pwm.systray.setup()
     pwm.keybind.update_keyboard_mapping()
     pwm.config.setup_keys()
+    pwm.windows.manage_existing()
 
     logging.info("Entering main event loop...")
     pwm.events.loop()

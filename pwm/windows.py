@@ -55,8 +55,17 @@ def destroy(wid):
     xcb.core.destroy_window(wid)
 
 
-def manage(wid):
+def manage(wid, only_if_mapped=False):
     if wid in managed:
+        return
+
+    attr = xcb.core.get_window_attributes(wid).reply()
+
+    if only_if_mapped and attr.map_state != xcb.MAP_STATE_VIEWABLE:
+        return
+
+    # Don't manage windows with the override_redirect flag.
+    if attr.override_redirect:
         return
 
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
@@ -79,6 +88,17 @@ def unmanage(wid):
 
     if focused == wid:
         handle_focus(pwm.workspaces.current().top_focus_priority())
+
+
+def manage_existing():
+    """Go through all existing windows and manage them."""
+
+    # Get the tree of windows whose parent is the root window (= all)
+    reply = xcb.core.query_tree(xcb.screen.root).reply()
+    children = xcb.query_tree_children(reply)
+
+    for i in range(xcb.query_tree_children_length(reply)):
+        manage(children[i], True)
 
 
 def is_mapped(wid):
