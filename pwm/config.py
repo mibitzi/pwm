@@ -3,8 +3,8 @@
 
 from __future__ import division, absolute_import, print_function
 
-import imp
 import logging
+from importlib.machinery import SourceFileLoader
 
 import pwm.keybind
 from pwm.ffi.xcb import xcb
@@ -20,7 +20,7 @@ class Config:
 
     def load(self):
         self.loaded = True
-        self.data = imp.load_source("config", "config.py")
+        self.data = SourceFileLoader("config", "config.py").load_module()
 
     def __getattr__(self, name):
         if not self.loaded:
