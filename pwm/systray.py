@@ -34,7 +34,7 @@ def setup():
     global selection_window
     selection_window = pwm.windows.create(
         -1, -1, 1, 1, xcb.mask((xcb.CW_OVERRIDE_REDIRECT, 1)))
-    pwm.windows.show(selection_window)
+    xcb.core.map_window(selection_window)
 
     # Get the selection
     global tray_atom

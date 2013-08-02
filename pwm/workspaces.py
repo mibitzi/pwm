@@ -30,11 +30,13 @@ class Workspace:
 
     def hide(self):
         for w in self.windows:
-            pwm.windows.hide(w)
+            # The next UnmapNotifyEvent for this window has to be ignored
+            pwm.windows.ignore_unmaps[w] += 1
+            xcb.core.unmap_window(w)
 
     def show(self):
         for w in self.windows:
-            pwm.windows.show(w)
+            xcb.core.map_window(w)
 
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
@@ -50,7 +52,7 @@ class Workspace:
             self.layout.add_window(wid, column, row)
 
             if current() == self:
-                pwm.windows.show(wid)
+                xcb.core.map_window(wid)
 
     def remove_window(self, wid):
         with pwm.windows.no_enter_notify_event():

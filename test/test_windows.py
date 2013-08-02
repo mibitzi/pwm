@@ -28,16 +28,6 @@ class TestWindow(unittest.TestCase):
         self.assertEqual(width, 300 - 2*config.window.border)
         self.assertEqual(height, 400 - 2*config.window.border)
 
-    def test_show(self):
-        pwm.windows.hide(self.wid)
-        pwm.windows.show(self.wid)
-
-        self.assertTrue(pwm.windows.is_mapped(self.wid))
-
-    def test_hide(self):
-        pwm.windows.hide(self.wid)
-        self.assertFalse(pwm.windows.is_mapped(self.wid))
-
     def test_manage(self):
         win = util.create_window()
         self.assertIn(win, pwm.windows.managed)

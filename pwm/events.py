@@ -78,8 +78,7 @@ def handle(event):
 
     elif etype == xcb.UNMAP_NOTIFY:
         event = xcb.ffi.cast("xcb_unmap_notify_event_t*", event)
-        if event.event != xcb.screen.root:
-            handle_unmap(event.window)
+        handle_unmap(event.window)
 
     elif etype == xcb.DESTROY_NOTIFY:
         event = xcb.ffi.cast("xcb_destroy_notify_event_t*", event)
@@ -121,7 +120,11 @@ def handle_focus(wid):
 
 def handle_unmap(wid):
     if wid in pwm.windows.managed:
-        pwm.windows.unmanage(wid)
-        window_unmapped(wid)
+        if pwm.windows.ignore_unmaps.get(wid, 0) == 0:
+            pwm.windows.unmanage(wid)
+            window_unmapped(wid)
+        else:
+            pwm.windows.ignore_unmaps[wid] -= 1
+
     elif wid in pwm.systray.clients:
         pwm.systray.handle_unmap(wid)

@@ -69,9 +69,13 @@ class TestWorkspaces(unittest.TestCase):
 
     def test_hide(self):
         wid = util.create_window()
-
         self.workspace.hide()
         self.assertFalse(pwm.windows.is_mapped(wid))
+
+    def test_hide_ignore_unmaps(self):
+        wid = util.create_window()
+        self.workspace.hide()
+        self.assertEqual(pwm.windows.ignore_unmaps[wid], 1)
 
     def test_top_focus_priority(self):
         wid1 = util.create_window()

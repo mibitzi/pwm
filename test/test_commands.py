@@ -42,6 +42,11 @@ class TestCommands(unittest.TestCase):
         pwm.commands.send_to_workspace(1)
         self.assertIn(wid, pwm.workspaces.workspaces[1].windows)
 
+    def test_send_to_workspace_ignore_unmap(self):
+        wid = util.create_window()
+        pwm.commands.send_to_workspace(1)
+        self.assertEqual(pwm.windows.ignore_unmaps[wid], 1)
+
     def test_send_to_workspace_focus(self):
         util.create_window()
         pwm.commands.send_to_workspace(1)

@@ -7,6 +7,7 @@ import logging
 import os
 
 import pwm
+from pwm.ffi.xcb import xcb
 import pwm.workspaces
 
 
@@ -242,7 +243,11 @@ def send_to_workspace(workspace):
         return
 
     pwm.workspaces.current().remove_window(wid)
-    pwm.windows.hide(wid)
+
+    # Prevent this window from sending a UnmapNotifyEvent, then unmap it
+    pwm.windows.ignore_unmaps[wid] += 1
+    xcb.core.unmap_window(wid)
+
     new_ws = pwm.workspaces.workspaces[workspace]
     new_ws.add_window(wid)
     pwm.windows.managed[wid] = new_ws

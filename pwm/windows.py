@@ -16,6 +16,11 @@ import pwm.xcbutil
 managed = {}
 focused = None
 
+# Some UnmapNotifyEvents, like those generated when switching workspaces have
+# to be ignored. Every window has a key in ignore_unmaps with a value
+# indicating how many future UnmapNotifyEvents have to be ignored.
+ignore_unmaps = {}
+
 MANAGED_EVENT_MASK = (xcb.EVENT_MASK_ENTER_WINDOW |
                       xcb.EVENT_MASK_FOCUS_CHANGE |
                       xcb.EVENT_MASK_PROPERTY_CHANGE)
@@ -57,6 +62,7 @@ def manage(wid):
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
 
     managed[wid] = pwm.workspaces.current()
+    ignore_unmaps[wid] = 0
     pwm.workspaces.current().add_window(wid)
 
     handle_focus(wid)
@@ -68,20 +74,11 @@ def unmanage(wid):
 
     ws = managed[wid]
     ws.remove_window(wid)
+    del ignore_unmaps[wid]
     del managed[wid]
 
     if focused == wid:
         handle_focus(pwm.workspaces.current().top_focus_priority())
-
-
-def show(wid):
-    """Map the given window."""
-    xcb.core.map_window(wid)
-
-
-def hide(wid):
-    """Unmap the given window."""
-    xcb.core.unmap_window(wid)
 
 
 def is_mapped(wid):
