@@ -15,17 +15,12 @@ grabbed_keys = {}
 
 class Config:
     def __init__(self):
-        self.loaded = False
         self.data = None
 
     def load(self):
-        self.loaded = True
         self.data = SourceFileLoader("config", "config.py").load_module()
 
     def __getattr__(self, name):
-        if not self.loaded:
-            self.load()
-
         return getattr(self.data, name)
 
 

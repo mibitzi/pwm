@@ -5,16 +5,15 @@ from __future__ import division, absolute_import, print_function
 
 import unittest
 
-import test.util as util
 import pwm.scheduler
 
 
 class TestState(unittest.TestCase):
     def setUp(self):
-        util.setup()
+        pwm.scheduler.setup()
 
     def tearDown(self):
-        util.tear_down()
+        pwm.scheduler.destroy()
 
     def test_add(self):
         pwm.scheduler.add(lambda: None, 1)

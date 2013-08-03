@@ -3,6 +3,7 @@
 
 from __future__ import division, absolute_import, print_function
 
+from pwm.config import config
 from pwm.ffi.xcb import xcb
 import pwm.xcbutil
 import pwm.bar
@@ -13,6 +14,8 @@ created_windows = []
 
 
 def setup():
+    config.load()
+
     # To increase test speed we only want to connect once
     global connected
     if not connected:

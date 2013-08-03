@@ -63,6 +63,7 @@ def remove(func):
 
 def start():
     """Active the scheduler thread and start processing the event functions."""
+    logging.info("Starting scheduler...")
     thread.start()
 
 
@@ -74,8 +75,7 @@ def _loop():
 def process_next():
     """Process the next event in the queue.
 
-    If the time for the next event is in the future, process_next will block
-    until that time.
+    If the time for the next event is in the future, block until that time.
     """
     event = None
     with lock:

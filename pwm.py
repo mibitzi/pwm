@@ -34,10 +34,6 @@ def main():
 
     args = parser.parse_args()
 
-    loglevel = config.loglevel
-    if args.loglevel:
-        loglevel = args.loglevel
-
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s:%(levelname)s:%(message)s',
@@ -45,10 +41,18 @@ def main():
 
     logging.info("Startup...")
 
+    logging.info("Loading config...")
+    config.load()
+
+    # Loglevel passed via the command line has higher priority
+    loglevel = config.loglevel
+    if args.loglevel:
+        loglevel = args.loglevel
+
     loglevel = loglevel.upper()
     if loglevel != "INFO":
+        logging.info("Changing loglevel to %s..." % loglevel)
         logging.getLogger().setLevel(loglevel)
-        logging.info("Changed to loglevel %s" % loglevel)
 
     xcb.connect()
     pwm.xcbutil.setup_root_window()
@@ -82,8 +86,11 @@ def main():
 
     if pwm.restart:
         logging.info("Restarting...")
+
+        # Make sure to pass the restore flag
         if not args.restore:
             sys.argv.append("-r")
+
         os.execv(sys.argv[0], sys.argv)
 
 if __name__ == "__main__":
