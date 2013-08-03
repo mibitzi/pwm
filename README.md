@@ -9,3 +9,6 @@ Dependencies
 * libxcb
 * xcb-util
 * cairo
+
+PWM uses python-cffi to communicate directly with xcb and cairo.
+Therefore no further wrapper libraries are needed.
