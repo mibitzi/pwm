@@ -25,13 +25,7 @@ def setup():
 
 
 def tear_down():
-    global created_windows
-    for wid, managed in created_windows:
-        if managed:
-            pwm.windows.unmanage(wid)
-        pwm.windows.destroy(wid)
-    created_windows = []
-
+    destroy_created_windows()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
 
@@ -48,3 +42,16 @@ def create_window(manage=True):
     created_windows.append((wid, manage))
 
     return wid
+
+
+def destroy_created_windows():
+    """Destroy all created windows.
+
+    This function will be called during tear_down().
+    """
+    global created_windows
+    for wid, managed in created_windows:
+        if managed:
+            pwm.windows.unmanage(wid)
+        pwm.windows.destroy(wid)
+    created_windows = []

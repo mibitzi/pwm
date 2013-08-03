@@ -4,6 +4,7 @@
 
 from __future__ import division, absolute_import, print_function
 
+import argparse
 import logging
 import os
 import sys
@@ -17,9 +18,25 @@ import pwm.bar
 import pwm.systray
 import pwm.workspaces
 import pwm.keybind
+import pwm.state
 
 
 def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-l", "--loglevel", help="the level of log verbosity",
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR",
+                                 "CRITICAL"])
+    parser.add_argument("-r", "--restore",
+                        help="automatically set when restarting",
+                        action="store_true")
+
+    args = parser.parse_args()
+
+    loglevel = config.loglevel
+    if args.loglevel:
+        loglevel = args.loglevel
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s:%(levelname)s:%(message)s',
@@ -27,14 +44,19 @@ def main():
 
     logging.info("Startup...")
 
-    loglevel = config.loglevel.upper()
+    loglevel = loglevel.upper()
     if loglevel != "INFO":
-        logging.getLogger().setLevel(getattr(logging, loglevel))
+        logging.getLogger().setLevel(loglevel)
         logging.info("Changed to loglevel %s" % loglevel)
 
     xcb.connect()
     pwm.xcbutil.setup_root_window()
     pwm.workspaces.setup()
+
+    if args.restore:
+        logging.info("Restoring state...")
+        pwm.state.restore()
+
     pwm.bar.setup()
     pwm.systray.setup()
     pwm.keybind.update_keyboard_mapping()
@@ -45,6 +67,10 @@ def main():
     pwm.events.loop()
 
     logging.info("Shutting down...")
+
+    if pwm.restart:
+        pwm.state.store()
+
     pwm.systray.destroy()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
@@ -52,6 +78,8 @@ def main():
 
     if pwm.restart:
         logging.info("Restarting...")
+        if not args.restore:
+            sys.argv.append("-r")
         os.execv(sys.argv[0], sys.argv)
 
 if __name__ == "__main__":

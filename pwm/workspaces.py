@@ -86,7 +86,7 @@ def setup():
     Set up all workspaces.
     """
     global workspaces
-    workspaces = [Workspace() for i in range(0, config.workspaces)]
+    workspaces = [Workspace() for i in range(config.workspaces)]
 
     global current_workspace_index
     current_workspace_index = 0
@@ -138,6 +138,6 @@ def opened():
     the current workspace.
     """
 
-    for i in range(0, config.workspaces):
+    for i in range(config.workspaces):
         if i == current_workspace_index or workspaces[i].windows:
             yield i, workspaces[i]
