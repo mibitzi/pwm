@@ -4,9 +4,9 @@
 from __future__ import division, absolute_import, print_function
 
 import time
-import heapq
-import threading
 from collections import namedtuple
+from heapq import heappush, heappop, heapify
+import threading
 import logging
 
 
@@ -51,7 +51,7 @@ def add(func, interval):
     again.
     """
     with lock:
-        heapq.heappush(queue, Event(time.monotonic()+interval, interval, func))
+        heappush(queue, Event(time.monotonic()+interval, interval, func))
 
 
 def remove(func):
@@ -59,6 +59,7 @@ def remove(func):
     with lock:
         global queue
         queue = [f for f in queue if f[2] != func]
+        heapify(queue)
 
 
 def start():
@@ -83,7 +84,7 @@ def process_next():
             stop_event.wait(0.5)
             return
 
-        event = heapq.heappop(queue)
+        event = heappop(queue)
 
     now = time.monotonic()
     if event.time > now and stop_event.wait(event.time-now):
