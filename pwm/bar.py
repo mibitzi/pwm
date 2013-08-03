@@ -209,6 +209,9 @@ class Bar:
 
     def update(self):
         """Update the bar."""
+
+        # We need a lock here because `update` will be called by the scheduler,
+        # which is in a different thread.
         if self.update_lock.acquire(False):
             try:
                 self.draw_background()
