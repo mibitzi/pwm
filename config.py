@@ -85,8 +85,8 @@ keys = [
 
 # Keys for every workspace.
 # Note that workspace indices are zero-based.
-for i in range(1, 10):
-    keys.append(("Mod4-%d" % i, func(cmd.switch_workspace, (i-1))))
-    keys.append(("Shift-Mod4-%d" % i, func(cmd.send_to_workspace, (i-1))))
+for i in range(9):
+    keys.append(("Mod4-{}".format(i+1), func(cmd.switch_workspace, i)))
+    keys.append(("Shift-Mod4-{}".format(i+1), func(cmd.send_to_workspace, i)))
 keys.append(("Mod4-0", func(cmd.switch_workspace, 9)))
 keys.append(("Shift-Mod4-0", func(cmd.send_to_workspace, 9)))
