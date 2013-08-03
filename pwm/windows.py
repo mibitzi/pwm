@@ -4,6 +4,7 @@
 from __future__ import division, absolute_import, print_function
 
 from contextlib import contextmanager
+from collections import defaultdict
 import struct
 
 from pwm.ffi.xcb import xcb
@@ -19,7 +20,7 @@ focused = None
 # Some UnmapNotifyEvents, like those generated when switching workspaces have
 # to be ignored. Every window has a key in ignore_unmaps with a value
 # indicating how many future UnmapNotifyEvents have to be ignored.
-ignore_unmaps = {}
+ignore_unmaps = defaultdict(int)
 
 MANAGED_EVENT_MASK = (xcb.EVENT_MASK_ENTER_WINDOW |
                       xcb.EVENT_MASK_FOCUS_CHANGE |

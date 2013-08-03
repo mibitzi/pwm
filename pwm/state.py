@@ -19,7 +19,6 @@ def store():
         pickler.dump(pwm.workspaces.workspaces)
         pickler.dump(pwm.workspaces.current_workspace_index)
         pickler.dump(pwm.windows.managed)
-        pickler.dump(pwm.windows.ignore_unmaps)
         pickler.dump(pwm.windows.focused)
 
 
@@ -30,5 +29,4 @@ def restore():
         pwm.workspaces.workspaces = unpickler.load()
         pwm.workspaces.current_workspace_index = unpickler.load()
         pwm.windows.managed = unpickler.load()
-        pwm.windows.ignore_unmaps = unpickler.load()
         pwm.windows.handle_focus(unpickler.load())

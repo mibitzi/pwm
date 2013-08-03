@@ -21,7 +21,6 @@ class TestState(unittest.TestCase):
     def reset(self):
         pwm.windows.handle_focus(None)
         pwm.windows.managed = {}
-        pwm.windows.ignore_unmaps = {}
         pwm.workspaces.workspaces = []
         pwm.workspaces.current_workspace_index = 0
 
@@ -32,14 +31,6 @@ class TestState(unittest.TestCase):
         pwm.state.restore()
 
         self.assertIn(wid, pwm.windows.managed)
-
-    def test_windows_ignore_unmaps(self):
-        wid = util.create_window()
-        pwm.state.store()
-        self.reset()
-        pwm.state.restore()
-
-        self.assertIn(wid, pwm.windows.ignore_unmaps)
 
     def test_num_workspaces(self):
         pwm.state.store()
