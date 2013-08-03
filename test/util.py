@@ -20,6 +20,7 @@ def setup():
         pwm.xcbutil.setup_root_window()
         connected = True
 
+    pwm.scheduler.setup()
     pwm.workspaces.setup()
     pwm.bar.setup()
 
@@ -28,6 +29,7 @@ def tear_down():
     destroy_created_windows()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
+    pwm.scheduler.destroy()
 
 
 def create_window(manage=True):

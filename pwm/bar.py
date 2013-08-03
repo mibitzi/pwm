@@ -12,11 +12,9 @@ from pwm.ffi.cairo import cairo
 import pwm.color as color
 import pwm.events
 import pwm.windows
+import pwm.scheduler
 
 primary = None
-update_thread = None
-stop_update = None
-update_lock = None
 
 
 class Bar:
@@ -31,6 +29,8 @@ class Bar:
         self.pixmap = self.create_pixmap()
         self.gc = self.create_gc()
         (self.surface, self.ctx) = self.create_cairo_context()
+
+        self.update_lock = threading.Lock()
 
     def destroy(self):
         pwm.windows.destroy(self.wid)
@@ -208,30 +208,31 @@ class Bar:
                            0, 0, 0, 0, self.width, self.height)
 
     def update(self):
-        self.draw_background()
-        self.draw_open_workspaces()
-        self.draw_widgets()
-        self.draw_window_text()
-        self.copy_pixmap()
+        """Update the bar."""
+        if self.update_lock.acquire(False):
+            try:
+                self.draw_background()
+                self.draw_open_workspaces()
+                self.draw_widgets()
+                self.draw_window_text()
+                self.copy_pixmap()
+                xcb.core.flush()
+            except:
+                logging.exception("Bar update error")
+            finally:
+                self.update_lock.release()
 
     def update_systray(self, width):
         self.systray_width = width
-        update()
+        self.update()
 
     def show(self):
         """Map the bar and update it."""
         xcb.core.map_window(self.wid)
-        update()
+        self.update()
 
 
 def setup():
-    global stop_update
-    global update_lock
-    global update_thread
-    stop_update = threading.Event()
-    update_lock = threading.Lock()
-    update_thread = threading.Thread(target=update_loop)
-
     global primary
     primary = Bar()
     primary.show()
@@ -241,15 +242,11 @@ def setup():
     pwm.events.window_unmapped.add(handle_window_unmapped)
     pwm.events.workspace_switched.add(handle_workspace_switched)
 
-    update_thread.start()
+    pwm.scheduler.add(update, config.bar.interval)
 
 
 def destroy():
-    stop_update.set()
-
-    update_thread.join(config.bar.interval*2)
-    if update_thread.is_alive():
-        logging.error("Bar updater did not stop, will be killed forcefully.")
+    pwm.scheduler.remove(update)
 
     pwm.events.focus_changed.remove(handle_focus_changed)
     pwm.events.window_property_changed.remove(handle_window_property_changed)
@@ -259,24 +256,8 @@ def destroy():
     primary.destroy()
 
 
-def update_loop():
-    """Loop and update the bar until stop_update is set."""
-    while True:
-        if stop_update.wait(config.bar.interval):
-            break
-        update()
-
-
 def update():
-    """Update the bar."""
-    if update_lock.acquire(False):
-        try:
-            primary.update()
-            xcb.core.flush()
-        except:
-            logging.exception("Bar update error")
-        finally:
-            update_lock.release()
+    primary.update()
 
 
 def calculate_height():

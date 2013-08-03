@@ -19,6 +19,7 @@ import pwm.systray
 import pwm.workspaces
 import pwm.keybind
 import pwm.state
+import pwm.scheduler
 
 
 def main():
@@ -57,11 +58,13 @@ def main():
         logging.info("Restoring state...")
         pwm.state.restore()
 
+    pwm.scheduler.setup()
     pwm.bar.setup()
     pwm.systray.setup()
     pwm.keybind.update_keyboard_mapping()
     pwm.config.setup_keys()
     pwm.windows.manage_existing()
+    pwm.scheduler.start()
 
     logging.info("Entering main event loop...")
     pwm.events.loop()
@@ -71,6 +74,7 @@ def main():
     if pwm.restart:
         pwm.state.store()
 
+    pwm.scheduler.destroy()
     pwm.systray.destroy()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
