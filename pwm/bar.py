@@ -143,7 +143,6 @@ class Bar:
 
             # Draw the text
             text = "%d" % (widx+1)
-
             extents = self.text_extents(text)
 
             center_x = left + box_width / 2
