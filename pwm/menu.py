@@ -28,7 +28,6 @@ _ctx = None
 _applications = None
 _filtered = None
 _selection = 0
-
 _typed = ""
 
 
@@ -147,6 +146,7 @@ def _filter_applist():
         #   Inverted score for correct sorting
         #   Name to sort those with the same score (e.g. empty string typed)
         #   Index in case two applications have the same name
+        #   Application information
         _filtered.append((-score, app["name"], idx, app))
 
     _filtered.sort()
