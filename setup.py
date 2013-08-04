@@ -4,7 +4,9 @@ setup(
     name="pwm",
     version="0.1",
     packages=find_packages(),
-    scripts=["pwm.py"],
+    entry_points={
+        "console_scripts": ["pwm = pwm.main:main"]
+    },
     install_requires=["cffi"],
     include_package_data=True,
     test_suite="test",
