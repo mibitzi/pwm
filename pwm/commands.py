@@ -9,6 +9,7 @@ import os
 import pwm
 from pwm.ffi.xcb import xcb
 import pwm.workspaces
+import pwm.menu
 
 
 def test(*args, **kwargs):
@@ -253,3 +254,8 @@ def send_to_workspace(workspace):
     pwm.windows.managed[wid] = new_ws
 
     pwm.windows.handle_focus(pwm.workspaces.current().top_focus_priority())
+
+
+def menu():
+    """Show the application menu."""
+    pwm.menu.show()

@@ -15,6 +15,7 @@ from pwm.ffi.xcb import xcb
 import pwm.xcbutil
 import pwm.events
 import pwm.bar
+import pwm.menu
 import pwm.systray
 import pwm.workspaces
 import pwm.keybind
@@ -64,6 +65,7 @@ def main():
 
     pwm.scheduler.setup()
     pwm.bar.setup()
+    pwm.menu.setup()
     pwm.systray.setup()
     pwm.keybind.update_keyboard_mapping()
     pwm.config.setup_keys()
@@ -80,6 +82,7 @@ def main():
 
     pwm.scheduler.destroy()
     pwm.systray.destroy()
+    pwm.menu.destroy()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
     xcb.core.disconnect()

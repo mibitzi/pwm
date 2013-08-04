@@ -50,7 +50,10 @@ def handle_key_press_event(event):
 
     key = grabbed_keys.get((mods, keycode))
     if key:
-        key[1]()
+        try:
+            key[1]()
+        except:
+            logging.exception("Command error")
 
 
 config = Config()

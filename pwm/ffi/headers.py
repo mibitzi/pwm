@@ -870,6 +870,25 @@ typedef struct xcb_get_modifier_mapping_reply_t {
     uint8_t  pad0[24];
 } xcb_get_modifier_mapping_reply_t;
 
+
+typedef struct xcb_grab_keyboard_cookie_t {
+    unsigned int sequence;
+} xcb_grab_keyboard_cookie_t;
+
+
+#define XCB_GRAB_KEYBOARD ...
+
+
+typedef struct xcb_grab_keyboard_reply_t {
+    uint8_t  response_type;
+    uint8_t  status;
+    uint16_t sequence;
+    uint32_t length;
+} xcb_grab_keyboard_reply_t;
+
+
+#define XCB_UNGRAB_KEYBOARD ...
+
 typedef enum xcb_grab_t {
     XCB_GRAB_ANY = 0
 } xcb_grab_t;
@@ -1428,6 +1447,26 @@ xcb_query_tree_reply_t *
 xcb_query_tree_reply (xcb_connection_t         *c  ,
                       xcb_query_tree_cookie_t   cookie  ,
                       xcb_generic_error_t     **e  );
+
+xcb_grab_keyboard_cookie_t
+xcb_grab_keyboard (xcb_connection_t *c  ,
+                   uint8_t           owner_events  ,
+                   xcb_window_t      grab_window  ,
+                   xcb_timestamp_t   time  ,
+                   uint8_t           pointer_mode  ,
+                   uint8_t           keyboard_mode  );
+
+
+xcb_grab_keyboard_reply_t *
+xcb_grab_keyboard_reply (xcb_connection_t            *c  ,
+                         xcb_grab_keyboard_cookie_t   cookie  ,
+                         xcb_generic_error_t        **e  );
+
+xcb_void_cookie_t
+xcb_ungrab_keyboard (xcb_connection_t *c  ,
+                     xcb_timestamp_t   time  );
+
+
 
 uint8_t          xcb_aux_get_depth       (xcb_connection_t *c,
                                           xcb_screen_t     *screen);

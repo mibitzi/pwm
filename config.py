@@ -65,7 +65,7 @@ keys = [
     ("Mod4-Shift-r", cmd.restart),
     ("Mod4-q", cmd.kill),
     ("Mod4-Return", func(cmd.spawn, "urxvt")),
-    ("Mod4-p", func(cmd.spawn, "dmenu_run")),
+    ("Mod4-p", cmd.menu),
 
     ("Mod4-h", func(cmd.focus, "left")),
     ("Mod4-j", func(cmd.focus, "below")),

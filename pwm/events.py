@@ -13,6 +13,7 @@ import pwm.windows
 import pwm.workspaces
 import pwm.keybind
 import pwm.systray
+import pwm.menu
 
 
 class Event(set):
@@ -35,6 +36,9 @@ window_property_changed = Event()
 
 # handler(window)
 window_unmapped = Event()
+
+# handler(window)
+window_exposed = Event()
 
 # handler(index)
 workspace_switched = Event()
@@ -84,6 +88,10 @@ def handle(event):
         event = xcb.ffi.cast("xcb_destroy_notify_event_t*", event)
         handle_unmap(event.window)
 
+    elif etype == xcb.EXPOSE:
+        event = xcb.ffi.cast("xcb_expose_event_t*", event)
+        window_exposed(event.window)
+
     elif etype == xcb.ENTER_NOTIFY:
         event = xcb.ffi.cast("xcb_enter_notify_event_t*", event)
         handle_focus(event.event)
@@ -104,7 +112,10 @@ def handle(event):
 
     elif etype == xcb.KEY_PRESS:
         event = xcb.ffi.cast("xcb_key_press_event_t*", event)
-        pwm.config.handle_key_press_event(event)
+        if pwm.menu.active:
+            pwm.menu.handle_key_press_event(event)
+        else:
+            pwm.config.handle_key_press_event(event)
 
     elif etype == xcb.CLIENT_MESSAGE:
         event = xcb.ffi.cast("xcb_client_message_event_t*", event)

@@ -244,6 +244,7 @@ def setup():
     pwm.events.window_property_changed.add(handle_window_property_changed)
     pwm.events.window_unmapped.add(handle_window_unmapped)
     pwm.events.workspace_switched.add(handle_workspace_switched)
+    pwm.events.window_exposed.add(handle_window_exposed)
 
     pwm.scheduler.add(update, config.bar.interval)
 
@@ -251,6 +252,7 @@ def setup():
 def destroy():
     pwm.scheduler.remove(update)
 
+    pwm.events.window_exposed.remove(handle_window_exposed)
     pwm.events.focus_changed.remove(handle_focus_changed)
     pwm.events.window_property_changed.remove(handle_window_property_changed)
     pwm.events.window_unmapped.remove(handle_window_unmapped)
@@ -284,3 +286,8 @@ def handle_window_unmapped(wid):
 
 def handle_workspace_switched(idx):
     update()
+
+
+def handle_window_exposed(wid):
+    if wid == primary.wid:
+        primary.copy_pixmap()
