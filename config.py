@@ -46,7 +46,10 @@ window = Values(
     border=2,
     focused="#1793D1",
     unfocused="#222222",
-    urgent="#900000")
+    urgent="#900000",
+
+    # How fast should floating windows move
+    move_speed=0.02)
 
 
 workspaces = 10
@@ -66,6 +69,7 @@ keys = [
     ("Mod4-q", cmd.kill),
     ("Mod4-Return", func(cmd.spawn, "urxvt")),
     ("Mod4-p", cmd.menu),
+    ("Mod4-f", cmd.toggle_floating),
 
     ("Mod4-h", func(cmd.focus, "left")),
     ("Mod4-j", func(cmd.focus, "below")),
@@ -80,7 +84,7 @@ keys = [
     ("Control-Mod4-h", func(cmd.resize, (-0.02, 0))),
     ("Control-Mod4-j", func(cmd.resize, (0, 0.02))),
     ("Control-Mod4-k", func(cmd.resize, (0, -0.02))),
-    ("Control-Mod4-l", func(cmd.resize, (0.02, 0)))
+    ("Control-Mod4-l", func(cmd.resize, (0.02, 0))),
 ]
 
 # Keys for every workspace.

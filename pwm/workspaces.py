@@ -26,7 +26,8 @@ class Workspace:
         self.width = xcb.screen.width_in_pixels
         self.height = xcb.screen.height_in_pixels - self.y
 
-        self.layout = pwm.layout.Layout(self)
+        self.tiling = pwm.layout.Tiling(self)
+        self.floating = pwm.layout.Floating(self)
 
     def hide(self):
         for w in self.windows:
@@ -40,24 +41,51 @@ class Workspace:
 
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
-            # Place new window below the one with the highest priority
-            column = 0
-            row = -1
-            priority = self.top_focus_priority()
-            if priority:
-                column, row = self.layout.path(priority)
-                row += 1
+            if pwm.windows.should_float(wid):
+                self.floating.add_window(wid)
+            else:
+                # Place new window below the one with the highest priority
+                column = 0
+                row = -1
+                priority = self.top_focus_priority()
+                if priority:
+                    column, row = self.tiling.path(priority)
+                    row += 1
+
+                self.tiling.add_window(wid, column, row)
 
             self.windows.append(wid)
-            self.layout.add_window(wid, column, row)
-
             if current() == self:
                 xcb.core.map_window(wid)
 
     def remove_window(self, wid):
         with pwm.windows.no_enter_notify_event():
             self.windows.remove(wid)
-            self.layout.remove_window(wid)
+
+            if wid in self.floating.windows:
+                self.floating.remove_window(wid)
+            else:
+                self.tiling.remove_window(wid)
+
+    def move_window(self, wid, direction):
+        with pwm.windows.no_enter_notify_event():
+            if wid in self.floating.windows:
+                self.floating.move(wid, direction)
+            else:
+                self.tiling.move(wid, direction)
+
+    def resize_window(self, wid, delta):
+        with pwm.windows.no_enter_notify_event():
+            if wid in self.floating.windows:
+                self.floating.resize(wid, delta)
+            else:
+                self.tiling.resize(wid, delta)
+
+    def focus_relative(self, wid, pos):
+        """Focus the neighbour of a window."""
+        #attr = getattr(pwm.workspaces.current().layout, window)
+        #pwm.windows.handle_focus(attr(pwm.windows.focused))
+        pass
 
     def top_focus_priority(self):
         """Return the window which is on top of the focus priority list.
@@ -79,6 +107,15 @@ class Workspace:
         # focused.
         self.windows.remove(wid)
         self.windows.append(wid)
+
+    def toggle_floating(self, wid):
+        with pwm.windows.no_enter_notify_event():
+            if wid in self.floating.windows:
+                self.floating.remove_window(wid)
+                self.tiling.add_window(wid)
+            else:
+                self.tiling.remove_window(wid)
+                self.floating.add_window(wid)
 
 
 def setup():
@@ -141,3 +178,21 @@ def opened():
     for i in range(config.workspaces):
         if i == current_workspace_index or workspaces[i].windows:
             yield i, workspaces[i]
+
+
+def send_window_to(wid, workspace):
+    """Send the window to another workspace."""
+
+    old_ws = pwm.windows.managed[wid]
+    old_ws.remove_window(wid)
+
+    # Prevent this window from sending a UnmapNotifyEvent, then unmap it
+    pwm.windows.ignore_unmaps[wid] += 1
+    xcb.core.unmap_window(wid)
+
+    new_ws = workspaces[workspace]
+    new_ws.add_window(wid)
+    pwm.windows.managed[wid] = new_ws
+
+    if current() == old_ws:
+        pwm.windows.handle_focus(old_ws.top_focus_priority())

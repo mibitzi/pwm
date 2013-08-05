@@ -3,6 +3,8 @@
 
 from __future__ import division, absolute_import, print_function
 
+from unittest.mock import patch
+
 from pwm.config import config
 from pwm.ffi.xcb import xcb
 import pwm.xutil
@@ -35,13 +37,14 @@ def tear_down():
     pwm.scheduler.destroy()
 
 
-def create_window(manage=True):
+def create_window(manage=True, floating=False):
     """Create a new window and manage it."""
 
     wid = pwm.windows.create(0, 0, 100, 100)
 
     if manage:
-        pwm.windows.manage(wid)
+        with patch.object(pwm.windows, "should_float", return_value=floating):
+            pwm.windows.manage(wid)
 
     global created_windows
     created_windows.append((wid, manage))

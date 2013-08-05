@@ -3,11 +3,13 @@
 
 from __future__ import division, absolute_import, print_function
 
-import os
-import time
 import unittest
+from unittest.mock import patch
 
+import pwm
 import pwm.commands
+import pwm.spawn
+import pwm.menu
 import test.util as util
 
 
@@ -18,41 +20,81 @@ class TestCommands(unittest.TestCase):
     def tearDown(self):
         util.tear_down()
 
-    def test_switch_workspace(self):
+    def test_quit(self):
+        pwm.commands.quit()
+        self.assertTrue(pwm.shutdown)
+
+    def test_restart(self):
+        pwm.commands.restart()
+        self.assertTrue(pwm.shutdown)
+        self.assertTrue(pwm.restart)
+
+    @patch.object(pwm.workspaces, "switch")
+    def test_switch_workspace(self, switch):
         pwm.commands.switch_workspace(1)
+        switch.assert_called_once_with(1)
 
-        self.assertEqual(pwm.workspaces.current(),
-                         pwm.workspaces.workspaces[1])
+    @patch.object(pwm.windows, "kill")
+    def test_kill(self, kill):
+        wid = util.create_window()
+        pwm.commands.kill()
+        kill.assert_called_once_with(wid)
 
-    def test_spawn(self):
-        tmp_file = "/tmp/test_spawn"
+    @patch.object(pwm.spawn, "spawn")
+    def test_spawn(self, spawn):
+        pwm.commands.spawn("firefox")
+        spawn.assert_called_once_with("firefox")
 
-        if os.path.isfile(tmp_file):
-            os.unlink(tmp_file)
+    def test_move(self):
+        wid = util.create_window()
+        ws = pwm.workspaces.current()
 
-        pwm.commands.spawn("touch %s" % tmp_file)
-        time.sleep(0.05)
+        def _test_direction(direction):
+            with patch.object(ws, "move_window") as move:
+                pwm.commands.move(direction)
 
-        self.assertTrue(os.path.isfile(tmp_file))
+            move.assert_called_once_with(wid, direction)
 
-        os.unlink(tmp_file)
+        for d in ["up", "down", "left", "right"]:
+            _test_direction(d)
 
-    def test_send_to_workspace(self):
+    def test_focus(self):
+        wid = util.create_window()
+        ws = pwm.workspaces.current()
+
+        def _test_focus(pos):
+            with patch.object(ws, "focus_relative") as focus:
+                pwm.commands.focus(pos)
+
+            focus.assert_called_once_with(wid, pos)
+
+        for pos in ["above", "below", "left", "right"]:
+            _test_focus(pos)
+
+    def test_resize(self):
+        wid = util.create_window()
+        ws = pwm.workspaces.current()
+
+        with patch.object(ws, "resize_window") as resize:
+            pwm.commands.resize((0.1, 0.1))
+
+        resize.assert_called_once_with(wid, (0.1, 0.1))
+
+    @patch.object(pwm.workspaces, "send_window_to")
+    def test_send_to_workspace(self, send):
         wid = util.create_window()
         pwm.commands.send_to_workspace(1)
-        self.assertIn(wid, pwm.workspaces.workspaces[1].windows)
+        send.assert_called_once_with(wid, 1)
 
-    def test_send_to_workspace_ignore_unmap(self):
+    def test_toggle_floating(self):
         wid = util.create_window()
-        pwm.commands.send_to_workspace(1)
-        self.assertEqual(pwm.windows.ignore_unmaps[wid], 1)
+        ws = pwm.workspaces.current()
 
-    def test_send_to_workspace_focus(self):
-        util.create_window()
-        pwm.commands.send_to_workspace(1)
-        self.assertIsNone(pwm.windows.focused)
+        with patch.object(ws, "toggle_floating") as toggle:
+            pwm.commands.toggle_floating()
+        toggle.assert_called_once_with(wid)
 
-    def test_send_to_workspace_unmap(self):
-        wid = util.create_window()
-        pwm.commands.send_to_workspace(1)
-        self.assertFalse(pwm.windows.is_mapped(wid))
+    @patch.object(pwm.menu, "show")
+    def test_menu(self, menu):
+        pwm.commands.menu()
+        menu.assert_called_once_with()

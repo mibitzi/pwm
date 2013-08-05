@@ -20,6 +20,15 @@ def setup_root_window():
     cookie.check()
 
 
+def get_wm_normal_hints(wid):
+    cookie = xcb.core.icccm_get_wm_normal_hints(wid).value
+
+    hints = xcb.ffi.new("xcb_size_hints_t*")
+    xcb.core.icccm_get_wm_normal_hints_reply(cookie, hints, xcb.ffi.NULL)
+
+    return hints
+
+
 #
 # From xpybutil
 # https://github.com/BurntSushi/xpybutil/blob/master/xpybutil/util.py

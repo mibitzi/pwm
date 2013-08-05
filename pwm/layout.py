@@ -3,6 +3,8 @@
 
 from __future__ import division, absolute_import, print_function
 
+from pwm.ffi.xcb import xcb
+from pwm.config import config
 import pwm.windows
 
 
@@ -18,10 +20,10 @@ class Window:
         self.wid = wid
 
 
-class Layout:
+class Tiling:
     def __init__(self, workspace):
-        self.columns = [Column(1.0, [])]
         self.workspace = workspace
+        self.columns = [Column(1.0, [])]
 
     def add_window(self, wid, column=0, row=-1):
         if column >= len(self.columns):
@@ -66,7 +68,10 @@ class Layout:
 
         raise ValueError
 
-    def move_up(self, wid):
+    def move(self, wid, direction):
+        getattr(self, "_move_{}".format(direction))(wid)
+
+    def _move_up(self, wid):
         """Move the given window one row up."""
 
         column, row = self.path(wid)
@@ -80,7 +85,7 @@ class Layout:
 
         self.arrange()
 
-    def move_down(self, wid):
+    def _move_down(self, wid):
         """Move the given window one row down."""
 
         column, row = self.path(wid)
@@ -89,12 +94,12 @@ class Layout:
             return
 
         bottom_wid = self.columns[column].windows[row+1].wid
-        self.move_up(bottom_wid)
+        self._move_up(bottom_wid)
 
-    def move_left(self, wid):
+    def _move_left(self, wid):
         self._move_left_right(wid, -1)
 
-    def move_right(self, wid):
+    def _move_right(self, wid):
         self._move_left_right(wid, 1)
 
     def _move_left_right(self, wid, offset):
@@ -273,3 +278,61 @@ class Layout:
 
                 top += height
             left += width
+
+
+class Floating:
+    def __init__(self, workspace):
+        self.workspace = workspace
+        self.windows = []
+        self.dirmap = {"up": (0, -1),
+                       "down": (0, 1),
+                       "left": (-1, 0),
+                       "right": (1, 0)}
+
+    def add_window(self, wid):
+        self.windows.append(wid)
+        hints = pwm.windows.properties[wid]["normal_hints"]
+        width, height = 0, 0
+        x, y = 0, 0
+
+        if hints.flags & xcb.ICCCM_SIZE_HINT_US_SIZE:
+            width, height = hints.width, hints.height
+        else:
+            x, y, width, height = pwm.windows.geometry[wid]
+
+        if (hints.flags & xcb.ICCCM_SIZE_HINT_US_POSITION or
+                hints.flags & xcb.ICCCM_SIZE_HINT_P_POSITION):
+            x, y = hints.x, hints.y
+
+        width = max(10, width)
+        height = max(10, height)
+
+        if x <= 0:
+            x = (self.workspace.width - width) / 2
+        if y <= 0:
+            y = (self.workspace.height - height) / 2
+
+        pwm.windows.configure(wid, x=x, y=y, width=width, height=height)
+
+    def remove_window(self, wid):
+        self.windows.remove(wid)
+
+    def _delta(self, direction, mul):
+        return (self.dirmap[direction][0]*mul, self.dirmap[direction][1]*mul)
+
+    def move(self, wid, direction):
+        x, y, _, _ = pwm.windows.get_geometry(wid)
+        dx, dy = self._delta(direction, config.window.move_speed)
+
+        pwm.windows.configure(wid,
+                              x=x+self.workspace.width*dx,
+                              y=y+self.workspace.height*dy)
+
+    def resize(self, wid, delta):
+        x, y, width, height = pwm.windows.get_geometry(wid)
+        border = config.window.border
+
+        pwm.windows.configure(
+            wid,
+            width=max(10, width+2*border+self.workspace.width*delta[0]),
+            height=max(10, height+2*border+self.workspace.height*delta[1]))

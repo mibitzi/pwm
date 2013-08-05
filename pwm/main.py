@@ -12,7 +12,7 @@ import sys
 import pwm
 from pwm.config import config
 from pwm.ffi.xcb import xcb
-import pwm.xcbutil
+import pwm.xutil
 import pwm.events
 import pwm.bar
 import pwm.menu
@@ -58,7 +58,7 @@ def main():
         logging.getLogger().setLevel(loglevel)
 
     xcb.connect()
-    pwm.xcbutil.setup_root_window()
+    pwm.xutil.setup_root_window()
     pwm.workspaces.setup()
     pwm.scheduler.setup()
     pwm.bar.setup()

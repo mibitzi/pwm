@@ -24,7 +24,7 @@ class TestWindow(unittest.TestCase):
         x, y, width, height = pwm.windows.get_geometry(self.wid)
 
         self.assertEqual(x, 100)
-        self.assertEqual(y, 200 + pwm.workspaces.current().y)
+        self.assertEqual(y, 200)
         self.assertEqual(width, 300 - 2*config.window.border)
         self.assertEqual(height, 400 - 2*config.window.border)
 
