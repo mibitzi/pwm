@@ -24,6 +24,8 @@ import pwm.scheduler
 
 
 def main():
+    """The entry point for pwm."""
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-l", "--loglevel", help="the level of log verbosity",
@@ -58,17 +60,19 @@ def main():
     xcb.connect()
     pwm.xcbutil.setup_root_window()
     pwm.workspaces.setup()
-
-    if args.restore:
-        logging.info("Restoring state...")
-        pwm.state.restore()
-
     pwm.scheduler.setup()
     pwm.bar.setup()
     pwm.menu.setup()
     pwm.systray.setup()
     pwm.keybind.update_keyboard_mapping()
     pwm.config.setup_keys()
+
+    # Restore has to be placed after the setups, otherwise the restored values
+    # will be overwritten again.
+    if args.restore:
+        logging.info("Restoring state...")
+        pwm.state.restore()
+
     pwm.windows.manage_existing()
     pwm.scheduler.start()
 

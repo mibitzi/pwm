@@ -9,10 +9,11 @@ import struct
 
 from pwm.ffi.xcb import xcb
 from pwm.config import config
-import pwm.color
-import pwm.workspaces
+import pwm.xutil
 import pwm.events
-import pwm.xcbutil
+import pwm.workspaces
+import pwm.color
+
 
 managed = {}
 focused = None
@@ -102,6 +103,28 @@ def manage_existing():
         manage(children[i], True)
 
 
+def should_float(wid):
+    """Try to determine if a window should be placed on the floating layer."""
+
+    # Check the _NET_WM_WINDOW_TYPE property to determine the type of this
+    # window.
+    # See the specification for more info:
+    # http://standards.freedesktop.org/wm-spec/wm-spec-latest.html
+
+    wintype = pwm.xutil.get_property_value(
+        pwm.xutil.get_property(wid, "_NET_WM_WINDOW_TYPE").reply())
+
+    for wt in wintype:
+        if (wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_DIALOG") or
+                wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_UTILITY") or
+                wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_TOOLBAR") or
+                wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_SPLASH")):
+
+            return True
+
+    return False
+
+
 def is_mapped(wid):
     """Return True if the window is mapped, otherwise False."""
     attr = xcb.core.get_window_attributes(wid).reply()
@@ -116,8 +139,8 @@ def change_attributes(wid, masks):
 def get_name(wid):
     """Get the window name."""
 
-    name = pwm.xcbutil.get_property_value(
-        pwm.xcbutil.get_property(wid, xcb.ATOM_WM_NAME).reply())
+    name = pwm.xutil.get_property_value(
+        pwm.xutil.get_property(wid, xcb.ATOM_WM_NAME).reply())
 
     return name or ""
 
@@ -177,8 +200,8 @@ def create_client_message(wid, atom, *data):
 def get_wm_protocols(wid):
     """Return the protocols supported by this window."""
 
-    return pwm.xcbutil.get_property_value(
-        pwm.xcbutil.get_property(wid, "WM_PROTOCOLS").reply())
+    return pwm.xutil.get_property_value(
+        pwm.xutil.get_property(wid, "WM_PROTOCOLS").reply())
 
 
 def kill(wid):
@@ -186,11 +209,11 @@ def kill(wid):
 
     # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
     # the hard way.
-    atom = pwm.xcbutil.get_atom("WM_DELETE_WINDOW")
+    atom = pwm.xutil.get_atom("WM_DELETE_WINDOW")
     if atom in get_wm_protocols(wid):
         event = create_client_message(
             wid,
-            pwm.xcbutil.get_atom("WM_PROTOCOLS"),
+            pwm.xutil.get_atom("WM_PROTOCOLS"),
             atom,
             xcb.CURRENT_TIME)
 

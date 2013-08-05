@@ -5,7 +5,7 @@ from __future__ import division, absolute_import, print_function
 
 from pwm.config import config
 from pwm.ffi.xcb import xcb
-import pwm.xcbutil
+import pwm.xutil
 import pwm.bar
 import pwm.workspaces
 
@@ -20,7 +20,7 @@ def setup():
     global connected
     if not connected:
         xcb.connect()
-        pwm.xcbutil.setup_root_window()
+        pwm.xutil.setup_root_window()
         connected = True
 
     pwm.scheduler.setup()

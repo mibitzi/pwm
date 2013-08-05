@@ -8,7 +8,7 @@ import logging
 
 import pwm
 from pwm.ffi.xcb import xcb, XcbError
-import pwm.xcbutil
+import pwm.xutil
 import pwm.windows
 import pwm.workspaces
 import pwm.keybind
@@ -99,7 +99,7 @@ def handle(event):
     elif etype == xcb.PROPERTY_NOTIFY:
         event = xcb.ffi.cast("xcb_property_notify_event_t*", event)
 
-        if event.atom == pwm.xcbutil.get_atom("_XEMBED_INFO"):
+        if event.atom == pwm.xutil.get_atom("_XEMBED_INFO"):
             pwm.systray.handle_property_notify(event)
         else:
             win = event.window
@@ -119,7 +119,7 @@ def handle(event):
 
     elif etype == xcb.CLIENT_MESSAGE:
         event = xcb.ffi.cast("xcb_client_message_event_t*", event)
-        if event.type == pwm.xcbutil.get_atom("_NET_SYSTEM_TRAY_OPCODE"):
+        if event.type == pwm.xutil.get_atom("_NET_SYSTEM_TRAY_OPCODE"):
             pwm.systray.handle_client_message(event)
 
 
