@@ -24,11 +24,14 @@ class Bar:
         self.pixmap = self.create_pixmap()
         self.gc = self.create_gc()
         (self.surface, self.ctx) = self.create_cairo_context()
+        self.extents = self.font_extents()
+        self.center_y = (self.height/2 - self.extents.descent +
+                         self.extents.height/2)+1
 
         self.handlers = pwm.events.HandlerList()
         self.handlers.add(pwm.events.focus_changed, self.handle_focus_changed)
-        self.handlers.add(pwm.events.window_property_changed,
-                          self.handle_window_property_changed)
+        self.handlers.add(pwm.events.window_name_changed,
+                          self.handle_window_name_changed)
         self.handlers.add(pwm.events.window_unmapped,
                           self.handle_window_unmapped)
         self.handlers.add(pwm.events.workspace_switched,
@@ -92,9 +95,9 @@ class Bar:
 
         return (surface, ctx)
 
-    def text_extents(self, text):
-        extents = cairo.ffi.new("cairo_text_extents_t*")
-        self.ctx.text_extents(text, extents)
+    def font_extents(self):
+        extents = cairo.ffi.new("cairo_font_extents_t*")
+        self.ctx.font_extents(extents)
         return extents
 
     def draw_background(self):
@@ -112,10 +115,9 @@ class Bar:
         # Figure out how big the boxes should be
         # Take the size of the text and add padding
         # Note that we have to align everything on 0.5 to avoid blurring
-        extents = self.text_extents(
-            "%d" % (len(pwm.workspaces.workspaces)-1))
+        ws_chars = len("%d" % (len(pwm.workspaces.workspaces)-1))
         padding_left = 5
-        box_width = extents.width + 2*padding_left
+        box_width = self.extents.max_x_advance*ws_chars + 2*padding_left
         padding_top = 0.5
         box_height = self.height - 2*padding_top
 
@@ -148,12 +150,10 @@ class Bar:
 
             # Draw the text
             text = "%d" % (widx+1)
-            extents = self.text_extents(text)
 
             center_x = left + box_width / 2
-            center_y = padding_top + box_height/2
-            self.ctx.move_to(center_x - extents.x_bearing - extents.width/2,
-                             center_y - extents.y_bearing - extents.height/2)
+            self.ctx.move_to(center_x - self.extents.max_x_advance*len(text)/2,
+                             self.center_y)
             self.ctx.set_source_rgb(*color.get_rgb(fg))
             self.ctx.show_text(text)
 
@@ -171,7 +171,8 @@ class Bar:
             return
 
         self.ctx.set_source_rgb(1, 1, 1)
-        self.show_text(self.workspaces_end + 10, text)
+        self.ctx.move_to(self.workspaces_end + 10, self.center_y)
+        self.ctx.show_text(text)
 
     def draw_widgets(self):
         offset = self.systray_width + 5
@@ -181,31 +182,14 @@ class Bar:
             if not col:
                 col = config.bar.foreground
 
-            extents = self.text_extents(text)
-
+            width = self.extents.max_x_advance*len(text)
             self.ctx.move_to(
-                self.width - offset - extents.width - extents.x_bearing,
-                self.height/2 - extents.y_bearing - extents.height/2)
+                self.width - offset - width,
+                self.center_y)
             self.ctx.set_source_rgb(*color.get_rgb(col))
             self.ctx.show_text(text)
 
-            offset += extents.width + 2
-
-    def show_text(self, x, text):
-        """Show text at the given x coordinate and vertically center it.
-
-        Set font face and size as defined in the configuration.
-        Return the used text extents.
-        """
-
-        extents = self.text_extents(text)
-
-        self.ctx.move_to(
-            x,
-            self.height/2 - (extents.y_bearing + extents.height/2))
-        self.ctx.show_text(text)
-
-        return extents
+            offset += width + 2
 
     def copy_pixmap(self):
         xcb.core.copy_area(self.pixmap, self.wid, self.gc,
@@ -213,7 +197,6 @@ class Bar:
 
     def update(self):
         """Update the bar."""
-
         self.draw_background()
         self.draw_open_workspaces()
         self.draw_widgets()
@@ -233,7 +216,7 @@ class Bar:
     def handle_focus_changed(self, wid):
         self.update()
 
-    def handle_window_property_changed(self, wid):
+    def handle_window_name_changed(self, wid):
         if wid == pwm.windows.focused:
             self.update()
 
