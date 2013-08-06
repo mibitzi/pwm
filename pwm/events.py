@@ -26,6 +26,22 @@ class Event(set):
 
     __call__ = fire
 
+
+class HandlerList:
+    """A list of event handlers."""
+    def __init__(self):
+        self.handlers = []
+
+    def add(self, event, handler):
+        self.handlers.append((event, handler))
+        event.add(handler)
+
+    def destroy(self):
+        for event, handler in self.handlers:
+            event.remove(handler)
+        self.handlers = []
+
+
 # handler(window)
 focus_changed = Event()
 
@@ -123,8 +139,7 @@ def handle(event):
 
 def handle_focus(wid):
     if wid in pwm.windows.managed:
-        pwm.windows.handle_focus(wid)
-        pwm.workspaces.current().handle_focus(wid)
+        pwm.windows.focus(wid)
 
 
 def handle_unmap(wid):

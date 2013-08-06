@@ -30,7 +30,22 @@ class Bar:
 
         self.update_lock = threading.Lock()
 
+        self.handlers = pwm.events.HandlerList()
+        self.handlers.add(pwm.events.focus_changed, self.handle_focus_changed)
+        self.handlers.add(pwm.events.window_property_changed,
+                          self.handle_window_property_changed)
+        self.handlers.add(pwm.events.window_unmapped,
+                          self.handle_window_unmapped)
+        self.handlers.add(pwm.events.workspace_switched,
+                          self.handle_workspace_switched)
+        self.handlers.add(pwm.events.window_exposed,
+                          self.handle_window_exposed)
+
+        pwm.scheduler.add(self.update, config.bar.interval)
+
     def destroy(self):
+        pwm.scheduler.remove(self.update)
+        self.handlers.destroy()
         pwm.windows.destroy(self.wid)
         cairo.surface_destroy(self.surface)
         self.ctx.destroy()
@@ -231,60 +246,35 @@ class Bar:
         xcb.core.map_window(self.wid)
         self.update()
 
+    def handle_focus_changed(self, wid):
+        self.update()
+
+    def handle_window_property_changed(self, wid):
+        if wid == pwm.windows.focused:
+            self.update()
+
+    def handle_window_unmapped(self, wid):
+        # Even if it was not the focused window, closing this window
+        # might have caused a workspace to be closed
+        self.update()
+
+    def handle_workspace_switched(self, idx):
+        self.update()
+
+    def handle_window_exposed(self, wid):
+        if wid == self.wid:
+            self.copy_pixmap()
+
 
 def setup():
     global primary
     primary = Bar()
     primary.show()
 
-    pwm.events.focus_changed.add(handle_focus_changed)
-    pwm.events.window_property_changed.add(handle_window_property_changed)
-    pwm.events.window_unmapped.add(handle_window_unmapped)
-    pwm.events.workspace_switched.add(handle_workspace_switched)
-    pwm.events.window_exposed.add(handle_window_exposed)
-
-    pwm.scheduler.add(update, config.bar.interval)
-
 
 def destroy():
-    pwm.scheduler.remove(update)
-
-    pwm.events.window_exposed.remove(handle_window_exposed)
-    pwm.events.focus_changed.remove(handle_focus_changed)
-    pwm.events.window_property_changed.remove(handle_window_property_changed)
-    pwm.events.window_unmapped.remove(handle_window_unmapped)
-    pwm.events.workspace_switched.remove(handle_workspace_switched)
-
     primary.destroy()
-
-
-def update():
-    primary.update()
 
 
 def calculate_height():
     return config.bar.font.size + 8
-
-
-def handle_focus_changed(wid):
-    update()
-
-
-def handle_window_property_changed(wid):
-    if wid == pwm.windows.focused:
-        update()
-
-
-def handle_window_unmapped(wid):
-    # Even if it was not the focused window, closing this window
-    # might have caused a workspace to be closed
-    update()
-
-
-def handle_workspace_switched(idx):
-    update()
-
-
-def handle_window_exposed(wid):
-    if wid == primary.wid:
-        primary.copy_pixmap()
