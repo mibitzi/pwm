@@ -79,15 +79,8 @@ def main():
     eventloop = pwm.events.initiate_loop()
     pwm.widgets.start()
 
-    try:
-        # The worker will run until it receives a shutdown signal
-        pwm.worker.process_tasks()
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    except:
-        logging.exception("Worker process error")
-    finally:
-        pwm.worker.shutdown.set()
+    # The worker will run until it receives a shutdown signal
+    pwm.worker.process_tasks()
 
     eventloop.join(1)
 
