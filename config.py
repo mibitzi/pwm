@@ -70,6 +70,7 @@ keys = [
     ("Mod4-Return", func(cmd.spawn, "urxvt")),
     ("Mod4-p", cmd.menu),
     ("Mod4-f", cmd.toggle_floating),
+    ("Mod4-space", cmd.toggle_focus_layer),
 
     ("Mod4-h", func(cmd.focus, "left")),
     ("Mod4-j", func(cmd.focus, "below")),

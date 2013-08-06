@@ -180,6 +180,15 @@ class TestWorkspace(unittest.TestCase):
         self.tiling.remove_window.assert_called_once_with(wid)
         self.floating.add_window.assert_called_once_with(wid)
 
+    def test_toggle_focus_layer(self):
+        wid_float = util.create_window(floating=True)
+        util.create_window()
+
+        with patch.object(pwm.windows, "focus") as focus:
+            self.workspace.toggle_focus_layer()
+
+        focus.assert_called_once_with(wid_float)
+
 
 class TestWorkspaces(unittest.TestCase):
     def setUp(self):

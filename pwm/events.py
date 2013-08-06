@@ -108,8 +108,8 @@ def handle(event):
 
     elif etype == xcb.ENTER_NOTIFY:
         event = xcb.ffi.cast("xcb_enter_notify_event_t*", event)
-        if event.window in pwm.windows.managed:
-            pwm.windows.focus(event.window)
+        if event.event in pwm.windows.managed:
+            pwm.windows.focus(event.event)
 
     elif etype == xcb.PROPERTY_NOTIFY:
         event = xcb.ffi.cast("xcb_property_notify_event_t*", event)

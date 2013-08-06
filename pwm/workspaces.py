@@ -124,6 +124,14 @@ class Workspace:
 
             self.windows[wid]["floating"] = not self.windows[wid]["floating"]
 
+    def toggle_focus_layer(self):
+        target = not self.windows[pwm.windows.focused]["floating"]
+
+        for win in reversed(self.windows):
+            if self.windows[win]["floating"] == target:
+                pwm.windows.focus(win)
+                return
+
 
 def setup():
     """

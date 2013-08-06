@@ -92,6 +92,14 @@ class TestCommands(unittest.TestCase):
             pwm.commands.toggle_floating()
         toggle.assert_called_once_with(wid)
 
+    def test_toggle_focus_layer(self):
+        util.create_window()
+        ws = pwm.workspaces.current()
+
+        with patch.object(ws, "toggle_focus_layer") as toggle:
+            pwm.commands.toggle_focus_layer()
+        toggle.assert_called_once_with()
+
     @patch.object(pwm.menu, "show")
     def test_menu(self, menu):
         pwm.commands.menu()

@@ -85,6 +85,12 @@ def toggle_floating(focused, ws):
     ws.toggle_floating(focused)
 
 
+@pwm.windows.only_if_focused
+def toggle_focus_layer(focused, ws):
+    """Toggle focus tiling/floating windows."""
+    ws.toggle_focus_layer()
+
+
 def menu():
     """Show the application menu."""
     pwm.menu.show()
