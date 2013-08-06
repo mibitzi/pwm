@@ -94,6 +94,8 @@ def unmanage(wid):
     ws.remove_window(wid)
     del ignore_unmaps[wid]
     del managed[wid]
+    del properties[wid]
+    del geometry[wid]
 
     if focused == wid:
         handle_focus(pwm.workspaces.current().top_focus_priority())
@@ -170,7 +172,7 @@ def configure(wid, **kwargs):
     """Configure the window and set the given variables in relation to the
     workspace.
 
-    Arguments can be: x, y, width, height
+    Arguments can be: x, y, width, height, stackmode
     """
 
     workspace = pwm.workspaces.current()
@@ -193,6 +195,9 @@ def configure(wid, **kwargs):
     if "height" in kwargs:
         values.append((xcb.CONFIG_WINDOW_HEIGHT,
                        int(kwargs["height"] - 2*config.window.border)))
+
+    if "stackmode" in kwargs:
+        values.append((xcb.CONFIG_WINDOW_STACK_MODE, kwargs["stackmode"]))
 
     xcb.core.configure_window(wid, *xcb.mask(values))
     update_geometry(wid)
@@ -217,6 +222,39 @@ def get_geometry(wid):
     ws = pwm.workspaces.current()
     geo = xcb.core.get_geometry(wid).reply()
     return (geo.x-ws.x, geo.y-ws.y, geo.width, geo.height)
+
+
+def prefered_geometry(wid, workspace=None):
+    """Return the preferd geometry for this window."""
+
+    if not workspace:
+        workspace = pwm.workspaces.current()
+
+    hints = properties[wid]["normal_hints"]
+    width, height = 0, 0
+    x, y = 0, 0
+    geo = geometry[wid]
+
+    if hints.flags & xcb.ICCCM_SIZE_HINT_US_SIZE:
+        width, height = hints.width, hints.height
+    else:
+        _, _, width, height = geo
+
+    if (hints.flags & xcb.ICCCM_SIZE_HINT_US_POSITION or
+            hints.flags & xcb.ICCCM_SIZE_HINT_P_POSITION):
+        x, y = hints.x, hints.y
+    else:
+        x, y, _, _ = geo
+
+    width = max(10, width)
+    height = max(10, height)
+
+    if x <= 0 or x >= workspace.width - width:
+        x = (workspace.width - width) / 2
+    if y <= 0 or y >= workspace.height - height:
+        y = (workspace.height - height) / 2
+
+    return x, y, width, height
 
 
 def create_client_message(wid, atom, *data):
@@ -302,6 +340,9 @@ def _handle_focus(wid, focused):
         xcb.core.set_input_focus(xcb.INPUT_FOCUS_POINTER_ROOT,
                                  wid,
                                  xcb.TIME_CURRENT_TIME)
+
+        if managed[wid].windows[wid]["floating"]:
+            configure(wid, stackmode=xcb.STACK_MODE_ABOVE)
 
 
 @contextmanager

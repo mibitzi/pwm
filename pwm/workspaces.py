@@ -4,6 +4,7 @@
 from __future__ import division, absolute_import, print_function
 
 import logging
+from collections import OrderedDict
 
 from pwm.config import config
 from pwm.ffi.xcb import xcb
@@ -18,7 +19,7 @@ current_workspace_index = 0
 
 class Workspace:
     def __init__(self):
-        self.windows = []
+        self.windows = OrderedDict()
 
         self.x = 0
         self.y = pwm.bar.calculate_height()
@@ -41,51 +42,58 @@ class Workspace:
 
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
-            if pwm.windows.should_float(wid):
+            floating = pwm.windows.should_float(wid)
+            if floating:
                 self.floating.add_window(wid)
             else:
                 # Place new window below the one with the highest priority
                 column = 0
                 row = -1
-                priority = self.top_focus_priority()
-                if priority:
-                    column, row = self.tiling.path(priority)
-                    row += 1
+                for priority in reversed(self.windows):
+                    if not self.windows[priority]["floating"]:
+                        column, row = self.tiling.path(priority)
+                        row += 1
+                        break
 
                 self.tiling.add_window(wid, column, row)
 
-            self.windows.append(wid)
+            self.windows[wid] = {"floating": floating}
             if current() == self:
                 xcb.core.map_window(wid)
 
     def remove_window(self, wid):
         with pwm.windows.no_enter_notify_event():
-            self.windows.remove(wid)
-
-            if wid in self.floating.windows:
+            if self.windows[wid]["floating"]:
                 self.floating.remove_window(wid)
             else:
                 self.tiling.remove_window(wid)
 
+            del self.windows[wid]
+
     def move_window(self, wid, direction):
         with pwm.windows.no_enter_notify_event():
-            if wid in self.floating.windows:
+            if self.windows[wid]["floating"]:
                 self.floating.move(wid, direction)
             else:
                 self.tiling.move(wid, direction)
 
     def resize_window(self, wid, delta):
         with pwm.windows.no_enter_notify_event():
-            if wid in self.floating.windows:
+            if self.windows[wid]["floating"]:
                 self.floating.resize(wid, delta)
             else:
                 self.tiling.resize(wid, delta)
 
     def focus_relative(self, wid, pos):
         """Focus the neighbour of a window."""
-        #attr = getattr(pwm.workspaces.current().layout, window)
-        #pwm.windows.handle_focus(attr(pwm.windows.focused))
-        pass
+        rel = None
+        if self.windows[wid]["floating"]:
+            rel = self.floating.relative(wid, pos)
+        else:
+            rel = self.tiling.relative(wid, pos)
+
+        if rel:
+            pwm.windows.handle_focus(rel)
 
     def top_focus_priority(self):
         """Return the window which is on top of the focus priority list.
@@ -93,7 +101,7 @@ class Workspace:
         If there are no windows, return None.
         """
         if self.windows:
-            return self.windows[-1]
+            return next(reversed(self.windows))
         return None
 
     def handle_focus(self, wid):
@@ -102,20 +110,21 @@ class Workspace:
         if wid not in self.windows:
             return
 
-        # Simply remove the window from the list and append it at the end.
+        # Simply move the window to the end of the list.
         # This way all windows will be sorted by how recently they were
         # focused.
-        self.windows.remove(wid)
-        self.windows.append(wid)
+        self.windows.move_to_end(wid)
 
     def toggle_floating(self, wid):
         with pwm.windows.no_enter_notify_event():
-            if wid in self.floating.windows:
+            if self.windows[wid]["floating"]:
                 self.floating.remove_window(wid)
                 self.tiling.add_window(wid)
             else:
                 self.tiling.remove_window(wid)
                 self.floating.add_window(wid)
+
+            self.windows[wid]["floating"] = not self.windows[wid]["floating"]
 
 
 def setup():

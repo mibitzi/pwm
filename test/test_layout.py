@@ -198,57 +198,67 @@ class TestTiling(unittest.TestCase):
         self.assertEqual(self.tiling.columns[0].size, 0.5)
         self.assertEqual(self.tiling.columns[1].size, 0.5)
 
-    def test_above_topmost(self):
+    def test_relative_above_topmost(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1])
-        self.assertEqual(self.tiling.above(self.wid[0]), self.wid[0])
+        self.assertEqual(self.tiling.relative(self.wid[0], "above"),
+                         self.wid[0])
 
     def test_above(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1])
         self.tiling.add_window(self.wid[2])
-        self.assertEqual(self.tiling.above(self.wid[1]), self.wid[0])
+        self.assertEqual(self.tiling.relative(self.wid[1], "above"),
+                         self.wid[0])
 
     def test_below_bottommost(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1])
-        self.assertEqual(self.tiling.below(self.wid[1]), self.wid[1])
+        self.assertEqual(self.tiling.relative(self.wid[1], "below"),
+                         self.wid[1])
 
     def test_below(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1])
         self.tiling.add_window(self.wid[2])
-        self.assertEqual(self.tiling.below(self.wid[1]), self.wid[2])
+        self.assertEqual(self.tiling.relative(self.wid[1], "below"),
+                         self.wid[2])
 
     def test_left_leftmost(self):
         self.tiling.add_window(self.wid[0])
-        self.assertEqual(self.tiling.left(self.wid[0]), self.wid[0])
+        self.assertEqual(self.tiling.relative(self.wid[0], "left"),
+                         self.wid[0])
 
     def test_left(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1], 1)
-        self.assertEqual(self.tiling.left(self.wid[1]), self.wid[0])
+        self.assertEqual(self.tiling.relative(self.wid[1], "left"),
+                         self.wid[0])
 
     def test_left_uneven(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1], 1)
         self.tiling.add_window(self.wid[2], 1)
-        self.assertEqual(self.tiling.left(self.wid[2]), self.wid[0])
+        self.assertEqual(self.tiling.relative(self.wid[2], "left"),
+                         self.wid[0])
 
     def test_right_rightmost(self):
         self.tiling.add_window(self.wid[0])
-        self.assertEqual(self.tiling.right(self.wid[0]), self.wid[0])
+        self.assertEqual(self.tiling.relative(self.wid[0], "right"),
+                         self.wid[0])
 
     def test_right(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1], 1)
-        self.assertEqual(self.tiling.right(self.wid[0]), self.wid[1])
+        self.assertEqual(self.tiling.relative(self.wid[0], "right"),
+                         self.wid[1])
 
     def test_right_uneven(self):
         self.tiling.add_window(self.wid[0])
         self.tiling.add_window(self.wid[1])
         self.tiling.add_window(self.wid[2], 1)
-        self.assertEqual(self.tiling.right(self.wid[0]), self.wid[2])
+        self.assertEqual(self.tiling.relative(self.wid[0], "right"),
+                         self.wid[2])
 
     def test_make_row_space_one(self):
         self.tiling.add_window(self.wid[0])
@@ -375,13 +385,15 @@ class TestFloating(unittest.TestCase):
             pwm.windows.configure(wid, x=x, y=y)
             self.floating.move(wid, direction)
             nx, ny, _, _ = pwm.windows.get_geometry(wid)
-            self.assertEqual((nx, ny), (x+relpos[0], y+relpos[1]))
+            self.assertEqual((nx, ny),
+                             (round(x+relpos[0]), round(y+relpos[1])))
 
-        speed = config.window.move_speed
-        _test_move("right", (speed, 0))
-        _test_move("left", (-speed, 0))
-        _test_move("up", (0, -speed))
-        _test_move("down", (0, speed))
+        speedx = config.window.move_speed*self.floating.workspace.width
+        speedy = config.window.move_speed*self.floating.workspace.height
+        _test_move("right", (speedx, 0))
+        _test_move("left", (-speedx, 0))
+        _test_move("up", (0, -speedy))
+        _test_move("down", (0, speedy))
 
     def test_resize(self):
         wid = util.create_window(floating=True)
@@ -392,5 +404,5 @@ class TestFloating(unittest.TestCase):
         _, _, new_width, new_height = pwm.windows.get_geometry(wid)
         ws = pwm.workspaces.current()
         self.assertEqual(
-            (new_width, new_height), (int(width+ws.width*0.02),
-                                      int(height+ws.height*0.03)))
+            (new_width, new_height), (round(width+ws.width*0.02),
+                                      round(height+ws.height*0.03)))

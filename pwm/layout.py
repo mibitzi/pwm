@@ -3,8 +3,8 @@
 
 from __future__ import division, absolute_import, print_function
 
-from pwm.ffi.xcb import xcb
 from pwm.config import config
+from pwm.ffi.xcb import xcb
 import pwm.windows
 
 
@@ -37,6 +37,7 @@ class Tiling:
             self.make_row_space(column, size)
             self.columns[column].windows.insert(row, Window(size, wid))
 
+        pwm.windows.configure(wid, stackmode=xcb.STACK_MODE_BELOW)
         self.arrange()
 
     def remove_window(self, wid):
@@ -145,7 +146,11 @@ class Tiling:
 
         self.arrange()
 
-    def above(self, wid):
+    def relative(self, wid, pos):
+        """Find the window in relative position to this one."""
+        return getattr(self, "_relative_{}".format(pos))(wid)
+
+    def _relative_above(self, wid):
         """Find the window above the given wid.
 
         If this window is the topmost window, return its wid.
@@ -153,7 +158,7 @@ class Tiling:
         column, row = self.path(wid)
         return wid if row == 0 else self.columns[column].windows[row-1].wid
 
-    def below(self, wid):
+    def _relative_below(self, wid):
         """Find the window below the given wid.
 
         If this window is the bottommost window, return its wid.
@@ -162,7 +167,7 @@ class Tiling:
         return (wid if row == len(self.columns[column].windows)-1
                 else self.columns[column].windows[row+1].wid)
 
-    def left(self, wid):
+    def _relative_left(self, wid):
         """Find the window left of the given wid.
 
         If the window is the leftmost window, return its wid.
@@ -175,7 +180,7 @@ class Tiling:
             left_col = self.columns[column-1]
             return left_col.windows[min(row, len(left_col.windows)-1)].wid
 
-    def right(self, wid):
+    def _relative_right(self, wid):
         """Find the window right of the given wid.
 
         If this window is the rightmost window, return its wid.
@@ -291,28 +296,10 @@ class Floating:
 
     def add_window(self, wid):
         self.windows.append(wid)
-        hints = pwm.windows.properties[wid]["normal_hints"]
-        width, height = 0, 0
-        x, y = 0, 0
 
-        if hints.flags & xcb.ICCCM_SIZE_HINT_US_SIZE:
-            width, height = hints.width, hints.height
-        else:
-            x, y, width, height = pwm.windows.geometry[wid]
-
-        if (hints.flags & xcb.ICCCM_SIZE_HINT_US_POSITION or
-                hints.flags & xcb.ICCCM_SIZE_HINT_P_POSITION):
-            x, y = hints.x, hints.y
-
-        width = max(10, width)
-        height = max(10, height)
-
-        if x <= 0:
-            x = (self.workspace.width - width) / 2
-        if y <= 0:
-            y = (self.workspace.height - height) / 2
-
-        pwm.windows.configure(wid, x=x, y=y, width=width, height=height)
+        x, y, width, height = pwm.windows.prefered_geometry(wid)
+        pwm.windows.configure(wid, x=x, y=y, width=width, height=height,
+                              stackmode=xcb.STACK_MODE_ABOVE)
 
     def remove_window(self, wid):
         self.windows.remove(wid)
@@ -325,14 +312,19 @@ class Floating:
         dx, dy = self._delta(direction, config.window.move_speed)
 
         pwm.windows.configure(wid,
-                              x=x+self.workspace.width*dx,
-                              y=y+self.workspace.height*dy)
+                              x=round(x+self.workspace.width*dx),
+                              y=round(y+self.workspace.height*dy))
 
     def resize(self, wid, delta):
         x, y, width, height = pwm.windows.get_geometry(wid)
         border = config.window.border
 
-        pwm.windows.configure(
-            wid,
-            width=max(10, width+2*border+self.workspace.width*delta[0]),
-            height=max(10, height+2*border+self.workspace.height*delta[1]))
+        width = max(10, round(width+2*border+self.workspace.width*delta[0]))
+        height = max(10, round(height+2*border+self.workspace.height*delta[1]))
+
+        pwm.windows.configure(wid, width=width, height=height)
+
+    def relative(self, wid, pos):
+        idx = self.windows.index(wid)+1
+        return (self.windows[idx] if idx < len(self.windows)
+                else self.windows[0])

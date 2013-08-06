@@ -48,16 +48,16 @@ class TestState(unittest.TestCase):
                          pwm.workspaces.workspaces[0])
 
     def test_workspace_windows(self):
-        wid0 = util.create_window()
+        windows0 = pwm.workspaces.current().windows
         pwm.workspaces.switch(1)
-        wid1 = util.create_window()
+        windows1 = pwm.workspaces.current().windows
 
         pwm.state.store()
         self.reset()
         pwm.state.restore()
 
-        self.assertEqual(pwm.workspaces.workspaces[0].windows, [wid0])
-        self.assertEqual(pwm.workspaces.workspaces[1].windows, [wid1])
+        self.assertEqual(pwm.workspaces.workspaces[0].windows, windows0)
+        self.assertEqual(pwm.workspaces.workspaces[1].windows, windows1)
 
     def test_focused(self):
         wid = util.create_window()

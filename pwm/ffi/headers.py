@@ -83,6 +83,14 @@ typedef enum xcb_config_window_t {
     XCB_CONFIG_WINDOW_STACK_MODE = 64
 } xcb_config_window_t;
 
+typedef enum xcb_stack_mode_t {
+    XCB_STACK_MODE_ABOVE = 0,
+    XCB_STACK_MODE_BELOW = 1,
+    XCB_STACK_MODE_TOP_IF = 2,
+    XCB_STACK_MODE_BOTTOM_IF = 3,
+    XCB_STACK_MODE_OPPOSITE = 4
+} xcb_stack_mode_t;
+
 typedef enum xcb_input_focus_t {
     XCB_INPUT_FOCUS_NONE = 0,
     XCB_INPUT_FOCUS_POINTER_ROOT = 1,
