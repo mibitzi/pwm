@@ -21,6 +21,9 @@ import pwm.state
 import pwm.worker
 
 
+restart = False
+
+
 def main():
     """The entry point for pwm."""
 
@@ -64,11 +67,12 @@ def main():
     pwm.config.setup_keys()
 
     # Restore has to be placed after the setups, otherwise the restored values
-    # will be overwritten again.
+    # would be overwritten again.
     if args.restore:
         logging.info("Restoring state...")
         pwm.state.restore()
 
+    # Manage existing windows after restoring state.
     pwm.windows.manage_existing()
 
     logging.info("Starting threads...")
@@ -83,7 +87,7 @@ def main():
     except:
         logging.exception("Event loop error")
 
-    if pwm.events.restart:
+    if restart:
         logging.info("Storing state...")
         pwm.state.store()
 
@@ -96,7 +100,7 @@ def main():
     pwm.workspaces.destroy()
     xcb.core.disconnect()
 
-    if pwm.events.restart:
+    if restart:
         logging.info("Restarting...")
 
         # Make sure to pass the restore flag

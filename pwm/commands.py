@@ -7,6 +7,7 @@ import pwm.menu
 import pwm.spawn
 import pwm.worker
 import pwm.events
+import pwm.main
 
 
 def quit():
@@ -17,7 +18,7 @@ def quit():
 def restart():
     """Restart pwm."""
     pwm.events.shutdown = True
-    pwm.events.restart = True
+    pwm.main.restart = True
 
 
 def switch_workspace(index):
