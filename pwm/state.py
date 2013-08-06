@@ -27,4 +27,4 @@ def restore():
         pwm.workspaces.workspaces = unpickler.load()
         pwm.workspaces.current_workspace_index = unpickler.load()
         pwm.windows.managed = unpickler.load()
-        pwm.windows.handle_focus(unpickler.load())
+        pwm.windows.focus(unpickler.load())

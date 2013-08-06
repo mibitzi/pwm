@@ -39,13 +39,13 @@ class TestWindow(unittest.TestCase):
         self.assertNotIn(wid, pwm.workspaces.current().windows)
         self.assertNotEqual(wid, pwm.windows.focused)
 
-    def test_handle_focus(self):
+    def test_focus(self):
         wid2 = util.create_window()
-        pwm.windows.handle_focus(wid2)
+        pwm.windows.focus(wid2)
         self.assertEqual(pwm.windows.focused, wid2)
 
-        pwm.windows.handle_focus(self.wid)
+        pwm.windows.focus(self.wid)
         self.assertEqual(pwm.windows.focused, self.wid)
 
-        pwm.windows.handle_focus(None)
+        pwm.windows.focus(None)
         self.assertEqual(pwm.windows.focused, None)

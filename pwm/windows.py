@@ -81,7 +81,7 @@ def manage(wid, only_if_mapped=False):
     ignore_unmaps[wid] = 0
     pwm.workspaces.current().add_window(wid)
 
-    handle_focus(wid)
+    focus(wid)
 
 
 def unmanage(wid):
@@ -96,7 +96,7 @@ def unmanage(wid):
     del geometry[wid]
 
     if focused == wid:
-        handle_focus(pwm.workspaces.current().top_focus_priority())
+        focus(pwm.workspaces.current().top_focus_priority())
 
 
 def manage_existing():
@@ -298,7 +298,7 @@ def kill(wid):
         xcb.core.kill_client(wid)
 
 
-def handle_focus(wid):
+def focus(wid):
     """Focus the window with the given wid.
 
     events.focus_changed will be fired with the new focused window as
@@ -319,6 +319,7 @@ def handle_focus(wid):
     focused = win
     if focused:
         _handle_focus(focused, True)
+        managed[wid].handle_focus(wid)
 
     pwm.events.focus_changed(win)
 

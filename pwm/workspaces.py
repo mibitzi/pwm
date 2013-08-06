@@ -91,7 +91,7 @@ class Workspace:
             rel = self.tiling.relative(wid, pos)
 
         if rel:
-            pwm.windows.handle_focus(rel)
+            pwm.windows.focus(rel)
 
     def top_focus_priority(self):
         """Return the window which is on top of the focus priority list.
@@ -169,7 +169,7 @@ def switch(index):
         current().hide()
 
     current_workspace_index = index
-    pwm.windows.handle_focus(current().top_focus_priority())
+    pwm.windows.focus(current().top_focus_priority())
     pwm.events.workspace_switched(index)
 
 
@@ -202,4 +202,4 @@ def send_window_to(wid, workspace):
     pwm.windows.managed[wid] = new_ws
 
     if current() == old_ws:
-        pwm.windows.handle_focus(old_ws.top_focus_priority())
+        pwm.windows.focus(old_ws.top_focus_priority())

@@ -17,7 +17,7 @@ class TestState(unittest.TestCase):
         util.tear_down()
 
     def reset(self):
-        pwm.windows.handle_focus(None)
+        pwm.windows.focus(None)
         pwm.windows.managed = {}
         pwm.workspaces.workspaces = []
         pwm.workspaces.current_workspace_index = 0
