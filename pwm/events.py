@@ -47,7 +47,7 @@ class HandlerList:
 focus_changed = Event()
 
 # handler(window)
-window_property_changed = Event()
+window_name_changed = Event()
 
 # handler(window)
 window_unmapped = Event()
@@ -107,6 +107,11 @@ def _handle(event):
         event = xcb.ffi.cast("xcb_destroy_notify_event_t*", event)
         handle_unmap(event.window)
 
+    elif etype == xcb.CONFIGURE_REQUEST:
+        event = xcb.ffi.cast("xcb_configure_request_event_t*", event)
+        logging.debug("CONFIGURE_REQUEST {}".format(event.window))
+        handle_configure_request(event)
+
     elif etype == xcb.EXPOSE:
         event = xcb.ffi.cast("xcb_expose_event_t*", event)
         window_exposed(event.window)
@@ -118,13 +123,7 @@ def _handle(event):
 
     elif etype == xcb.PROPERTY_NOTIFY:
         event = xcb.ffi.cast("xcb_property_notify_event_t*", event)
-
-        if event.atom == pwm.xutil.get_atom("_XEMBED_INFO"):
-            pwm.systray.handle_property_notify(event)
-        else:
-            win = event.window
-            if win in pwm.windows.managed:
-                window_property_changed(win)
+        handle_property_notify(event)
 
     elif etype == xcb.MAPPING_NOTIFY:
         event = xcb.ffi.cast("xcb_mapping_notify_event_t*", event)
@@ -153,3 +152,18 @@ def handle_unmap(wid):
 
     elif wid in pwm.systray.clients:
         pwm.systray.handle_unmap(wid)
+
+
+def handle_configure_request(event):
+    if event.window not in pwm.windows.managed:
+        pwm.windows.configure(event.window, x=event.x, y=event.y,
+                              width=event.width, height=event.height)
+
+
+def handle_property_notify(event):
+    if event.atom == pwm.xutil.get_atom("_XEMBED_INFO"):
+        pwm.systray.handle_property_notify(event)
+    elif event.atom == xcb.ATOM_WM_NAME:
+        wid = event.window
+        if wid in pwm.windows.managed:
+            window_name_changed(wid)
