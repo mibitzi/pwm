@@ -92,7 +92,7 @@ def handle(event):
 
     elif etype == xcb.MAP_NOTIFY:
         event = xcb.ffi.cast("xcb_map_notify_event_t*", event)
-        handle_focus(event.window)
+        logging.debug("MAP_NOTIFY {}".format(event.window))
 
     elif etype == xcb.UNMAP_NOTIFY:
         event = xcb.ffi.cast("xcb_unmap_notify_event_t*", event)
@@ -108,7 +108,8 @@ def handle(event):
 
     elif etype == xcb.ENTER_NOTIFY:
         event = xcb.ffi.cast("xcb_enter_notify_event_t*", event)
-        handle_focus(event.event)
+        if event.window in pwm.windows.managed:
+            pwm.windows.focus(event.window)
 
     elif etype == xcb.PROPERTY_NOTIFY:
         event = xcb.ffi.cast("xcb_property_notify_event_t*", event)
@@ -135,11 +136,6 @@ def handle(event):
         event = xcb.ffi.cast("xcb_client_message_event_t*", event)
         if event.type == pwm.xutil.get_atom("_NET_SYSTEM_TRAY_OPCODE"):
             pwm.systray.handle_client_message(event)
-
-
-def handle_focus(wid):
-    if wid in pwm.windows.managed:
-        pwm.windows.focus(wid)
 
 
 def handle_unmap(wid):
