@@ -40,8 +40,6 @@ def main():
         format='%(asctime)s:%(levelname)s:%(message)s',
         datefmt='%m-%d %H:%M:%S')
 
-    logging.info("Startup...")
-
     logging.info("Loading config...")
     config.load()
 
@@ -55,6 +53,7 @@ def main():
         logging.info("Changing loglevel to %s..." % loglevel)
         logging.getLogger().setLevel(loglevel)
 
+    logging.info("Startup...")
     xcb.connect()
     pwm.xutil.setup_root_window()
     pwm.workspaces.setup()
@@ -72,11 +71,12 @@ def main():
 
     pwm.windows.manage_existing()
 
-    logging.info("Entering main event loop...")
+    logging.info("Starting threads...")
     pwm.worker.start()
     pwm.widgets.start()
 
     try:
+        logging.info("Entering main event loop...")
         pwm.events.loop()
     except (KeyboardInterrupt, SystemExit):
         pass
