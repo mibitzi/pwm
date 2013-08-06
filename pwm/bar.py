@@ -1,9 +1,6 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-import logging
-import threading
-
 from pwm.config import config
 from pwm.ffi.xcb import xcb
 from pwm.ffi.cairo import cairo
@@ -27,8 +24,6 @@ class Bar:
         self.pixmap = self.create_pixmap()
         self.gc = self.create_gc()
         (self.surface, self.ctx) = self.create_cairo_context()
-
-        self.update_lock = threading.Lock()
 
         self.handlers = pwm.events.HandlerList()
         self.handlers.add(pwm.events.focus_changed, self.handle_focus_changed)
@@ -219,20 +214,12 @@ class Bar:
     def update(self):
         """Update the bar."""
 
-        # We need a lock here because `update` will be called by the scheduler,
-        # which is in a different thread.
-        if self.update_lock.acquire(False):
-            try:
-                self.draw_background()
-                self.draw_open_workspaces()
-                self.draw_widgets()
-                self.draw_window_text()
-                self.copy_pixmap()
-                xcb.core.flush()
-            except:
-                logging.exception("Bar update error")
-            finally:
-                self.update_lock.release()
+        self.draw_background()
+        self.draw_open_workspaces()
+        self.draw_widgets()
+        self.draw_window_text()
+        self.copy_pixmap()
+        xcb.core.flush()
 
     def update_systray(self, width):
         self.systray_width = width
