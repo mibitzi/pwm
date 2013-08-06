@@ -6,17 +6,20 @@ import pwm.windows
 import pwm.workspaces
 import pwm.menu
 import pwm.spawn
+import pwm.worker
+import pwm.main
 
 
 def quit():
     """Exit pwm."""
-    pwm.shutdown = True
+    pwm.worker.shutdown.set()
 
 
 def restart():
     """Restart pwm."""
-    pwm.shutdown = True
-    pwm.restart = True
+    pwm.worker.shutdown.set()
+
+    pwm.main.restart = True
 
 
 def switch_workspace(index):
@@ -24,7 +27,6 @@ def switch_workspace(index):
 
     Workspace indices are zero-based.
     """
-
     pwm.workspaces.switch(index)
 
 

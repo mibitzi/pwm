@@ -10,7 +10,7 @@ from pwm.ffi.cairo import cairo
 import pwm.color as color
 import pwm.events
 import pwm.windows
-import pwm.scheduler
+import pwm.widgets
 
 primary = None
 
@@ -41,10 +41,7 @@ class Bar:
         self.handlers.add(pwm.events.window_exposed,
                           self.handle_window_exposed)
 
-        pwm.scheduler.add(self.update, config.bar.interval)
-
     def destroy(self):
-        pwm.scheduler.remove(self.update)
         self.handlers.destroy()
         pwm.windows.destroy(self.wid)
         cairo.surface_destroy(self.surface)
@@ -183,8 +180,8 @@ class Bar:
 
     def draw_widgets(self):
         offset = self.systray_width + 5
-        for widget in reversed(config.bar.widgets):
-            col, text = widget()
+        for widget in reversed(pwm.widgets.output):
+            col, text = widget
 
             if not col:
                 col = config.bar.foreground

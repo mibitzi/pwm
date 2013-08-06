@@ -3,8 +3,8 @@
 
 import select
 import logging
+import threading
 
-import pwm
 from pwm.ffi.xcb import xcb, XcbError
 import pwm.xutil
 import pwm.windows
@@ -12,6 +12,7 @@ import pwm.workspaces
 import pwm.keybind
 import pwm.systray
 import pwm.menu
+import pwm.worker
 
 
 class Event(set):
@@ -58,32 +59,36 @@ window_exposed = Event()
 workspace_switched = Event()
 
 
-def poll():
+def _poll():
     while True:
         try:
             event = xcb.core.poll_for_event()
             if not event:
                 break
-            handle(event)
+            _handle(event)
         except XcbError:
             logging.exception("XCB Error")
 
+    xcb.core.flush()
 
-def loop():
+
+def initiate_loop():
+    t = threading.Thread(target=_loop)
+    t.daemon = True
+    t.start()
+    return t
+
+
+def _loop():
     fd = xcb.core.get_file_descriptor()
 
-    try:
-        while not pwm.shutdown:
-            # Wait until there is actually something to do, then poll
-            select.select([fd], [], [])
-            poll()
-            xcb.core.flush()
-
-    except (KeyboardInterrupt, SystemExit):
-        pass
+    while not pwm.worker.shutdown.is_set():
+        # Wait until there is actually something to do, then poll
+        select.select([fd], [], [])
+        pwm.worker.tasks.put(_poll)
 
 
-def handle(event):
+def _handle(event):
     etype = event.response_type & ~0x80
 
     if etype == xcb.MAP_REQUEST:

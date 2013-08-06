@@ -4,10 +4,11 @@
 import unittest
 from unittest.mock import patch
 
-import pwm
 import pwm.commands
 import pwm.spawn
 import pwm.menu
+import pwm.worker
+import pwm.main
 import test.util as util
 
 
@@ -20,12 +21,12 @@ class TestCommands(unittest.TestCase):
 
     def test_quit(self):
         pwm.commands.quit()
-        self.assertTrue(pwm.shutdown)
+        self.assertTrue(pwm.worker.shutdown.is_set())
 
     def test_restart(self):
         pwm.commands.restart()
-        self.assertTrue(pwm.shutdown)
-        self.assertTrue(pwm.restart)
+        self.assertTrue(pwm.worker.shutdown.is_set())
+        self.assertTrue(pwm.main.restart)
 
     @patch.object(pwm.workspaces, "switch")
     def test_switch_workspace(self, switch):

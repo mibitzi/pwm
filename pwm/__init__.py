@@ -1,2 +1,0 @@
-shutdown = False
-restart = False

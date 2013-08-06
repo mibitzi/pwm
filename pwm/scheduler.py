@@ -1,92 +1,30 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-import time
-from collections import namedtuple
-from heapq import heappush, heappop, heapify
 import threading
 import logging
 
 
-Event = namedtuple("Event", ["time", "interval", "func"])
+class Scheduler:
+    def __init__(self, func, interval):
+        self.func = func
+        self.interval = interval
 
-queue = []
-thread = None
-stop_event = None
-lock = None
+        self.stop_event = threading.Event()
+        self.thread = threading.Thread(target=self._loop)
+        self.thread.daemon = True
 
+    def start(self):
+        self.thread.start()
 
-def setup():
-    global queue
-    queue = []
+    def stop(self):
+        self.stop_event.set()
+        self.thread.join()
 
-    global stop_event
-    stop_event = threading.Event()
-
-    global lock
-    lock = threading.Lock()
-
-    global thread
-    thread = threading.Thread(target=_loop)
-
-
-def destroy():
-    if thread.is_alive():
-        stop_event.set()
-        thread.join(2)
-
-        if thread.is_alive():
-            logging.error("Scheduler did not stop, will be killed forcefully.")
-
-    global queue
-    queue = []
-
-
-def add(func, interval):
-    """Add a new function to the queue.
-
-    interval is the amount of seconds to wait before calling this function
-    again.
-    """
-    with lock:
-        heappush(queue, Event(time.monotonic()+interval, interval, func))
-
-
-def remove(func):
-    """Remove a function which was previously added."""
-    with lock:
-        global queue
-        queue = [f for f in queue if f[2] != func]
-        heapify(queue)
-
-
-def start():
-    """Active the scheduler thread and start processing the event functions."""
-    logging.info("Starting scheduler...")
-    thread.start()
-
-
-def _loop():
-    while not stop_event.is_set():
-        process_next()
-
-
-def process_next():
-    """Process the next event in the queue.
-
-    If the time for the next event is in the future, block until that time.
-    """
-    event = None
-    with lock:
-        if not queue:
-            stop_event.wait(0.5)
-            return
-
-        event = heappop(queue)
-
-    now = time.monotonic()
-    if event.time > now and stop_event.wait(event.time-now):
-        return
-
-    event.func()
-    add(event.func, event.interval)
+    def _loop(self):
+        while not self.stop_event.is_set():
+            try:
+                self.func()
+            except:
+                logging.exception("Scheduler error")
+            self.stop_event.wait(self.interval)

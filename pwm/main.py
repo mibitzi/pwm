@@ -18,7 +18,10 @@ import pwm.systray
 import pwm.workspaces
 import pwm.keybind
 import pwm.state
-import pwm.scheduler
+import pwm.worker
+
+
+restart = False
 
 
 def main():
@@ -58,7 +61,6 @@ def main():
     xcb.connect()
     pwm.xutil.setup_root_window()
     pwm.workspaces.setup()
-    pwm.scheduler.setup()
     pwm.bar.setup()
     pwm.menu.setup()
     pwm.systray.setup()
@@ -72,24 +74,36 @@ def main():
         pwm.state.restore()
 
     pwm.windows.manage_existing()
-    pwm.scheduler.start()
 
     logging.info("Entering main event loop...")
-    pwm.events.loop()
+    eventloop = pwm.events.initiate_loop()
+    pwm.widgets.start()
+
+    try:
+        # The worker will run until it receives a shutdown signal
+        pwm.worker.process_tasks()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    except:
+        logging.exception("Worker process error")
+    finally:
+        pwm.worker.shutdown.set()
+
+    eventloop.join(1)
 
     logging.info("Shutting down...")
 
-    if pwm.restart:
+    if restart:
         pwm.state.store()
 
-    pwm.scheduler.destroy()
+    pwm.widgets.destroy()
     pwm.systray.destroy()
     pwm.menu.destroy()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
     xcb.core.disconnect()
 
-    if pwm.restart:
+    if restart:
         logging.info("Restarting...")
 
         # Make sure to pass the restore flag
