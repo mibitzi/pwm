@@ -297,7 +297,7 @@ class Floating:
     def add_window(self, wid):
         self.windows.append(wid)
 
-        x, y, width, height = pwm.windows.prefered_geometry(wid)
+        x, y, width, height = pwm.windows.preferred_geometry(wid)
         pwm.windows.configure(wid, x=x, y=y, width=width, height=height,
                               stackmode=xcb.STACK_MODE_ABOVE)
 

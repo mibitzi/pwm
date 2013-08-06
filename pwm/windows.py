@@ -224,7 +224,7 @@ def get_geometry(wid):
     return (geo.x-ws.x, geo.y-ws.y, geo.width, geo.height)
 
 
-def prefered_geometry(wid, workspace=None):
+def preferred_geometry(wid, workspace=None):
     """Return the preferd geometry for this window."""
 
     if not workspace:
