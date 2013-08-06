@@ -1,25 +1,23 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-import pwm
 import pwm.windows
 import pwm.workspaces
 import pwm.menu
 import pwm.spawn
 import pwm.worker
-import pwm.main
+import pwm.events
 
 
 def quit():
     """Exit pwm."""
-    pwm.worker.shutdown.set()
+    pwm.events.shutdown = True
 
 
 def restart():
     """Restart pwm."""
-    pwm.worker.shutdown.set()
-
-    pwm.main.restart = True
+    pwm.events.shutdown = True
+    pwm.events.restart = True
 
 
 def switch_workspace(index):

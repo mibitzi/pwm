@@ -3,7 +3,6 @@
 
 import select
 import logging
-import threading
 
 from pwm.ffi.xcb import xcb, XcbError
 import pwm.xutil
@@ -13,6 +12,10 @@ import pwm.keybind
 import pwm.systray
 import pwm.menu
 import pwm.worker
+
+
+shutdown = False
+restart = False
 
 
 class Event(set):
@@ -72,17 +75,10 @@ def _poll():
     xcb.core.flush()
 
 
-def initiate_loop():
-    t = threading.Thread(target=_loop)
-    t.daemon = True
-    t.start()
-    return t
-
-
-def _loop():
+def loop():
     fd = xcb.core.get_file_descriptor()
 
-    while not pwm.worker.shutdown.is_set():
+    while not shutdown:
         # Wait until there is actually something to do, then poll
         select.select([fd], [], [])
         pwm.worker.tasks.put(_poll)

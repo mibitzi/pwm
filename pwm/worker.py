@@ -6,17 +6,34 @@ import threading
 import logging
 
 tasks = Queue()
-shutdown = threading.Event()
+_thread = None
 
 
-def process_tasks():
-    while not shutdown.is_set():
+class ExitWorker(Exception):
+    pass
+
+
+def start():
+    global _thread
+    _thread = threading.Thread(target=_loop)
+    _thread.daemon = True
+    _thread.start()
+
+
+def destroy():
+    tasks.put(ExitWorker)
+    _thread.join()
+
+
+def _loop():
+    while True:
         try:
             work = tasks.get()
+            if work is ExitWorker:
+                raise ExitWorker()
             work()
             tasks.task_done()
-        except (KeyboardInterrupt, SystemExit):
-            shutdown.set()
+        except ExitWorker:
             break
         except:
             logging.exception("Worker task error")

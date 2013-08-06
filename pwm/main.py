@@ -21,9 +21,6 @@ import pwm.state
 import pwm.worker
 
 
-restart = False
-
-
 def main():
     """The entry point for pwm."""
 
@@ -76,27 +73,30 @@ def main():
     pwm.windows.manage_existing()
 
     logging.info("Entering main event loop...")
-    eventloop = pwm.events.initiate_loop()
+    pwm.worker.start()
     pwm.widgets.start()
 
-    # The worker will run until it receives a shutdown signal
-    pwm.worker.process_tasks()
+    try:
+        pwm.events.loop()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    except:
+        logging.exception("Event loop error")
 
-    eventloop.join(1)
-
-    logging.info("Shutting down...")
-
-    if restart:
+    if pwm.events.restart:
+        logging.info("Storing state...")
         pwm.state.store()
 
+    logging.info("Shutting down...")
     pwm.widgets.destroy()
+    pwm.worker.destroy()
     pwm.systray.destroy()
     pwm.menu.destroy()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
     xcb.core.disconnect()
 
-    if restart:
+    if pwm.events.restart:
         logging.info("Restarting...")
 
         # Make sure to pass the restore flag
