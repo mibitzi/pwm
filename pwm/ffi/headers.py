@@ -57,6 +57,8 @@ typedef uint32_t xcb_drawable_t;
 typedef uint32_t xcb_visualid_t;
 typedef uint8_t xcb_keycode_t;
 typedef uint32_t xcb_keysym_t;
+typedef uint32_t xcb_font_t;
+typedef uint32_t xcb_cursor_t;
 
 typedef struct xcb_visualtype_t {
     xcb_visualid_t visual_id;
@@ -1474,7 +1476,33 @@ xcb_void_cookie_t
 xcb_ungrab_keyboard (xcb_connection_t *c  ,
                      xcb_timestamp_t   time  );
 
+xcb_void_cookie_t
+xcb_open_font (xcb_connection_t *c,
+               xcb_font_t        fid,
+               uint16_t          name_len,
+               const char       *name);
 
+xcb_void_cookie_t
+xcb_create_glyph_cursor (xcb_connection_t *c  /**< */,
+                         xcb_cursor_t      cid  /**< */,
+                         xcb_font_t        source_font  /**< */,
+                         xcb_font_t        mask_font  /**< */,
+                         uint16_t          source_char  /**< */,
+                         uint16_t          mask_char  /**< */,
+                         uint16_t          fore_red  /**< */,
+                         uint16_t          fore_green  /**< */,
+                         uint16_t          fore_blue  /**< */,
+                         uint16_t          back_red  /**< */,
+                         uint16_t          back_green  /**< */,
+                         uint16_t          back_blue  /**< */);
+
+xcb_void_cookie_t
+xcb_free_cursor (xcb_connection_t *c  /**< */,
+                 xcb_cursor_t      cursor  /**< */);
+
+xcb_void_cookie_t
+xcb_close_font (xcb_connection_t *c  /**< */,
+                xcb_font_t        font  /**< */);
 
 uint8_t          xcb_aux_get_depth       (xcb_connection_t *c,
                                           xcb_screen_t     *screen);

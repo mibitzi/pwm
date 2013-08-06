@@ -4,6 +4,18 @@
 from pwm.ffi.xcb import xcb
 
 
+class Cursor:
+    fleur = 52
+    left_ptr = 68
+    sizing = 120
+    bottom_left_corner = 12
+    bottom_right_corner = 14
+    top_left_corner = 134
+    top_right_corner = 136
+    double_arrow_horiz = 108
+    double_arrow_vert = 116
+
+
 def setup_root_window():
     mask_values = (xcb.EVENT_MASK_STRUCTURE_NOTIFY |
                    xcb.EVENT_MASK_SUBSTRUCTURE_NOTIFY |
@@ -16,6 +28,24 @@ def setup_root_window():
         *xcb.mask([(xcb.CW_EVENT_MASK, mask_values)]))
 
     cookie.check()
+
+    # We have to set the cursor now, otherwise it will not show up until the
+    # first client is launched.
+    set_root_cursor(Cursor.left_ptr)
+
+
+def set_root_cursor(cursor):
+    fid = xcb.core.generate_id()
+    xcb.core.open_font(fid, len("cursor"), "cursor".encode("UTF-8"))
+
+    cid = xcb.core.generate_id()
+    xcb.core.create_glyph_cursor(cid, fid, fid, cursor, cursor+1,
+                                 0, 0, 0, 65535, 65535, 65535)
+    xcb.core.change_window_attributes(xcb.screen.root,
+                                      *xcb.mask((xcb.CW_CURSOR, cid)))
+
+    xcb.core.free_cursor(cid)
+    xcb.core.close_font(fid)
 
 
 def get_wm_normal_hints(wid):
