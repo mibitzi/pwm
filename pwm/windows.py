@@ -161,7 +161,11 @@ def get_name(wid):
     """Get the window name."""
 
     name = pwm.xutil.get_property_value(
-        pwm.xutil.get_property(wid, xcb.ATOM_WM_NAME).reply())
+        pwm.xutil.get_property(wid, "_NET_WM_NAME").reply())
+
+    if not name:
+        name = pwm.xutil.get_property_value(
+            pwm.xutil.get_property(wid, xcb.ATOM_WM_NAME).reply())
 
     return name or ""
 

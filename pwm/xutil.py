@@ -157,7 +157,7 @@ def get_property_value(property_reply):
         #        else:
         #            s.append(chr(o))
         #else:
-        ret = xcb.ffi.string(value, property_reply.value_len)
+        ret = xcb.ffi.string(value, property_reply.value_len).decode("UTF-8")
 
         return ret
     elif property_reply.format in (16, 32):

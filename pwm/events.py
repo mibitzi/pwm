@@ -109,7 +109,6 @@ def _handle(event):
 
     elif etype == xcb.CONFIGURE_REQUEST:
         event = xcb.ffi.cast("xcb_configure_request_event_t*", event)
-        logging.debug("CONFIGURE_REQUEST {}".format(event.window))
         handle_configure_request(event)
 
     elif etype == xcb.EXPOSE:
@@ -155,6 +154,7 @@ def handle_unmap(wid):
 
 
 def handle_configure_request(event):
+    # If we don't manage this window we just fulfill the request.
     if event.window not in pwm.windows.managed:
         pwm.windows.configure(event.window, x=event.x, y=event.y,
                               width=event.width, height=event.height)
@@ -163,7 +163,8 @@ def handle_configure_request(event):
 def handle_property_notify(event):
     if event.atom == pwm.xutil.get_atom("_XEMBED_INFO"):
         pwm.systray.handle_property_notify(event)
-    elif event.atom == xcb.ATOM_WM_NAME:
+    elif (event.atom == xcb.ATOM_WM_NAME or
+            event.atom == pwm.xutil.get_atom("_NET_WM_NAME")):
         wid = event.window
         if wid in pwm.windows.managed:
             window_name_changed(wid)
