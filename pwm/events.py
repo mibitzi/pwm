@@ -15,7 +15,6 @@ import pwm.worker
 
 
 shutdown = False
-restart = False
 
 
 class Event(set):
