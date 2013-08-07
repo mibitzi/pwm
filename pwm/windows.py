@@ -12,7 +12,7 @@ import pwm.xutil
 import pwm.events
 import pwm.workspaces
 import pwm.color
-import pwm.match
+import pwm.rules
 
 
 managed = {}
@@ -115,7 +115,7 @@ def manage_existing():
 def should_float(wid):
     """Try to determine if a window should be placed on the floating layer."""
 
-    if pwm.match.floating(wid):
+    if pwm.rules.floating(wid):
         return True
 
     # Check the _NET_WM_WINDOW_TYPE property to determine the type of this

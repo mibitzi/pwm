@@ -14,7 +14,7 @@ created_windows = []
 
 
 def setup():
-    config.load()
+    config.load(default=True)
 
     # To increase test speed we only want to connect once
     global connected

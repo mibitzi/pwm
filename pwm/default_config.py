@@ -4,6 +4,7 @@ It usually resides ~/.config/pwmrc.py
 
 import pwm.commands as cmd
 import pwm.widgets as widgets
+from pwm.rules import Rule
 
 
 class Values():
@@ -114,13 +115,13 @@ keys.append(("Mod4-0", cmd.switch_workspace(9)))
 keys.append(("Shift-Mod4-0", cmd.send_to_workspace(9)))
 
 
-# You can define a list of windows which should always be started in floating
-# mode.
-# Each tuple has a property and its value used to match a window.
+# You can define rules for some windows.
+# Each rule has a property and its value used to match a window.
 # There are three possible properties: class, role and name.
 # Use the xprop tool and look for WM_CLASS, WM_WINDOW_ROLE and _NET_WM_NAME
 # (or WM_NAME), to get the correct values.
-floating = [
-    ("class", "Truecrypt"),
-    ("class", "Vlc")
+rules = [
+    Rule("role", "Preferences", floating=True),
+    Rule("class", "truecrypt", floating=True),
+    Rule("class", "vlc", floating=True)
 ]
