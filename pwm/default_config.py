@@ -116,10 +116,10 @@ keys.append(("Shift-Mod4-0", cmd.send_to_workspace(9)))
 
 # You can define a list of windows which should always be started in floating
 # mode.
-# Each tuple has the property and the value used to match a window.
+# Each tuple has a property and its value used to match a window.
 # There are three possible properties: class, role and name.
-# Use the xprop tool and look for WM_CLASS, WM_ROLE and WM_NAME, to get the
-# correct values.
+# Use the xprop tool and look for WM_CLASS, WM_WINDOW_ROLE and _NET_WM_NAME
+# (or WM_NAME), to get the correct values.
 floating = [
     ("class", "Truecrypt"),
     ("class", "Vlc")
