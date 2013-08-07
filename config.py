@@ -34,7 +34,15 @@ bar = Values(
     # Where color is a hex value string such as "#ffffff".
     # If color is None the default foreground color will be used.
     widgets=[
-        widgets.battery(),
+        widgets.volume(),
+        widgets.separator(),
+        widgets.battery("BAT1"),
+        widgets.separator(),
+        widgets.disk("/"),
+        widgets.separator(),
+        widgets.disk("/home"),
+        widgets.separator(),
+        widgets.load(),
         widgets.separator(),
         widgets.time(),
     ])
@@ -85,9 +93,9 @@ keys = [
     ("Control-Mod4-l", cmd.resize((0.02, 0))),
 
     ("XF86AudioRaiseVolume", cmd.spawn("amixer -q set Master 2dB+ unmute")),
-
     ("XF86AudioLowerVolume", cmd.spawn("amixer -q set Master 2dB- unmute")),
     ("XF86AudioMute", cmd.spawn("amixer -q set Master toggle")),
+
     ("XF86MonBrightnessUp", cmd.spawn("/usr/bin/xbacklight -inc 10")),
     ("XF86MonBrightnessDown", cmd.spawn("/usr/bin/xbacklight -dec 10")),
 ]

@@ -30,7 +30,7 @@ def setup_keys():
         keystr = key[0]
         mods, keycode = pwm.keybind.parse_keystring(keystr)
 
-        if mods != 0 and keycode:
+        if keycode:
             pwm.keybind.grab_key(xcb.screen.root, mods, keycode)
 
             grabbed_keys[(mods, keycode)] = key
