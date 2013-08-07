@@ -21,28 +21,28 @@ class TestCommands(unittest.TestCase):
         util.tear_down()
 
     def test_quit(self):
-        pwm.commands.quit()
+        pwm.commands.quit()()
         self.assertTrue(pwm.events.shutdown)
 
     def test_restart(self):
-        pwm.commands.restart()
+        pwm.commands.restart()()
         self.assertTrue(pwm.events.shutdown)
         self.assertTrue(pwm.main.restart)
 
     @patch.object(pwm.workspaces, "switch")
     def test_switch_workspace(self, switch):
-        pwm.commands.switch_workspace(1)
+        pwm.commands.switch_workspace(1)()
         switch.assert_called_once_with(1)
 
     @patch.object(pwm.windows, "kill")
     def test_kill(self, kill):
         wid = util.create_window()
-        pwm.commands.kill()
+        pwm.commands.kill()()
         kill.assert_called_once_with(wid)
 
     @patch.object(pwm.spawn, "spawn")
     def test_spawn(self, spawn):
-        pwm.commands.spawn("firefox")
+        pwm.commands.spawn("firefox")()
         spawn.assert_called_once_with("firefox")
 
     def test_move(self):
@@ -51,7 +51,7 @@ class TestCommands(unittest.TestCase):
 
         def _test_direction(direction):
             with patch.object(ws, "move_window") as move:
-                pwm.commands.move(direction)
+                pwm.commands.move(direction)()
 
             move.assert_called_once_with(wid, direction)
 
@@ -64,7 +64,7 @@ class TestCommands(unittest.TestCase):
 
         def _test_focus(pos):
             with patch.object(ws, "focus_relative") as focus:
-                pwm.commands.focus(pos)
+                pwm.commands.focus(pos)()
 
             focus.assert_called_once_with(wid, pos)
 
@@ -76,14 +76,14 @@ class TestCommands(unittest.TestCase):
         ws = pwm.workspaces.current()
 
         with patch.object(ws, "resize_window") as resize:
-            pwm.commands.resize((0.1, 0.1))
+            pwm.commands.resize((0.1, 0.1))()
 
         resize.assert_called_once_with(wid, (0.1, 0.1))
 
     @patch.object(pwm.workspaces, "send_window_to")
     def test_send_to_workspace(self, send):
         wid = util.create_window()
-        pwm.commands.send_to_workspace(1)
+        pwm.commands.send_to_workspace(1)()
         send.assert_called_once_with(wid, 1)
 
     def test_toggle_floating(self):
@@ -91,7 +91,7 @@ class TestCommands(unittest.TestCase):
         ws = pwm.workspaces.current()
 
         with patch.object(ws, "toggle_floating") as toggle:
-            pwm.commands.toggle_floating()
+            pwm.commands.toggle_floating()()
         toggle.assert_called_once_with(wid)
 
     def test_toggle_focus_layer(self):
@@ -99,10 +99,10 @@ class TestCommands(unittest.TestCase):
         ws = pwm.workspaces.current()
 
         with patch.object(ws, "toggle_focus_layer") as toggle:
-            pwm.commands.toggle_focus_layer()
+            pwm.commands.toggle_focus_layer()()
         toggle.assert_called_once_with()
 
     @patch.object(pwm.menu, "show")
     def test_menu(self, menu):
-        pwm.commands.menu()
+        pwm.commands.menu()()
         menu.assert_called_once_with()

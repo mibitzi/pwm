@@ -17,12 +17,12 @@ class TestWidgets(unittest.TestCase):
         util.tear_down()
 
     def _call_widgets(self):
-        widgets = [partial(pwm.widgets.time, "%H-%M", "#ff00ff")]
+        widgets = [partial(pwm.widgets.time(), "%H-%M", "#ff00ff")]
         pwm.widgets._call_widgets(widgets)
 
         self.assertEqual(pwm.widgets.output,
                          [("#ff00ff", time.strftime("%H-%M"))])
 
     def test_time(self):
-        self.assertEqual(pwm.widgets.time("%H-%M", "#ff00ff"),
+        self.assertEqual(pwm.widgets.time("%H-%M", "#ff00ff")(),
                          ("#ff00ff", time.strftime("%H-%M")))

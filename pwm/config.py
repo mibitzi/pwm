@@ -1,6 +1,7 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
+import functools
 import logging
 from importlib.machinery import SourceFileLoader
 
@@ -52,6 +53,18 @@ def handle_key_press_event(event):
             key[1]()
         except:
             logging.exception("Command error")
+
+
+def create_arguments(func):
+    """A function decorator. When the function is called store the arguments
+    and return a new function with those arguments already set.
+
+    Used to pass functions with arguments in the config file.
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return functools.partial(func, *args, **kwargs)
+    return wrapper
 
 
 config = Config()
