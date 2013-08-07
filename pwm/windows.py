@@ -17,11 +17,10 @@ import pwm.rules
 
 managed = {}
 focused = None
-properties = defaultdict(dict)
 geometry = {}
 
 
-# Some UnmapNotifyEvents, like those generated when switching workspaces have
+# Some UnmapNotifyEvents, like those generated when switching workspaces, have
 # to be ignored. Every window has a key in ignore_unmaps with a value
 # indicating how many future UnmapNotifyEvents have to be ignored.
 ignore_unmaps = defaultdict(int)
@@ -73,7 +72,6 @@ def manage(wid, only_if_mapped=False):
     if attr.override_redirect:
         return
 
-    update_properties(wid)
     update_geometry(wid)
 
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
@@ -94,7 +92,6 @@ def unmanage(wid):
     if wid in ignore_unmaps:
         del ignore_unmaps[wid]
     del managed[wid]
-    del properties[wid]
     del geometry[wid]
 
     if focused == wid:
@@ -137,11 +134,6 @@ def should_float(wid):
             return True
 
     return False
-
-
-def update_properties(wid):
-    normal_hints = pwm.xutil.get_wm_normal_hints(wid)
-    properties[wid]["normal_hints"] = normal_hints
 
 
 def update_geometry(wid):
@@ -247,29 +239,16 @@ def preferred_geometry(wid, workspace=None):
     if not workspace:
         workspace = pwm.workspaces.current()
 
-    hints = properties[wid]["normal_hints"]
-    width, height = 0, 0
-    x, y = 0, 0
-    geo = geometry[wid]
+    # We will use the last known geometry.
+    _, _, width, height = geometry[wid]
 
-    if hints.flags & xcb.ICCCM_SIZE_HINT_US_SIZE:
-        width, height = hints.width, hints.height
-    else:
-        _, _, width, height = geo
-
-    if (hints.flags & xcb.ICCCM_SIZE_HINT_US_POSITION or
-            hints.flags & xcb.ICCCM_SIZE_HINT_P_POSITION):
-        x, y = hints.x, hints.y
-    else:
-        x, y, _, _ = geo
-
+    # There should be some minimum size.
     width = max(10, width)
     height = max(10, height)
 
-    if x <= 0 or x >= workspace.width - width:
-        x = (workspace.width - width) / 2
-    if y <= 0 or y >= workspace.height - height:
-        y = (workspace.height - height) / 2
+    # Just center the window.
+    x = (workspace.width - width) / 2
+    y = (workspace.height - height) / 2
 
     return x, y, width, height
 
@@ -352,6 +331,7 @@ def _handle_focus(wid, focused):
                                  wid,
                                  xcb.TIME_CURRENT_TIME)
 
+        # Focused floating windows should always be at the top.
         if managed[wid].windows[wid]["floating"]:
             configure(wid, stackmode=xcb.STACK_MODE_ABOVE)
 

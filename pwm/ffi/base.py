@@ -13,7 +13,6 @@ lib = ffi.verify("""
     #include <xcb/xcb.h>
     #include <xcb/xproto.h>
     #include <xcb/xcb_aux.h>
-    #include <xcb/xcb_icccm.h>
     #include <cairo/cairo.h>
     #include <cairo/cairo-xcb.h>
-    """, libraries=["xcb", "xcb-util", "xcb-icccm", "cairo"])
+    """, libraries=["xcb", "xcb-util", "cairo"])
