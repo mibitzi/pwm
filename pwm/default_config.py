@@ -1,3 +1,7 @@
+"""This is the configuration file for pwm.
+It usually resides ~/.config/pwmrc.py
+"""
+
 import pwm.commands as cmd
 import pwm.widgets as widgets
 
@@ -62,7 +66,7 @@ workspaces = 10
 
 # Keys are described as tuples.
 # The first value should be a string describing the key.
-# It should start with one or more modifiers following exactly one key.
+# It should start with one or more modifiers following one key.
 # Avaliable modifiers are:
 #    Control, Shift, Mod1, Mod2, Mod3, Mod4, Mod5
 # Whereas Mod4 is usually the Super/Windows key

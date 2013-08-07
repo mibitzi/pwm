@@ -5,20 +5,30 @@ import os
 import glob
 import re
 
+# The directories are defined in:
+# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+
+
+def config_home():
+    """Return the XDG_CONFIG_HOME directory."""
+    return os.getenv("XDG_CONFIG_HOME", os.environ["HOME"]+"/.config")
+
+
+def data_home():
+    """Return the XDG_DATA_HOME directory."""
+    return os.getenv("XDG_DATA_HOME", os.environ["HOME"] + "/.local/share")
+
+
+def data_dirs():
+    """Return the XDG_DATA_DIRS directory."""
+    return os.getenv("XDG_DATA_DIRS", "/usr/local/share:/usr/share")
+
 
 def desktop_file_dirs():
     """Return a list of directories in which .desktop files could be stored."""
 
-    # The directories are defined in:
-    # http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-
-    xdg_data_home = os.getenv("XDG_DATA_HOME",
-                              os.environ["HOME"] + "/.local/share")
-
-    xdg_data_dirs = os.getenv("XDG_DATA_DIRS", "/usr/local/share:/usr/share")
-
-    search_dirs = [xdg_data_home + "/applications"]
-    search_dirs.extend(d + "/applications" for d in xdg_data_dirs.split(":"))
+    search_dirs = [data_home() + "/applications"]
+    search_dirs.extend(d + "/applications" for d in data_dirs().split(":"))
 
     return search_dirs
 

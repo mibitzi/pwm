@@ -1,12 +1,16 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
+import os
+import errno
 import functools
 import logging
 from importlib.machinery import SourceFileLoader
+import pkg_resources
 
 import pwm.keybind
 from pwm.ffi.xcb import xcb
+import pwm.xdg
 
 config = None
 grabbed_keys = {}
@@ -15,9 +19,28 @@ grabbed_keys = {}
 class Config:
     def __init__(self):
         self.data = None
+        self.path = pwm.xdg.config_home()+"/pwm/pwmrc.py"
 
     def load(self):
-        self.data = SourceFileLoader("config", "config.py").load_module()
+        self._ensure_config_exists(self.path)
+        loader = SourceFileLoader("config", self.path)
+        self.data = loader.load_module()
+
+    def _ensure_config_exists(self, path):
+        """Copy the default configuration to path if it not already exists."""
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError as err:
+            if err.errno != errno.EEXIST:
+                raise
+
+        if not os.path.isfile(path):
+            default = pkg_resources.resource_string(__name__,
+                                                    "default_config.py")
+
+            # Note that we must pass "x" as mode.
+            with open(path, "xb") as f:
+                f.write(default)
 
     def __getattr__(self, name):
         return getattr(self.data, name)
