@@ -123,6 +123,10 @@ class AtomNameCookie(Cookie):
         return str(self.cookie.reply().name.buf())
 
 
+def get_property_reply_value(wid, atom):
+    return get_property_value(get_property(wid, atom).reply())
+
+
 def get_property_value(property_reply):
     """
     A function that takes a property reply object, and turns its value into

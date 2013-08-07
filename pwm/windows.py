@@ -12,6 +12,7 @@ import pwm.xutil
 import pwm.events
 import pwm.workspaces
 import pwm.color
+import pwm.match
 
 
 managed = {}
@@ -77,9 +78,9 @@ def manage(wid, only_if_mapped=False):
 
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
 
-    managed[wid] = pwm.workspaces.current()
-    ignore_unmaps[wid] = 0
     pwm.workspaces.current().add_window(wid)
+    ignore_unmaps[wid] = 0
+    managed[wid] = pwm.workspaces.current()
 
     focus(wid)
 
@@ -90,7 +91,8 @@ def unmanage(wid):
 
     ws = managed[wid]
     ws.remove_window(wid)
-    del ignore_unmaps[wid]
+    if wid in ignore_unmaps:
+        del ignore_unmaps[wid]
     del managed[wid]
     del properties[wid]
     del geometry[wid]
@@ -113,13 +115,15 @@ def manage_existing():
 def should_float(wid):
     """Try to determine if a window should be placed on the floating layer."""
 
+    if pwm.match.floating(wid):
+        return True
+
     # Check the _NET_WM_WINDOW_TYPE property to determine the type of this
     # window.
     # See the specification for more info:
     # http://standards.freedesktop.org/wm-spec/wm-spec-latest.html
 
-    wintype = pwm.xutil.get_property_value(
-        pwm.xutil.get_property(wid, "_NET_WM_WINDOW_TYPE").reply())
+    wintype = pwm.xutil.get_property_reply_value(wid, "_NET_WM_WINDOW_TYPE")
 
     if not wintype:
         return False
@@ -160,14 +164,25 @@ def change_attributes(wid, masks):
 def get_name(wid):
     """Get the window name."""
 
-    name = pwm.xutil.get_property_value(
-        pwm.xutil.get_property(wid, "_NET_WM_NAME").reply())
+    name = pwm.xutil.get_property_reply_value(wid, "_NET_WM_NAME")
 
     if not name:
-        name = pwm.xutil.get_property_value(
-            pwm.xutil.get_property(wid, xcb.ATOM_WM_NAME).reply())
+        name = pwm.xutil.get_property_reply_value(wid, xcb.ATOM_WM_NAME)
 
     return name or ""
+
+
+def get_wm_class(wid):
+    return pwm.xutil.get_property_reply_value(wid, "WM_CLASS")
+
+
+def get_wm_window_role(wid):
+    return pwm.xutil.get_property_reply_value(wid, "WM_WINDOW_ROLE")
+
+
+def get_wm_protocols(wid):
+    """Return the protocols supported by this window."""
+    return pwm.xutil.get_property_reply_value(wid, "WM_PROTOCOLS")
 
 
 def configure(wid, **kwargs):
@@ -274,13 +289,6 @@ def create_client_message(wid, atom, *data):
         vals.append(data[i] if i < len(data) else 0)
 
     return struct.pack("BBHII5I", *vals)
-
-
-def get_wm_protocols(wid):
-    """Return the protocols supported by this window."""
-
-    return pwm.xutil.get_property_value(
-        pwm.xutil.get_property(wid, "WM_PROTOCOLS").reply())
 
 
 def kill(wid):

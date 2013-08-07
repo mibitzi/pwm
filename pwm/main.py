@@ -11,6 +11,7 @@ import pwm
 from pwm.config import config
 from pwm.ffi.xcb import xcb
 import pwm.xutil
+import pwm.match
 import pwm.events
 import pwm.bar
 import pwm.menu
@@ -69,6 +70,7 @@ def main():
     pwm.systray.setup()
     pwm.keybind.update_keyboard_mapping()
     pwm.config.setup_keys()
+    pwm.match.setup()
 
     # Restore has to be placed after the setups, otherwise the restored values
     # would be overwritten again.

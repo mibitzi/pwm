@@ -167,10 +167,12 @@ def handle_configure_request(event):
         # reason not to obey the request.
         mask = []
         if event.value_mask & xcb.CONFIG_WINDOW_X:
-            mask.append((xcb.CONFIG_WINDOW_X, event.x))
+            mask.append((xcb.CONFIG_WINDOW_X,
+                         xcb.ffi.cast("uint32_t", event.x)))
 
         if event.value_mask & xcb.CONFIG_WINDOW_Y:
-            mask.append((xcb.CONFIG_WINDOW_Y, event.y))
+            mask.append((xcb.CONFIG_WINDOW_Y,
+                         xcb.ffi.cast("uint32_t", event.y)))
 
         if event.value_mask & xcb.CONFIG_WINDOW_WIDTH:
             mask.append((xcb.CONFIG_WINDOW_WIDTH, event.width))
@@ -183,6 +185,7 @@ def handle_configure_request(event):
 
         # The requested values are in absolute coordinates.
         xcb.core.configure_window(event.window, *xcb.mask(mask))
+        pwm.windows.update_geometry(event.window)
     else:
         # Just notify the client about it's actual geometry.
         ws.tiling.arrange(event.window)
