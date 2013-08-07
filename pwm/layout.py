@@ -264,8 +264,12 @@ class Tiling:
 
         self.arrange()
 
-    def arrange(self):
-        """Apply layout structure to windows. Use geometry from workspace."""
+    def arrange(self, wid=None):
+        """Apply layout structure to windows. Use geometry from workspace.
+
+        If wid is None all windows will be configured, otherwise only the one
+        with this wid.
+        """
 
         left = 0
         for col in self.columns:
@@ -273,11 +277,13 @@ class Tiling:
             width = round(self.workspace.width*col.size)
             for win in col.windows:
                 height = round(self.workspace.height*win.size)
-                pwm.windows.configure(win.wid,
-                                      x=left,
-                                      y=top,
-                                      width=width,
-                                      height=height)
+
+                if not wid or win.wid == wid:
+                    pwm.windows.configure(win.wid,
+                                          x=left,
+                                          y=top,
+                                          width=width,
+                                          height=height)
 
                 top += height
             left += width

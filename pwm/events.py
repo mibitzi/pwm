@@ -104,6 +104,7 @@ def _handle(event):
 
     elif etype == xcb.CONFIGURE_REQUEST:
         event = xcb.ffi.cast("xcb_configure_request_event_t*", event)
+        logging.debug("CONFIGURE_REQUEST {}".format(event.window))
         handle_configure_request(event)
 
     elif etype == xcb.EXPOSE:
@@ -149,10 +150,42 @@ def handle_unmap(wid):
 
 
 def handle_configure_request(event):
-    # If we don't manage this window we just fulfill the request.
-    if event.window not in pwm.windows.managed:
-        pwm.windows.configure(event.window, x=event.x, y=event.y,
-                              width=event.width, height=event.height)
+    # See the spec for more about this event:
+    # http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.5
+
+    managed = event.window in pwm.windows.managed
+
+    if managed:
+        ws = pwm.windows.managed[event.window]
+        floating = ws.windows[event.window]["floating"]
+    else:
+        ws = None
+        floating = False
+
+    if not managed or floating:
+        # The window is either not managed or a floating one, so there is no
+        # reason not to obey the request.
+        mask = []
+        if event.value_mask & xcb.CONFIG_WINDOW_X:
+            mask.append((xcb.CONFIG_WINDOW_X, event.x))
+
+        if event.value_mask & xcb.CONFIG_WINDOW_Y:
+            mask.append((xcb.CONFIG_WINDOW_Y, event.y))
+
+        if event.value_mask & xcb.CONFIG_WINDOW_WIDTH:
+            mask.append((xcb.CONFIG_WINDOW_WIDTH, event.width))
+
+        if event.value_mask & xcb.CONFIG_WINDOW_HEIGHT:
+            mask.append((xcb.CONFIG_WINDOW_HEIGHT, event.height))
+
+        # Note that we don't want to set border_width or stack_mode even if
+        # requested.
+
+        # The requested values are in absolute coordinates.
+        xcb.core.configure_window(event.window, *xcb.mask(mask))
+    else:
+        # Just notify the client about it's actual geometry.
+        ws.tiling.arrange(event.window)
 
 
 def handle_property_notify(event):
