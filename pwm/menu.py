@@ -11,7 +11,7 @@ from pwm.ffi.cairo import cairo
 import pwm.color
 import pwm.keybind
 import pwm.xdg
-import pwm.commands
+import pwm.spawn
 
 
 active = False
@@ -210,7 +210,7 @@ def handle_key_press_event(event):
     elif symstr == "Return":
         if _filtered:
             # Strip out the placeholders some Exec values might have.
-            pwm.commands.spawn(
+            pwm.spawn.spawn(
                 _filtered[_selection][-1]["exec"].split(" ", 1)[0])
         _hide()
         return
