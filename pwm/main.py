@@ -36,6 +36,10 @@ def main():
                         help="automatically set when restarting",
                         action="store_true")
 
+    parser.add_argument("--default",
+                        help="use the default configuration",
+                        action="store_true")
+
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -44,7 +48,7 @@ def main():
         datefmt='%m-%d %H:%M:%S')
 
     logging.info("Loading config...")
-    config.load()
+    config.load(default=args.default)
 
     # Loglevel passed via the command line has higher priority
     loglevel = config.loglevel

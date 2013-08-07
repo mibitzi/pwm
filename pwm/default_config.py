@@ -37,6 +37,7 @@ bar = Values(
     #     (color, text)
     # Where color is a hex value string such as "#ffffff".
     # If color is None the default foreground color will be used.
+    separator="#aaaaaa",
     widgets=[
         widgets.volume(),
         widgets.separator(),

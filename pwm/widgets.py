@@ -57,8 +57,10 @@ def _humanize_bytes(num):
 
 
 @pwm.config.create_arguments
-def separator(char="|", color=None):
+def separator(char="•", color=None):
     """Return a separator."""
+    if not color:
+        color = config.bar.separator
     return (color, " {} ".format(char))
 
 
@@ -73,7 +75,7 @@ def time(fmt="%Y-%m-%d %H:%M:%S", color=None):
 
 
 @pwm.config.create_arguments
-def battery(bat="BAT0", color=None, fmt="BAT {status} {capacity}%"):
+def battery(bat="BAT0", color=None, fmt="⚡ {status} {capacity}%"):
     """Return the current battery status.
 
     bat is the number of the battery to check.
