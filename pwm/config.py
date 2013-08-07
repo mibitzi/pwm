@@ -5,6 +5,7 @@ import os
 import errno
 import functools
 import logging
+import importlib
 from importlib.machinery import SourceFileLoader
 import pkg_resources
 
@@ -22,9 +23,13 @@ class Config:
         self.path = pwm.xdg.config_home()+"/pwm/pwmrc.py"
 
     def load(self):
-        self._ensure_config_exists(self.path)
-        loader = SourceFileLoader("config", self.path)
-        self.data = loader.load_module()
+        try:
+            self._ensure_config_exists(self.path)
+            loader = SourceFileLoader("config", self.path)
+            self.data = loader.load_module()
+        except:
+            logging.exception("Configuration error, falling back to default")
+            self.data = importlib.import_module("pwm.default_config")
 
     def _ensure_config_exists(self, path):
         """Copy the default configuration to path if it not already exists."""
