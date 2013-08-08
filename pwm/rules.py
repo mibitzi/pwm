@@ -8,19 +8,24 @@ import pwm.windows
 class Rule:
     def __init__(self, prop, value, floating=False, workspace=None):
         self.prop = prop
-        self.value = value
+        self.value = value.lower()
         self.floating = floating
         self.workspace = workspace
 
 
 def _find_rules(wid):
+    def _lower(s):
+        return s.lower() if s else None
+
     for rule in config.rules:
         if ((rule.prop == "class" and
-             rule.value == pwm.windows.get_property(wid, "WM_CLASS")) or
+             rule.value == _lower(pwm.windows.get_property(
+                 wid, "WM_CLASS"))) or
             (rule.prop == "role" and
-             rule.value == pwm.windows.get_property(wid, "WM_WINDOW_ROLE")) or
+             rule.value == _lower(pwm.windows.get_property(
+                 wid, "WM_WINDOW_ROLE"))) or
             (rule.prop == "name" and
-             rule.value == pwm.windows.get_name(wid))):
+             rule.value == _lower(pwm.windows.get_name(wid)))):
             yield rule
 
 

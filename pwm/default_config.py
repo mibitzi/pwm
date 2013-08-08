@@ -121,7 +121,7 @@ keys.append(("Shift-Mod4-0", cmd.send_to_workspace(9)))
 # Use the xprop tool and look for WM_CLASS, WM_WINDOW_ROLE and _NET_WM_NAME
 # (or WM_NAME), to get the correct values.
 rules = [
-    Rule("role", "Preferences", floating=True),
+    Rule("role", "preferences", floating=True),
     Rule("class", "truecrypt", floating=True),
     Rule("class", "vlc", floating=True)
 ]
