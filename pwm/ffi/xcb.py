@@ -120,8 +120,5 @@ class Xcb:
 
         return mask, values
 
-    def free(self, cdata):
-        self.lib.free(cdata)
-
 
 xcb = Xcb()
