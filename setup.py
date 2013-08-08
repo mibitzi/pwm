@@ -1,5 +1,7 @@
 from setuptools import setup, find_packages
 
+import pwm.ffi.base
+
 setup(
     name="pwm",
     version="0.1",
@@ -10,6 +12,9 @@ setup(
     install_requires=["cffi"],
     include_package_data=True,
     test_suite="test",
+
+    zip_safe=False,
+    ext_modules[pwm.ffi.base.ffi.verifier.get_extension()]
 
     author="Michael Bitzi",
     author_email="mibitzi@gmail.com",
