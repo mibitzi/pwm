@@ -16,9 +16,9 @@ class Rule:
 def _find_rules(wid):
     for rule in config.rules:
         if ((rule.prop == "class" and
-             rule.value == pwm.windows.get_wm_class(wid)) or
+             rule.value == pwm.windows.get_property(wid, "WM_CLASS")) or
             (rule.prop == "role" and
-             rule.value == pwm.windows.get_wm_window_role(wid)) or
+             rule.value == pwm.windows.get_property(wid, "WM_WINDOW_ROLE")) or
             (rule.prop == "name" and
              rule.value == pwm.windows.get_name(wid))):
             yield rule

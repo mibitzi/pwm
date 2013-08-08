@@ -14,6 +14,7 @@ import pwm.color
 import pwm.keybind
 import pwm.xdg
 import pwm.spawn
+import pwm.bar
 
 
 active = False
@@ -36,7 +37,7 @@ def setup():
     _width = xcb.screen.width_in_pixels
 
     global _height
-    _height = config.bar.font.size + 8
+    _height = pwm.bar.calculate_height()
 
     global _window
     mask = [(xcb.CW_OVERRIDE_REDIRECT, 1),

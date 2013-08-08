@@ -95,8 +95,7 @@ def handle_client_message(event):
         # says this *has* to be set, but VLC does not set it...
         xe_version = 1
         map_it = True
-        info = pwm.xutil.get_property_value(
-            pwm.xutil.get_property(client, "_XEMBED_INFO").reply())
+        info = pwm.windows.get_property(client, "_XEMBED_INFO")
 
         if info:
             xe_version = info[0]
@@ -159,6 +158,7 @@ def configure_clients():
         if not mapped:
             continue
 
+        # Client windows are squares, width=height
         offset += pwm.bar.primary.height+2
         xcb.core.configure_window(
             client,
@@ -173,14 +173,14 @@ def handle_unmap(wid):
 
 
 def handle_property_notify(event):
+    # We are only interested in new values for _XEMBED_INFO
     if (event.atom != pwm.xutil.get_atom("_XEMBED_INFO") or
             event.state != xcb.PROPERTY_NEW_VALUE):
         return
 
     client = event.window
 
-    info = pwm.xutil.get_property_value(
-        pwm.xutil.get_property(client, "_XEMBED_INFO").reply())
+    info = pwm.windows.get_property(client, "_XEMBED_INFO")
 
     if not info:
         return

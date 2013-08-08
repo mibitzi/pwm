@@ -17,6 +17,6 @@ class TestRules(unittest.TestCase):
         rule = pwm.rules.Rule("class", "Vlc", floating=True)
 
         with patch.object(config, "rules", [rule]):
-            with patch.object(pwm.windows, "get_wm_class",
+            with patch.object(pwm.windows, "get_property",
                               return_value="Vlc"):
                 self.assertTrue(pwm.rules.floating(0))

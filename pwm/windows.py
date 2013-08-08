@@ -120,7 +120,7 @@ def should_float(wid):
     # See the specification for more info:
     # http://standards.freedesktop.org/wm-spec/wm-spec-latest.html
 
-    wintype = pwm.xutil.get_property_reply_value(wid, "_NET_WM_WINDOW_TYPE")
+    wintype = get_property(wid, "_NET_WM_WINDOW_TYPE")
 
     if not wintype:
         return False
@@ -156,25 +156,52 @@ def change_attributes(wid, masks):
 def get_name(wid):
     """Get the window name."""
 
-    name = pwm.xutil.get_property_reply_value(wid, "_NET_WM_NAME")
+    name = get_property(wid, "_NET_WM_NAME")
 
     if not name:
-        name = pwm.xutil.get_property_reply_value(wid, xcb.ATOM_WM_NAME)
+        name = get_property(wid, xcb.ATOM_WM_NAME)
 
     return name or ""
 
 
-def get_wm_class(wid):
-    return pwm.xutil.get_property_reply_value(wid, "WM_CLASS")
+def get_property(wid, atom):
+    """Get a property of this window."""
 
+    if isinstance(atom, str):
+        atom = pwm.xutil.get_atom(atom)
 
-def get_wm_window_role(wid):
-    return pwm.xutil.get_property_reply_value(wid, "WM_WINDOW_ROLE")
+    reply = xcb.core.get_property(False, wid, atom,
+                                  xcb.GET_PROPERTY_TYPE_ANY, 0,
+                                  2 ** 32 - 1).reply()
 
+    # We want to turn the value into something useful.
+    # In particular, if the format of the reply is 8, then assume that it is a
+    # string. Moreover, it could be a list of null terminated strings.
+    # Otherwise, the format must be a list of integers.
 
-def get_wm_protocols(wid):
-    """Return the protocols supported by this window."""
-    return pwm.xutil.get_property_reply_value(wid, "WM_PROTOCOLS")
+    value = xcb.get_property_value(reply)
+
+    if reply.format == 8:
+        value = xcb.ffi.cast("char*", value)
+
+        #if 0 in value[:-1]:
+        #    ret = []
+        #    s = []
+        #    for o in value:
+        #        if o == 0:
+        #            ret.append(''.join(s))
+        #            s = []
+        #        else:
+        #            s.append(chr(o))
+        #else:
+        ret = xcb.ffi.string(value, reply.value_len).decode("UTF-8")
+
+        return ret
+    elif reply.format in (16, 32):
+        value = xcb.ffi.cast("uint%d_t*" % reply.format, value)
+        return [value[i] for i in range(reply.value_len)]
+
+    return None
 
 
 def configure(wid, **kwargs):
@@ -276,7 +303,7 @@ def kill(wid):
     # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
     # the hard way.
     atom = pwm.xutil.get_atom("WM_DELETE_WINDOW")
-    if atom in get_wm_protocols(wid):
+    if atom in get_property(wid, "WM_PROTOCOLS"):
         event = create_client_message(
             wid,
             pwm.xutil.get_atom("WM_PROTOCOLS"),
