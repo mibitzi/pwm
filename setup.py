@@ -14,7 +14,7 @@ setup(
     test_suite="test",
 
     zip_safe=False,
-    ext_modules[pwm.ffi.base.ffi.verifier.get_extension()]
+    ext_modules[pwm.ffi.base.ffi.verifier.get_extension()],
 
     author="Michael Bitzi",
     author_email="mibitzi@gmail.com",
