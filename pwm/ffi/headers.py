@@ -244,6 +244,15 @@ typedef enum xcb_grab_mode_t {
 
 } xcb_grab_mode_t;
 
+typedef enum xcb_grab_status_t {
+    XCB_GRAB_STATUS_SUCCESS = 0,
+    XCB_GRAB_STATUS_ALREADY_GRABBED = 1,
+    XCB_GRAB_STATUS_INVALID_TIME = 2,
+    XCB_GRAB_STATUS_NOT_VIEWABLE = 3,
+    XCB_GRAB_STATUS_FROZEN = 4
+} xcb_grab_status_t;
+
+
 
 #define XCB_KEY_PRESS ...
 

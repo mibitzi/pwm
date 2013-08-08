@@ -3,6 +3,8 @@
 
 import string
 import re
+import time
+import logging
 
 import pwm.windows
 from pwm.config import config
@@ -99,8 +101,29 @@ def show():
     xcb.core.map_window(_window)
     _draw()
 
-    xcb.core.grab_keyboard(False, xcb.screen.root, xcb.CURRENT_TIME,
-                           xcb.GRAB_MODE_ASYNC, xcb.GRAB_MODE_ASYNC).reply()
+    try:
+        _grab_keyboard()
+    except:
+        logging.exception()
+        _hide()
+
+
+def _grab_keyboard():
+    """Try to grab the keyboard."""
+
+    # Try (repeatedly, if necessary) to grab the keyboard. We might not
+    # get the keyboard at the first attempt because of the keybinding
+    # still being active when started via a wm's keybinding.
+    for _ in range(1000):
+        reply = xcb.core.grab_keyboard(True, xcb.screen.root, xcb.CURRENT_TIME,
+                                       xcb.GRAB_MODE_ASYNC,
+                                       xcb.GRAB_MODE_ASYNC).reply()
+        reply = xcb.ffi.cast("xcb_grab_keyboard_reply_t*", reply)
+        if reply != xcb.ffi.NULL and reply.status == xcb.GRAB_STATUS_SUCCESS:
+            return
+        time.sleep(1.0/1000.0)
+
+    raise Exception("Cannot grab keyboard")
 
 
 def _hide():
