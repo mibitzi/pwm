@@ -90,10 +90,6 @@ def _handle(event):
         event = xcb.ffi.cast("xcb_map_request_event_t*", event)
         pwm.windows.manage(event.window)
 
-    elif etype == xcb.MAP_NOTIFY:
-        event = xcb.ffi.cast("xcb_map_notify_event_t*", event)
-        logging.debug("MAP_NOTIFY {}".format(event.window))
-
     elif etype == xcb.UNMAP_NOTIFY:
         event = xcb.ffi.cast("xcb_unmap_notify_event_t*", event)
         handle_unmap(event.window)
@@ -165,27 +161,24 @@ def handle_configure_request(event):
     if not managed or floating:
         # The window is either not managed or a floating one, so there is no
         # reason not to obey the request.
-        mask = []
+        kwargs = {}
         if event.value_mask & xcb.CONFIG_WINDOW_X:
-            mask.append((xcb.CONFIG_WINDOW_X,
-                         xcb.ffi.cast("uint32_t", event.x)))
+            kwargs["x"] = event.x
 
         if event.value_mask & xcb.CONFIG_WINDOW_Y:
-            mask.append((xcb.CONFIG_WINDOW_Y,
-                         xcb.ffi.cast("uint32_t", event.y)))
+            kwargs["y"] = event.y
 
         if event.value_mask & xcb.CONFIG_WINDOW_WIDTH:
-            mask.append((xcb.CONFIG_WINDOW_WIDTH, event.width))
+            kwargs["width"] = event.width
 
         if event.value_mask & xcb.CONFIG_WINDOW_HEIGHT:
-            mask.append((xcb.CONFIG_WINDOW_HEIGHT, event.height))
+            kwargs["height"] = event.height
 
         # Note that we don't want to set border_width or stack_mode even if
         # requested.
 
         # The requested values are in absolute coordinates.
-        xcb.core.configure_window(event.window, *xcb.mask(mask))
-        pwm.windows.update_geometry(event.window)
+        pwm.windows.configure(event.window, absolute=True, **kwargs)
     else:
         # Just notify the client about it's actual geometry.
         ws.tiling.arrange(event.window)

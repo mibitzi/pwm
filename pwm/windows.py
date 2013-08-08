@@ -186,17 +186,18 @@ def configure(wid, **kwargs):
 
     workspace = pwm.workspaces.current()
     values = [(xcb.CONFIG_WINDOW_BORDER_WIDTH, config.window.border)]
+    abs_ = 0 if kwargs.get("absolute", False) else 1
 
     # We need to cast x and y in order to have correct handling for negative
     # values.
     if "x" in kwargs:
         values.append(
             (xcb.CONFIG_WINDOW_X,
-             xcb.ffi.cast("uint32_t", int(workspace.x + kwargs["x"]))))
+             xcb.ffi.cast("uint32_t", int(workspace.x*abs_ + kwargs["x"]))))
     if "y" in kwargs:
         values.append(
             (xcb.CONFIG_WINDOW_Y,
-             xcb.ffi.cast("uint32_t", int(workspace.y + kwargs["y"]))))
+             xcb.ffi.cast("uint32_t", int(workspace.y*abs_ + kwargs["y"]))))
 
     if "width" in kwargs:
         values.append((xcb.CONFIG_WINDOW_WIDTH,
@@ -209,28 +210,25 @@ def configure(wid, **kwargs):
         values.append((xcb.CONFIG_WINDOW_STACK_MODE, kwargs["stackmode"]))
 
     xcb.core.configure_window(wid, *xcb.mask(values))
-    update_geometry(wid)
+
+    if ("x" in kwargs or "y" in kwargs or
+            "width" in kwargs or "height" in kwargs):
+        update_geometry(wid)
 
 
-def get_absolute_geometry(wid):
+def get_geometry(wid, absolute=False):
     """Get geometry information for the given window.
 
     Return a tuple(x, y, width, height).
     """
 
     geo = xcb.core.get_geometry(wid).reply()
+
+    if not absolute:
+        ws = pwm.workspaces.current()
+        geo.x -= ws.x
+        geo.y -= ws.y
     return (geo.x, geo.y, geo.width, geo.height)
-
-
-def get_geometry(wid):
-    """Get geometry information for the given window.
-
-    Return a tuple(x, y, width, height).
-    """
-
-    ws = pwm.workspaces.current()
-    geo = xcb.core.get_geometry(wid).reply()
-    return (geo.x-ws.x, geo.y-ws.y, geo.width, geo.height)
 
 
 def preferred_geometry(wid, workspace=None):
@@ -354,8 +352,8 @@ def no_enter_notify_event():
 def only_if_focused(func):
     """A decorator to call the function only if there is a focused window.
 
-    The wrapped function will receive 2 additional parameters, the focused
-    window and its workspace.
+    The function will receive 2 additional parameters, the focused window and
+    its workspace.
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
