@@ -12,7 +12,9 @@ class XcbError(Exception):
         self.error = error
 
     def __str__(self):
-        return "type {}, code {}, major {}, minor {}".format(
+        label = xcb.event_get_error_label(self.error.response_type)
+        return "{}, type {}, code {}, major {}, minor {}".format(
+            xcb.ffi.string(label).decode("UTF-8"),
             self.error.response_type, self.error.error_code,
             self.error.major_code, self.error.minor_code)
 

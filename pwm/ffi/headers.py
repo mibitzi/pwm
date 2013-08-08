@@ -1534,6 +1534,9 @@ xcb_visualtype_t *
 xcb_aux_find_visual_by_attrs (xcb_screen_t *screen,
                   int8_t class_,
                   int8_t depth);
+
+const char * xcb_event_get_error_label(uint8_t type);
+
 """
 
 cairo = """
