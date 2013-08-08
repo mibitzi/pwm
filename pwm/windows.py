@@ -182,6 +182,8 @@ def configure(wid, **kwargs):
     workspace.
 
     Arguments can be: x, y, width, height, stackmode
+    If absolute=True then the window will be configured in absolute coordinates
+    and not in relation to the workspace.
     """
 
     workspace = pwm.workspaces.current()
