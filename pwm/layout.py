@@ -350,7 +350,7 @@ class Fullscreen:
         pwm.windows.configure(wid, x=0, y=0,
                               width=xcb.screen.width_in_pixels,
                               height=xcb.screen.height_in_pixels,
-                              borderwidth=10,
+                              borderwidth=0,
                               stackmode=xcb.STACK_MODE_ABOVE,
                               absolute=True,
                               noupdate=True)
