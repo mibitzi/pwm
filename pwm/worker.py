@@ -5,6 +5,8 @@ from queue import Queue
 import threading
 import logging
 
+from pwm.ffi.xcb import xcb
+
 tasks = Queue()
 _thread = None
 
@@ -32,6 +34,7 @@ def _loop():
             if work is ExitWorker:
                 raise ExitWorker()
             work()
+            xcb.core.flush()
             tasks.task_done()
         except ExitWorker:
             break

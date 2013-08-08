@@ -71,8 +71,6 @@ def _poll():
         except XcbError:
             logging.exception("XCB Error")
 
-    xcb.core.flush()
-
 
 def loop():
     fd = xcb.core.get_file_descriptor()

@@ -202,7 +202,6 @@ class Bar:
         self.draw_widgets()
         self.draw_window_text()
         self.copy_pixmap()
-        xcb.core.flush()
 
     def update_systray(self, width):
         self.systray_width = width
