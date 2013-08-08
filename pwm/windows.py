@@ -214,8 +214,13 @@ def configure(wid, **kwargs):
     """
 
     workspace = pwm.workspaces.current()
-    values = [(xcb.CONFIG_WINDOW_BORDER_WIDTH, config.window.border)]
+    values = []
     abs_ = 0 if kwargs.get("absolute", False) else 1
+
+    if "borderwidth" in kwargs:
+        values.append((xcb.CONFIG_WINDOW_BORDER_WIDTH, kwargs["borderwidth"]))
+    else:
+        values.append((xcb.CONFIG_WINDOW_BORDER_WIDTH, config.window.border))
 
     # We need to cast x and y in order to have correct handling for negative
     # values.
@@ -237,6 +242,9 @@ def configure(wid, **kwargs):
 
     if "stackmode" in kwargs:
         values.append((xcb.CONFIG_WINDOW_STACK_MODE, kwargs["stackmode"]))
+
+    if "sibling" in kwargs:
+        values.append((xcb.CONFIG_WINDOW_SIBLING, kwargs["sibling"]))
 
     xcb.core.configure_window(wid, *xcb.mask(values))
 

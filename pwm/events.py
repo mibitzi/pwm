@@ -174,13 +174,20 @@ def handle_configure_request(event):
         if event.value_mask & xcb.CONFIG_WINDOW_HEIGHT:
             kwargs["height"] = event.height
 
-        # Note that we don't want to set border_width or stack_mode even if
-        # requested.
+        # Note that we don't want to set border_width or stack_mode for managed
+        # windows, even if requested.
+        if not managed:
+            if event.value_mask & xcb.CONFIG_WINDOW_STACK_MODE:
+                kwargs["stackmode"] = event.stack_mode
+            if event.value_mask & xcb.CONFIG_WINDOW_SIBLING:
+                kwargs["sibling"] = event.sibling
+            if event.value_mask & xcb.CONFIG_WINDOW_BORDER_WIDTH:
+                kwargs["borderwidth"] = event.border_width
 
-        # The requested values are in absolute coordinates.
+        # Note that the requested values are in absolute coordinates.
         pwm.windows.configure(event.window, absolute=True, **kwargs)
     else:
-        # Just notify the client about it's actual geometry.
+        # Just notify the client about its actual geometry.
         ws.tiling.arrange(event.window)
 
 
