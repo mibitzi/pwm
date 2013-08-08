@@ -18,16 +18,17 @@ class Cursor:
     double_arrow_vert = 116
 
 
-def setup_root_window():
-    mask_values = (xcb.EVENT_MASK_STRUCTURE_NOTIFY |
-                   xcb.EVENT_MASK_SUBSTRUCTURE_NOTIFY |
-                   xcb.EVENT_MASK_SUBSTRUCTURE_REDIRECT |
-                   xcb.EVENT_MASK_ENTER_WINDOW |
-                   xcb.EVENT_MASK_LEAVE_WINDOW)
+ROOT_MASK = (xcb.EVENT_MASK_STRUCTURE_NOTIFY |
+             xcb.EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+             xcb.EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+             xcb.EVENT_MASK_ENTER_WINDOW |
+             xcb.EVENT_MASK_LEAVE_WINDOW)
 
+
+def setup_root_window():
     cookie = xcb.core.change_window_attributes_checked(
         xcb.screen.root,
-        *xcb.mask([(xcb.CW_EVENT_MASK, mask_values)]))
+        *xcb.mask([(xcb.CW_EVENT_MASK, ROOT_MASK)]))
 
     cookie.check()
 
