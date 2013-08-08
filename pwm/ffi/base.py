@@ -7,9 +7,12 @@ from pwm.ffi import headers
 
 
 ffi = cffi.FFI()
-ffi.cdef(headers.xcb+headers.cairo)
+ffi.cdef("""
+void free(void *ptr);
+""" + headers.xcb+headers.cairo)
 
 lib = ffi.verify("""
+    #include <stdlib.h>
     #include <xcb/xcb.h>
     #include <xcb/xproto.h>
     #include <xcb/xcb_aux.h>

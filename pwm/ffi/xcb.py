@@ -23,8 +23,8 @@ class Cookie:
     def __init__(self, name, value):
         self.name = name
         self.value = value
-
         self.name = re.sub("_unchecked$", "", self.name)
+        self.creply = None
 
     def __getattr__(self, name):
         return getattr(self.value, name)
@@ -32,11 +32,12 @@ class Cookie:
     def reply(self):
         error = xcb.ffi.new("xcb_generic_error_t**")
 
-        reply = getattr(xcb.core, "%s_reply" % self.name)(self.value, error)
-        if reply == xcb.ffi.NULL:
+        self.creply = xcb.ffi.gc(getattr(xcb.core, "%s_reply" % self.name)(
+            self.value, error), xcb.lib.free)
+        if self.creply == xcb.ffi.NULL:
             raise XcbError(xcb.ffi.cast("xcb_generic_error_t*", error))
 
-        return reply
+        return self.creply
 
     def check(self):
         error = xcb.core.request_check(self.value)
@@ -118,5 +119,9 @@ class Xcb:
             mask |= m[0]
 
         return mask, values
+
+    def free(self, cdata):
+        self.lib.free(cdata)
+
 
 xcb = Xcb()

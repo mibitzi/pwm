@@ -120,6 +120,8 @@ def _handle(event):
         if event.type == pwm.xutil.get_atom("_NET_SYSTEM_TRAY_OPCODE"):
             pwm.systray.handle_client_message(event)
 
+    xcb.free(event)
+
 
 def handle_unmap(wid):
     if wid in pwm.windows.managed:
