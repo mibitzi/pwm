@@ -173,12 +173,16 @@ def handle_unmap(wid):
 
 
 def handle_property_notify(event):
-    # We are only interested in new values for _XEMBED_INFO
+    # We are only interested in new values for _XEMBED_INFO.
+    # Those will tell us whether a client should be mapped or not.
     if (event.atom != pwm.xutil.get_atom("_XEMBED_INFO") or
             event.state != xcb.PROPERTY_NEW_VALUE):
         return
 
     client = event.window
+
+    if client not in clients:
+        return
 
     info = pwm.windows.get_property(client, "_XEMBED_INFO")
 
