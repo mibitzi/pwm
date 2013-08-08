@@ -42,7 +42,7 @@ class TestState(unittest.TestCase):
         self.reset()
         pwm.state.restore()
 
-        self.assertEqual(pwm.windows.managed[wid],
+        self.assertEqual(pwm.windows.managed[wid].workspace,
                          pwm.workspaces.workspaces[0])
 
     def test_workspace_windows(self):

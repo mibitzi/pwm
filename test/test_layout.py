@@ -2,6 +2,7 @@
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
 import unittest
+from unittest.mock import patch
 
 from pwm.config import config
 import pwm.layout
@@ -402,5 +403,44 @@ class TestFloating(unittest.TestCase):
         _, _, new_width, new_height = pwm.windows.get_geometry(wid)
         ws = pwm.workspaces.current()
         self.assertEqual(
-            (new_width, new_height), (round(width+ws.width*0.02),
-                                      round(height+ws.height*0.03)))
+            (new_width, new_height),
+            (round(width+ws.width*0.02), round(height+ws.height*0.03)))
+
+
+class TestFullscreen(unittest.TestCase):
+    def setUp(self):
+        util.setup()
+        self.fullscreen = pwm.layout.Fullscreen(pwm.workspaces.current())
+
+    def tearDown(self):
+        util.tear_down()
+
+    def test_add_window(self):
+        wid = util.create_window()
+        self.fullscreen.add_window(wid)
+        self.assertIn(wid, self.fullscreen.windows)
+
+    def test_remove_window(self):
+        wid = util.create_window()
+        self.fullscreen.add_window(wid)
+        self.fullscreen.remove_window(wid)
+        self.assertNotIn(wid, self.fullscreen.windows)
+
+    def test_add_window_flag(self):
+        wid = util.create_window()
+        self.fullscreen.add_window(wid)
+        self.assertTrue(pwm.windows.managed[wid].fullscreen)
+
+    def test_remove_window_flag(self):
+        wid = util.create_window()
+        self.fullscreen.add_window(wid)
+        self.fullscreen.remove_window(wid)
+        self.assertFalse(pwm.windows.managed[wid].fullscreen)
+
+    def test_add_window_configure(self):
+        wid = util.create_window()
+
+        with patch.object(pwm.windows, "configure") as conf:
+            self.fullscreen.add_window(wid)
+
+        conf.assert_called_once()

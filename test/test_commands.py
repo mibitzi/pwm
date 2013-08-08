@@ -102,6 +102,14 @@ class TestCommands(unittest.TestCase):
             pwm.commands.toggle_focus_layer()()
         toggle.assert_called_once_with()
 
+    def test_toggle_fullscreen(self):
+        wid = util.create_window()
+        ws = pwm.workspaces.current()
+
+        with patch.object(ws, "toggle_fullscreen") as toggle:
+            pwm.commands.toggle_fullscreen()()
+        toggle.assert_called_once_with(wid)
+
     @patch.object(pwm.menu, "show")
     def test_menu(self, menu):
         pwm.commands.menu()()

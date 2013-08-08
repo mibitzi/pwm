@@ -3,7 +3,6 @@
 
 from contextlib import contextmanager
 from functools import wraps
-from collections import defaultdict
 import struct
 
 from pwm.ffi.xcb import xcb
@@ -17,17 +16,23 @@ import pwm.rules
 
 managed = {}
 focused = None
-geometry = {}
-
-
-# Some UnmapNotifyEvents, like those generated when switching workspaces, have
-# to be ignored. Every window has a key in ignore_unmaps with a value
-# indicating how many future UnmapNotifyEvents have to be ignored.
-ignore_unmaps = defaultdict(int)
 
 MANAGED_EVENT_MASK = (xcb.EVENT_MASK_ENTER_WINDOW |
                       xcb.EVENT_MASK_FOCUS_CHANGE |
                       xcb.EVENT_MASK_PROPERTY_CHANGE)
+
+
+class Info:
+    def __init__(self):
+        # Some UnmapNotifyEvents, like those generated when switching
+        # workspaces, have to be ignored. This indicates how many future
+        # UnmapNotifyEvents have to be ignored.
+        self.ignore_unmaps = 0
+
+        self.floating = False
+        self.fullscreen = False
+        self.workspace = None
+        self.geometry = None
 
 
 def create(x, y, width, height, mask=None):
@@ -72,13 +77,16 @@ def manage(wid, only_if_mapped=False):
     if attr.override_redirect:
         return
 
+    info = Info()
+    managed[wid] = info
+    info.floating = should_float(wid)
+
     update_geometry(wid)
 
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
 
     pwm.workspaces.current().add_window(wid)
-    ignore_unmaps[wid] = 0
-    managed[wid] = pwm.workspaces.current()
+    info.workspace = pwm.workspaces.current()
 
     focus(wid)
 
@@ -87,12 +95,9 @@ def unmanage(wid):
     if wid not in managed:
         return
 
-    ws = managed[wid]
+    ws = managed[wid].workspace
     ws.remove_window(wid)
-    if wid in ignore_unmaps:
-        del ignore_unmaps[wid]
     del managed[wid]
-    del geometry[wid]
 
     if focused == wid:
         focus(pwm.workspaces.current().top_focus_priority())
@@ -138,8 +143,8 @@ def should_float(wid):
 
 def update_geometry(wid):
     # We only want the geometry if this window is floating
-    if wid not in managed or wid in managed[wid].floating.windows:
-        geometry[wid] = get_geometry(wid)
+    if wid not in managed or managed[wid].floating:
+        managed[wid].geometry = get_geometry(wid)
 
 
 def is_mapped(wid):
@@ -217,10 +222,9 @@ def configure(wid, **kwargs):
     values = []
     abs_ = 0 if kwargs.get("absolute", False) else 1
 
-    if "borderwidth" in kwargs:
-        values.append((xcb.CONFIG_WINDOW_BORDER_WIDTH, kwargs["borderwidth"]))
-    else:
-        values.append((xcb.CONFIG_WINDOW_BORDER_WIDTH, config.window.border))
+    border = (kwargs["borderwidth"] if "borderwidth" in kwargs
+              else config.window.border)
+    values.append((xcb.CONFIG_WINDOW_BORDER_WIDTH, border))
 
     # We need to cast x and y in order to have correct handling for negative
     # values.
@@ -235,10 +239,10 @@ def configure(wid, **kwargs):
 
     if "width" in kwargs:
         values.append((xcb.CONFIG_WINDOW_WIDTH,
-                       int(kwargs["width"] - 2*config.window.border)))
+                       int(kwargs["width"] - 2*border)))
     if "height" in kwargs:
         values.append((xcb.CONFIG_WINDOW_HEIGHT,
-                       int(kwargs["height"] - 2*config.window.border)))
+                       int(kwargs["height"] - 2*border)))
 
     if "stackmode" in kwargs:
         values.append((xcb.CONFIG_WINDOW_STACK_MODE, kwargs["stackmode"]))
@@ -248,9 +252,10 @@ def configure(wid, **kwargs):
 
     xcb.core.configure_window(wid, *xcb.mask(values))
 
-    if ("x" in kwargs or "y" in kwargs or
-            "width" in kwargs or "height" in kwargs):
-        update_geometry(wid)
+    if wid in managed and "noupdate" not in kwargs:
+        if ("x" in kwargs or "y" in kwargs or
+                "width" in kwargs or "height" in kwargs):
+            update_geometry(wid)
 
 
 def get_geometry(wid, absolute=False):
@@ -265,6 +270,12 @@ def get_geometry(wid, absolute=False):
         ws = pwm.workspaces.current()
         geo.x -= ws.x
         geo.y -= ws.y
+
+    # Because borders are not included in width/height and because we
+    # subtracted them when configuring we have to add them again.
+    geo.width += 2*geo.border_width
+    geo.height += 2*geo.border_width
+
     return (geo.x, geo.y, geo.width, geo.height)
 
 
@@ -275,7 +286,7 @@ def preferred_geometry(wid, workspace=None):
         workspace = pwm.workspaces.current()
 
     # We will use the last known geometry.
-    _, _, width, height = geometry[wid]
+    _, _, width, height = managed[wid].geometry
 
     # There should be some minimum size.
     width = max(10, width)
@@ -345,7 +356,7 @@ def focus(wid):
     focused = win
     if focused:
         _handle_focus(focused, True)
-        managed[wid].handle_focus(wid)
+        managed[wid].workspace.handle_focus(wid)
 
     pwm.events.focus_changed(win)
 
@@ -367,7 +378,7 @@ def _handle_focus(wid, focused):
                                  xcb.TIME_CURRENT_TIME)
 
         # Focused floating windows should always be at the top.
-        if managed[wid].windows[wid]["floating"]:
+        if managed[wid].floating:
             configure(wid, stackmode=xcb.STACK_MODE_ABOVE)
 
 
@@ -396,5 +407,5 @@ def only_if_focused(func):
     def wrapper(*args, **kwargs):
         focused = pwm.windows.focused
         if focused:
-            func(focused, managed[focused], *args, **kwargs)
+            func(focused, managed[focused].workspace, *args, **kwargs)
     return wrapper

@@ -105,6 +105,12 @@ def toggle_focus_layer(focused, ws):
 
 
 @pwm.config.create_arguments
+@pwm.windows.only_if_focused
+def toggle_fullscreen(focused, ws):
+    ws.toggle_fullscreen(focused)
+
+
+@pwm.config.create_arguments
 def menu():
     """Show the application menu."""
     pwm.menu.show()

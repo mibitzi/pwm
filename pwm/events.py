@@ -119,17 +119,19 @@ def _handle(event):
         event = xcb.ffi.cast("xcb_client_message_event_t*", event)
         if event.type == pwm.xutil.get_atom("_NET_SYSTEM_TRAY_OPCODE"):
             pwm.systray.handle_client_message(event)
+        elif event.type == pwm.xutil.get_atom("_NET_WM_STATE"):
+            handle_wm_state(event)
 
     xcb.free(event)
 
 
 def handle_unmap(wid):
     if wid in pwm.windows.managed:
-        if pwm.windows.ignore_unmaps.get(wid, 0) == 0:
+        if pwm.windows.managed[wid].ignore_unmaps == 0:
             pwm.windows.unmanage(wid)
             window_unmapped(wid)
         else:
-            pwm.windows.ignore_unmaps[wid] -= 1
+            pwm.windows.managed[wid].ignore_unmaps -= 1
 
     elif wid in pwm.systray.clients:
         pwm.systray.handle_unmap(wid)
@@ -142,8 +144,8 @@ def handle_configure_request(event):
     managed = event.window in pwm.windows.managed
 
     if managed:
-        ws = pwm.windows.managed[event.window]
-        floating = ws.windows[event.window]["floating"]
+        ws = pwm.windows.managed[event.window].workspace
+        floating = pwm.windows.managed[event.window].floating
     else:
         ws = None
         floating = False
@@ -184,8 +186,36 @@ def handle_configure_request(event):
 def handle_property_notify(event):
     if event.atom == pwm.xutil.get_atom("_XEMBED_INFO"):
         pwm.systray.handle_property_notify(event)
-    elif (event.atom == xcb.ATOM_WM_NAME or
-            event.atom == pwm.xutil.get_atom("_NET_WM_NAME")):
+    elif event.atom in (xcb.ATOM_WM_NAME, pwm.xutil.get_atom("_NET_WM_NAME")):
         wid = event.window
         if wid in pwm.windows.managed:
             window_name_changed(wid)
+
+
+def handle_wm_state(event):
+    msgtype = event.data.data32[1]
+    type_fullscreen = pwm.xutil.get_atom("_NET_WM_STATE_FULLSCREEN")
+    type_urgent = pwm.xutil.get_atom("_NET_WM_STATE_DEMANDS_ATTENTION")
+
+    if event.format != 32 or msgtype not in (type_fullscreen, type_urgent):
+        return
+
+    wid = event.window
+    if wid not in pwm.windows.managed:
+        return
+
+    action = event.data.data32[0]
+    action_add = pwm.xutil.get_atom("_NET_WM_STATE_ADD")
+    action_remove = pwm.xutil.get_atom("_NET_WM_STATE_REMOVE")
+    action_toggle = pwm.xutil.get_atom("_NET_WM_STATE_TOGGLE")
+
+    if msgtype == type_fullscreen:
+        isfull = pwm.windows.managed[wid].fullscreen
+
+        if (action == action_toggle or
+                (isfull and action == action_remove) or
+                (not isfull and action == action_add)):
+            pwm.windows.managed[wid].workspace.toggle_fullscreen(wid)
+
+    elif msgtype == type_urgent:
+        pass

@@ -3,7 +3,6 @@
 
 import unittest
 
-from pwm.config import config
 import pwm.workspaces
 import pwm.windows
 import test.util as util
@@ -23,8 +22,8 @@ class TestWindow(unittest.TestCase):
 
         self.assertEqual(x, 100)
         self.assertEqual(y, 200)
-        self.assertEqual(width, 300 - 2*config.window.border)
-        self.assertEqual(height, 400 - 2*config.window.border)
+        self.assertEqual(width, 300)
+        self.assertEqual(height, 400)
 
     def test_manage(self):
         win = util.create_window()

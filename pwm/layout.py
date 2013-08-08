@@ -22,8 +22,11 @@ class Tiling:
     def __init__(self, workspace):
         self.workspace = workspace
         self.columns = [Column(1.0, [])]
+        self.windows = []
 
     def add_window(self, wid, column=0, row=-1):
+        self.windows.append(wid)
+
         if column >= len(self.columns):
             self.columns.append(Column(1.0, [Window(1.0, wid)]))
         else:
@@ -39,6 +42,8 @@ class Tiling:
         self.arrange()
 
     def remove_window(self, wid):
+        self.windows.remove(wid)
+
         column, row = self.path(wid)
         del self.columns[column].windows[row]
 
@@ -321,10 +326,9 @@ class Floating:
 
     def resize(self, wid, delta):
         x, y, width, height = pwm.windows.get_geometry(wid)
-        border = config.window.border
 
-        width = max(10, round(width+2*border+self.workspace.width*delta[0]))
-        height = max(10, round(height+2*border+self.workspace.height*delta[1]))
+        width = max(10, round(width+self.workspace.width*delta[0]))
+        height = max(10, round(height+self.workspace.height*delta[1]))
 
         pwm.windows.configure(wid, width=width, height=height)
 
@@ -332,3 +336,25 @@ class Floating:
         idx = self.windows.index(wid)+1
         return (self.windows[idx] if idx < len(self.windows)
                 else self.windows[0])
+
+
+class Fullscreen:
+    def __init__(self, workspace):
+        self.workspace = workspace
+        self.windows = []
+
+    def add_window(self, wid):
+        self.windows.append(wid)
+        pwm.windows.managed[wid].fullscreen = True
+
+        pwm.windows.configure(wid, x=0, y=0,
+                              width=xcb.screen.width_in_pixels,
+                              height=xcb.screen.height_in_pixels,
+                              borderwidth=10,
+                              stackmode=xcb.STACK_MODE_ABOVE,
+                              absolute=True,
+                              noupdate=True)
+
+    def remove_window(self, wid):
+        self.windows.remove(wid)
+        pwm.windows.managed[wid].fullscreen = False

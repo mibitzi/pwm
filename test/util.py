@@ -31,9 +31,10 @@ def tear_down():
     destroy_created_windows()
     pwm.bar.destroy()
     pwm.workspaces.destroy()
+    pwm.windows.managed = {}
 
 
-def create_window(manage=True, floating=False):
+def create_window(manage=True, floating=False, fullscreen=False):
     """Create a new window and manage it."""
 
     wid = pwm.windows.create(0, 0, 100, 100)
@@ -41,6 +42,11 @@ def create_window(manage=True, floating=False):
     if manage:
         with patch.object(pwm.windows, "should_float", return_value=floating):
             pwm.windows.manage(wid)
+    else:
+        pwm.windows.managed[wid] = pwm.windows.Info()
+        pwm.windows.managed[wid].floating = floating
+
+    pwm.windows.managed[wid].fullscreen = fullscreen
 
     global created_windows
     created_windows.append((wid, manage))

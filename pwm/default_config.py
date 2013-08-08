@@ -80,7 +80,8 @@ keys = [
     ("Mod4-q", cmd.kill()),
     ("Mod4-Return", cmd.spawn("urxvt")),
     ("Mod4-p", cmd.menu()),
-    ("Mod4-f", cmd.toggle_floating()),
+    ("Shift-Mod4-f", cmd.toggle_floating()),
+    ("Mod4-f", cmd.toggle_fullscreen()),
     ("Mod4-space", cmd.toggle_focus_layer()),
 
     ("Mod4-h", cmd.focus("left")),
