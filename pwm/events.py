@@ -1,8 +1,8 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
-import select
 import logging
+import functools
 
 from pwm.ffi.xcb import xcb, XcbError
 import pwm.xutil
@@ -61,24 +61,14 @@ window_exposed = Event()
 workspace_switched = Event()
 
 
-def _poll():
-    while True:
+def loop():
+    while not shutdown:
         try:
-            event = xcb.core.poll_for_event()
-            if not event:
-                break
-            _handle(event)
+            ev = xcb.core.wait_for_event()
+            if ev:
+                pwm.worker.tasks.put(functools.partial(_handle, ev))
         except XcbError:
             logging.exception("XCB Error")
-
-
-def loop():
-    fd = xcb.core.get_file_descriptor()
-
-    while not shutdown:
-        # Wait until there is actually something to do, then poll
-        select.select([fd], [], [])
-        pwm.worker.tasks.put(_poll)
 
 
 def _handle(event):

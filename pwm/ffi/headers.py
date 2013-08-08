@@ -1193,6 +1193,7 @@ typedef enum xcb_gc_t {
 
 int xcb_flush(xcb_connection_t *c);
 xcb_generic_event_t *xcb_poll_for_event(xcb_connection_t *c);
+xcb_generic_event_t *xcb_wait_for_event(xcb_connection_t *c);
 xcb_generic_error_t *xcb_request_check(xcb_connection_t *c, xcb_void_cookie_t cookie);
 void xcb_discard_reply(xcb_connection_t *c, unsigned int sequence);
 const xcb_setup_t *xcb_get_setup(xcb_connection_t *c);
