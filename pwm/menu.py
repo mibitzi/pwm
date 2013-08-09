@@ -99,11 +99,16 @@ def show():
     _applications = pwm.xdg.applications()
     _filter_applist()
 
-    _grab_keyboard()
-    active = True
-
     xcb.core.map_window(_window)
     _draw()
+
+    try:
+        _grab_keyboard()
+    except:
+        _hide()
+        raise
+
+    active = True
 
 
 def _grab_keyboard():
@@ -113,11 +118,10 @@ def _grab_keyboard():
     # get the keyboard at the first attempt because of the keybinding
     # still being active when started via a wm's keybinding.
     for _ in range(1000):
-        reply = xcb.core.grab_keyboard(True, xcb.screen.root, xcb.CURRENT_TIME,
+        reply = xcb.core.grab_keyboard(True, _window, xcb.CURRENT_TIME,
                                        xcb.GRAB_MODE_ASYNC,
                                        xcb.GRAB_MODE_ASYNC).reply()
-        reply = xcb.ffi.cast("xcb_grab_keyboard_reply_t*", reply)
-        if reply != xcb.ffi.NULL and reply.status == xcb.GRAB_STATUS_SUCCESS:
+        if reply != xcb.ffi.NULL:
             return
         time.sleep(1.0/1000.0)
 
