@@ -43,6 +43,7 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(
+        filename="/tmp/pwm.log",
         level=logging.INFO,
         format='%(asctime)s:%(levelname)s:%(message)s',
         datefmt='%m-%d %H:%M:%S')
