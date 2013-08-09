@@ -14,6 +14,8 @@ primary = None
 
 class Bar:
     def __init__(self):
+        self.x = 0
+        self.y = 0
         self.width = xcb.screen.width_in_pixels
         self.height = calculate_height()
 
@@ -52,7 +54,7 @@ class Bar:
                 (xcb.CW_BACK_PIXEL, color.get_pixel(config.bar.background)),
                 (xcb.CW_EVENT_MASK, xcb.EVENT_MASK_EXPOSURE)]
 
-        return pwm.windows.create(0, 0, self.width, self.height,
+        return pwm.windows.create(self.x, self.y, self.width, self.height,
                                   xcb.mask(mask))
 
     def create_pixmap(self):

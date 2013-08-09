@@ -43,7 +43,8 @@ def setup():
     mask = [(xcb.CW_OVERRIDE_REDIRECT, 1),
             (xcb.CW_BACK_PIXEL, pwm.color.get_pixel(config.bar.background)),
             (xcb.CW_EVENT_MASK, xcb.EVENT_MASK_EXPOSURE)]
-    _window = pwm.windows.create(0, 0, _width, _height, xcb.mask(mask))
+    _window = pwm.windows.create(pwm.bar.primary.x, pwm.bar.primary.y,
+                                 _width, _height, xcb.mask(mask))
 
     global _pixmap
     _pixmap = xcb.core.generate_id()
@@ -200,8 +201,8 @@ def _draw():
     for idx, (_, _, _, app) in enumerate(_filtered):
         _ctx.text_extents(app["name"], text_extents)
 
-        if idx == 0:
-            # Make the first entry a bit nicer
+        if idx == _selection:
+            # Make the selected entry a bit nicer
             _ctx.set_source_rgb(*pwm.color.get_rgb(
                 config.bar.active_workspace_background))
             _ctx.rectangle(left-5, 0, text_extents.width+10, _height)
@@ -229,6 +230,7 @@ def handle_key_press_event(event):
         return
 
     global _typed
+    global _selection
 
     if symstr == "Escape":
         _hide()
@@ -242,8 +244,19 @@ def handle_key_press_event(event):
         _hide()
         return
 
+    elif symstr == "Tab":
+        _selection += 1
+        if _selection >= len(_filtered):
+            _selection = 0
+
+    elif symstr == "ISO_Left_Tab":
+        _selection -= 1
+        if _selection < 0:
+            _selection = len(_filtered)-1
+
     elif symstr == "BackSpace":
         _typed = _typed[:-1]
+        _filter_applist()
 
     else:
         sym = chr(sym)
@@ -251,6 +264,6 @@ def handle_key_press_event(event):
             return
 
         _typed += sym
+        _filter_applist()
 
-    _filter_applist()
     _draw()
