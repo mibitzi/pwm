@@ -81,6 +81,10 @@ def manage(wid, only_if_mapped=False):
     managed[wid] = info
     info.floating = should_float(wid)
 
+    state = get_property(wid, "_NET_WM_STATE")
+    if state and pwm.atom.get("_NET_WM_STATE_FULLSCREEN") in state:
+        info.fullscreen = True
+
     update_geometry(wid)
 
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])

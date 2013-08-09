@@ -36,6 +36,11 @@ class TestWorkspace(unittest.TestCase):
             self.workspace.height,
             xcb.screen.height_in_pixels - pwm.bar.primary.height)
 
+    def test_add_window_fullscreen(self):
+        wid = util.create_window(manage=False, fullscreen=True)
+        self.workspace.add_window(wid)
+        self.fullscreen.add_window.assert_called_once_with(wid)
+
     def test_add_window_floating(self):
         wid = util.create_window(floating=True)
         self.floating.add_window.assert_called_once_with(wid)

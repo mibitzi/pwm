@@ -42,7 +42,9 @@ class Workspace:
 
     def add_window(self, wid):
         with pwm.windows.no_enter_notify_event():
-            if pwm.windows.managed[wid].floating:
+            if pwm.windows.managed[wid].fullscreen:
+                self.fullscreen.add_window(wid)
+            elif pwm.windows.managed[wid].floating:
                 self.floating.add_window(wid)
             else:
                 # Place new window below the one with the highest priority
