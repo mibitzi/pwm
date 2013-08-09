@@ -1,5 +1,5 @@
-"""This is the configuration file for pwm.
-It usually resides ~/.config/pwmrc.py
+"""
+This is the configuration file for pwm.
 """
 
 import pwm.commands as cmd
@@ -107,8 +107,8 @@ keys = [
     ("XF86AudioLowerVolume", cmd.spawn("amixer -q set Master 2dB- unmute")),
     ("XF86AudioMute", cmd.spawn("amixer -q set Master toggle")),
 
-    ("XF86MonBrightnessUp", cmd.spawn("/usr/bin/xbacklight -inc 10")),
-    ("XF86MonBrightnessDown", cmd.spawn("/usr/bin/xbacklight -dec 10")),
+    ("XF86MonBrightnessUp", cmd.spawn("xbacklight -inc 10")),
+    ("XF86MonBrightnessDown", cmd.spawn("xbacklight -dec 10")),
 ]
 
 # Keys for every workspace.
