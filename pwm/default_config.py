@@ -33,25 +33,29 @@ bar = Values(
     urgent_workspace_background="#900000",
     urgent_workspace_border="#2f343a",
 
-    # Widgets are defined as a list of functions.
-    # Every widget function should return a tuple like:
+    # Widgets are defined as a list of callables.
+    # Every widget should return a tuple like:
     #     (color, text)
     # Where color is a hex value string such as "#ffffff".
     # If color is None the default foreground color will be used.
-    separator="#aaaaaa",
+    #
+    # The default widget functions create new callables with the passed
+    # arguments. If you want to use your own widget, simply define a function
+    # and add its name to the list. Note that your widget will not receive any
+    # arguments when called.
     widgets=[
         widgets.volume(),
         widgets.separator(),
-        widgets.battery("BAT1"),
-        widgets.separator(),
         widgets.disk("/"),
-        widgets.separator(),
-        widgets.disk("/home"),
         widgets.separator(),
         widgets.load(),
         widgets.separator(),
         widgets.time(),
-    ])
+    ],
+
+    # The color used for the separator widget.
+    separator="#aaaaaa",
+)
 
 
 window = Values(

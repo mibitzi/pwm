@@ -65,6 +65,12 @@ def separator(char="•", color=None):
 
 
 @pwm.config.create_arguments
+def text(text, color=None):
+    """Return a text in the wanted color."""
+    return (color, text)
+
+
+@pwm.config.create_arguments
 def time(fmt="%Y-%m-%d %H:%M:%S", color=None):
     """Return the current time.
 
@@ -136,3 +142,12 @@ def disk(path, color=None, fmt="{path} {free}"):
 def load(color=None):
     """Return system load."""
     return (color, " ".join("{:.2f}".format(f) for f in os.getloadavg()))
+
+
+@pwm.config.create_arguments
+def cmd(cmd, color=None):
+    """Return the output of another program."""
+    shell = os.getenv("SHELL", "/bin/sh")
+    out = subprocess.check_output([shell, "-c", cmd], universal_newlines=True)
+    out = out.split("\n")[0]
+    return (color, out)
