@@ -115,7 +115,7 @@ class TestEvents(unittest.TestCase):
     def _test_wm_state_fullscreen(self, wid, action):
         event = MagicMock()
         event.format = 32
-        event.data.data32 = [pwm.xutil.get_atom(action),
+        event.data.data32 = [action,
                              pwm.xutil.get_atom("_NET_WM_STATE_FULLSCREEN")]
         event.window = wid
 
@@ -127,13 +127,13 @@ class TestEvents(unittest.TestCase):
 
     def test_handle_wm_state_add_fullscreen(self):
         wid = util.create_window()
-        self._test_wm_state_fullscreen(wid, "_NET_WM_STATE_ADD")
+        self._test_wm_state_fullscreen(wid, pwm.xutil._NET_WM_STATE_ADD)
 
     def test_handle_wm_state_remove_fullscreen(self):
         wid = util.create_window()
         pwm.windows.managed[wid].fullscreen = True
-        self._test_wm_state_fullscreen(wid, "_NET_WM_STATE_REMOVE")
+        self._test_wm_state_fullscreen(wid, pwm.xutil._NET_WM_STATE_REMOVE)
 
     def test_handle_wm_state_toggle_fullscreen(self):
         wid = util.create_window()
-        self._test_wm_state_fullscreen(wid, "_NET_WM_STATE_TOGGLE")
+        self._test_wm_state_fullscreen(wid, pwm.xutil._NET_WM_STATE_TOGGLE)

@@ -209,6 +209,38 @@ def get_property(wid, atom):
     return None
 
 
+def set_property(wid, atom, value, proptype=None):
+    fmt = 0
+    data = []
+    datalen = 0
+
+    if not isinstance(value, (list, tuple)):
+        value = [value]
+
+    if isinstance(value[0], str):
+        fmt = 8
+        data = b"\x00".join(val.encode("UTF-8") for val in value)
+        datalen = len(data)
+
+        if not proptype:
+            proptype = pwm.xutil.get_atom("UTF8_STRING")
+
+    elif isinstance(value[0], int):
+        fmt = 32
+        datalen = len(value)
+        data = struct.pack("{}I".format(datalen), *value)
+
+        if not proptype:
+            # We just assume it's an atom, but it could also be something else.
+            proptype = xcb.ATOM_ATOM
+
+    if isinstance(atom, str):
+        atom = pwm.xutil.get_atom(atom)
+
+    xcb.core.change_property(xcb.PROP_MODE_REPLACE, wid, atom, proptype, fmt,
+                             datalen, data)
+
+
 def configure(wid, **kwargs):
     """Configure the window and set the given variables in relation to the
     workspace.

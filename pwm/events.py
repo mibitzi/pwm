@@ -193,6 +193,8 @@ def handle_property_notify(event):
 
 
 def handle_wm_state(event):
+    logging.debug("_NET_WM_STATE {}".format(event.window))
+
     msgtype = event.data.data32[1]
     type_fullscreen = pwm.xutil.get_atom("_NET_WM_STATE_FULLSCREEN")
     type_urgent = pwm.xutil.get_atom("_NET_WM_STATE_DEMANDS_ATTENTION")
@@ -205,16 +207,13 @@ def handle_wm_state(event):
         return
 
     action = event.data.data32[0]
-    action_add = pwm.xutil.get_atom("_NET_WM_STATE_ADD")
-    action_remove = pwm.xutil.get_atom("_NET_WM_STATE_REMOVE")
-    action_toggle = pwm.xutil.get_atom("_NET_WM_STATE_TOGGLE")
 
     if msgtype == type_fullscreen:
         isfull = pwm.windows.managed[wid].fullscreen
 
-        if (action == action_toggle or
-                (isfull and action == action_remove) or
-                (not isfull and action == action_add)):
+        if (action == pwm.xutil._NET_WM_STATE_TOGGLE or
+                (isfull and action == pwm.xutil._NET_WM_STATE_REMOVE) or
+                (not isfull and action == pwm.xutil._NET_WM_STATE_ADD)):
             pwm.windows.managed[wid].workspace.toggle_fullscreen(wid)
 
     elif msgtype == type_urgent:

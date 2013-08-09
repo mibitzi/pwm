@@ -1,7 +1,10 @@
 # Copyright (c) 2013 Michael Bitzi
 # Licensed under the MIT license http://opensource.org/licenses/MIT
 
+import logging
+
 from pwm.ffi.xcb import xcb
+import pwm.windows
 
 _atom_cache = {}
 
@@ -32,9 +35,17 @@ def setup_root_window():
 
     cookie.check()
 
-    # We have to set the cursor now, otherwise it will not show up until the
-    # first client is launched.
-    set_root_cursor(Cursor.left_ptr)
+    try:
+        # We have to set the cursor now, otherwise it will not show up until
+        # the first client is launched.
+        set_root_cursor(Cursor.left_ptr)
+    except:
+        logging.exception("Root cursor error")
+
+    try:
+        set_root_properties()
+    except:
+        logging.exception("Root properties error")
 
 
 def set_root_cursor(cursor):
@@ -49,6 +60,59 @@ def set_root_cursor(cursor):
 
     xcb.core.free_cursor(cid)
     xcb.core.close_font(fid)
+
+
+def set_root_properties():
+    # The root window must set certain properties, see:
+    # See http://standards.freedesktop.org/wm-spec/latest/ar01s03.html
+
+    # Let the clients know what window properties we support.
+    supported = [
+        "_NET_SUPPORTED",
+        # "_NET_WM_STATE",
+        # "_NET_WM_STATE_FULLSCREEN"
+        "_NET_WM_NAME",
+        #"_NET_WM_STRUT_PARTIAL",
+        #"_NET_WM_ICON_NAME",
+        #"_NET_WM_VISIBLE_ICON_NAME",
+        #"_NET_WM_DESKTOP",
+        "_NET_WM_WINDOW_TYPE",
+        #"_NET_WM_WINDOW_TYPE_DESKTOP",
+        #"_NET_WM_WINDOW_TYPE_DOCK",
+        "_NET_WM_WINDOW_TYPE_TOOLBAR",
+        #"_NET_WM_WINDOW_TYPE_MENU",
+        "_NET_WM_WINDOW_TYPE_UTILITY",
+        "_NET_WM_WINDOW_TYPE_SPLASH",
+        "_NET_WM_WINDOW_TYPE_DIALOG",
+        #"_NET_WM_WINDOW_TYPE_DROPDOWN_MENU",
+        #"_NET_WM_WINDOW_TYPE_POPUP_MENU",
+        #"_NET_WM_WINDOW_TYPE_TOOLTIP",
+        #"_NET_WM_WINDOW_TYPE_NOTIFICATION",
+        #"_NET_WM_WINDOW_TYPE_COMBO",
+        #"_NET_WM_WINDOW_TYPE_DND",
+        "_NET_WM_WINDOW_TYPE_NORMAL",
+        #"_NET_WM_ICON",
+        #"_NET_WM_PID",
+        "_NET_WM_STATE",
+        #"_NET_WM_STATE_STICKY",
+        #"_NET_WM_STATE_SKIP_TASKBAR",
+        "_NET_WM_STATE_FULLSCREEN",
+        #"_NET_WM_STATE_MAXIMIZED_HORZ",
+        #"_NET_WM_STATE_MAXIMIZED_VERT",
+        #"_NET_WM_STATE_ABOVE",
+        #"_NET_WM_STATE_BELOW",
+        #"_NET_WM_STATE_MODAL",
+        #"_NET_WM_STATE_HIDDEN",
+        #"_NET_WM_STATE_DEMANDS_ATTENTION"
+    ]
+
+    atoms = [get_atom(name) for name in supported]
+    pwm.windows.set_property(xcb.screen.root, "_NET_SUPPORTED", atoms)
+
+
+_NET_WM_STATE_REMOVE = 0  # remove/unset property
+_NET_WM_STATE_ADD = 1  # add/set property
+_NET_WM_STATE_TOGGLE = 2  # toggle property
 
 
 def get_atom(atom_name, only_if_exists=False):
@@ -71,3 +135,17 @@ def get_atom(atom_name, only_if_exists=False):
     _atom_cache[atom_name] = atom
 
     return atom
+
+
+def get_atom_name(atom):
+    try:
+        reply = xcb.core.get_atom_name(atom).reply()
+    except:
+        reply = None
+
+    if not reply:
+        return ""
+
+    name = xcb.ffi.string(xcb.get_atom_name_name(reply), reply.name_len)
+    name = name.decode("UTF-8")
+    return name

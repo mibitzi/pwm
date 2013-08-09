@@ -1041,6 +1041,14 @@ typedef struct xcb_get_atom_name_reply_t {
 } xcb_get_atom_name_reply_t;
 
 
+typedef enum xcb_prop_mode_t {
+    XCB_PROP_MODE_REPLACE = 0,
+    XCB_PROP_MODE_PREPEND = 1,
+    XCB_PROP_MODE_APPEND = 2
+} xcb_prop_mode_t;
+
+
+
 typedef struct xcb_query_tree_cookie_t {
     unsigned int sequence;
 } xcb_query_tree_cookie_t;
@@ -1277,6 +1285,18 @@ xcb_get_property_value (const xcb_get_property_reply_t *R  );
 int
 xcb_get_property_value_length (const xcb_get_property_reply_t *R  );
 
+
+xcb_void_cookie_t
+xcb_change_property (xcb_connection_t *c  ,
+                     uint8_t           mode  ,
+                     xcb_window_t      window  ,
+                     xcb_atom_t        property  ,
+                     xcb_atom_t        type  ,
+                     uint8_t           format  ,
+                     uint32_t          data_len  ,
+                     const void       *data  );
+
+
 xcb_get_keyboard_mapping_cookie_t
 xcb_get_keyboard_mapping (xcb_connection_t *c  ,
                           xcb_keycode_t     first_keycode  ,
@@ -1377,6 +1397,14 @@ xcb_get_atom_name (xcb_connection_t *c  ,
 xcb_get_atom_name_cookie_t
 xcb_get_atom_name_unchecked (xcb_connection_t *c  ,
                              xcb_atom_t        atom  );
+
+xcb_get_atom_name_reply_t *
+xcb_get_atom_name_reply (xcb_connection_t            *c  /**< */,
+                         xcb_get_atom_name_cookie_t   cookie  /**< */,
+                         xcb_generic_error_t        **e  /**< */);
+
+char *
+xcb_get_atom_name_name (const xcb_get_atom_name_reply_t *R  /**< */);
 
 xcb_void_cookie_t
 xcb_kill_client (xcb_connection_t *c  ,
@@ -1493,26 +1521,26 @@ xcb_open_font (xcb_connection_t *c,
                const char       *name);
 
 xcb_void_cookie_t
-xcb_create_glyph_cursor (xcb_connection_t *c  /**< */,
-                         xcb_cursor_t      cid  /**< */,
-                         xcb_font_t        source_font  /**< */,
-                         xcb_font_t        mask_font  /**< */,
-                         uint16_t          source_char  /**< */,
-                         uint16_t          mask_char  /**< */,
-                         uint16_t          fore_red  /**< */,
-                         uint16_t          fore_green  /**< */,
-                         uint16_t          fore_blue  /**< */,
-                         uint16_t          back_red  /**< */,
-                         uint16_t          back_green  /**< */,
-                         uint16_t          back_blue  /**< */);
+xcb_create_glyph_cursor (xcb_connection_t *c  ,
+                         xcb_cursor_t      cid  ,
+                         xcb_font_t        source_font  ,
+                         xcb_font_t        mask_font  ,
+                         uint16_t          source_char  ,
+                         uint16_t          mask_char  ,
+                         uint16_t          fore_red  ,
+                         uint16_t          fore_green  ,
+                         uint16_t          fore_blue  ,
+                         uint16_t          back_red  ,
+                         uint16_t          back_green  ,
+                         uint16_t          back_blue  );
 
 xcb_void_cookie_t
-xcb_free_cursor (xcb_connection_t *c  /**< */,
-                 xcb_cursor_t      cursor  /**< */);
+xcb_free_cursor (xcb_connection_t *c  ,
+                 xcb_cursor_t      cursor  );
 
 xcb_void_cookie_t
-xcb_close_font (xcb_connection_t *c  /**< */,
-                xcb_font_t        font  /**< */);
+xcb_close_font (xcb_connection_t *c  ,
+                xcb_font_t        font  );
 
 uint8_t          xcb_aux_get_depth       (xcb_connection_t *c,
                                           xcb_screen_t     *screen);
