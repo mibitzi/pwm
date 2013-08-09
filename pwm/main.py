@@ -30,8 +30,8 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-l", "--loglevel", help="the level of log verbosity",
-                        choices=["DEBUG", "INFO", "WARNING", "ERROR",
-                                 "CRITICAL"])
+                        choices=["debug", "info", "warning", "error",
+                                 "critical"])
     parser.add_argument("-r", "--restore",
                         help="automatically set when restarting",
                         action="store_true")
@@ -44,11 +44,16 @@ def main():
 
     logging.basicConfig(
         filename="/tmp/pwm.log",
+        filemode="w",
         level=logging.INFO,
         format='%(asctime)s:%(levelname)s:%(message)s',
-        datefmt='%m-%d %H:%M:%S')
+        datefmt='%y-%m-%d %H:%M:%S')
 
-    logging.getLogger().addHandler(logging.StreamHandler())
+    console = logging.StreamHandler()
+    console.setFormatter(logging.Formatter(
+        fmt="%(asctime)s:%(levelname)s:%(message)s",
+        datefmt="%H:%M:%S"))
+    logging.getLogger().addHandler(console)
 
     logging.info("Loading config...")
     config.load(default=args.default)
@@ -62,6 +67,7 @@ def main():
     if loglevel != "INFO":
         logging.info("Changing loglevel to %s..." % loglevel)
         logging.getLogger().setLevel(loglevel)
+        console.setLevel(loglevel)
 
     logging.info("Startup...")
     xcb.connect()
