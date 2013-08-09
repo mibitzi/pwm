@@ -48,6 +48,8 @@ def main():
         format='%(asctime)s:%(levelname)s:%(message)s',
         datefmt='%m-%d %H:%M:%S')
 
+    logging.getLogger().addHandler(logging.StreamHandler())
+
     logging.info("Loading config...")
     config.load(default=args.default)
 

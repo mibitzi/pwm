@@ -271,10 +271,10 @@ def configure(wid, **kwargs):
 
     if "width" in kwargs:
         values.append((xcb.CONFIG_WINDOW_WIDTH,
-                       int(kwargs["width"] - 2*border)))
+                       max(0, int(kwargs["width"] - 2*border))))
     if "height" in kwargs:
         values.append((xcb.CONFIG_WINDOW_HEIGHT,
-                       int(kwargs["height"] - 2*border)))
+                       max(0, int(kwargs["height"] - 2*border))))
 
     if "stackmode" in kwargs:
         values.append((xcb.CONFIG_WINDOW_STACK_MODE, kwargs["stackmode"]))

@@ -12,7 +12,8 @@ class Values():
         self.__dict__.update(kwargs)
 
 
-loglevel = "debug"
+# The log will be written to /tmp/pwm.log
+loglevel = "info"
 
 bar = Values(
     interval=1.0,

@@ -3,7 +3,7 @@
 
 import string
 import re
-import logging
+import time
 
 import pwm.windows
 from pwm.config import config
@@ -91,7 +91,6 @@ def show():
     global active
     if active:
         return
-    active = True
 
     global _typed
     _typed = ""
@@ -100,35 +99,34 @@ def show():
     _applications = pwm.xdg.applications()
     _filter_applist()
 
+    _grab_keyboard()
+    active = True
+
     xcb.core.map_window(_window)
     _draw()
-
-    try:
-        _grab_keyboard()
-    except:
-        logging.exception("Grab keyboard error")
-        _hide()
 
 
 def _grab_keyboard():
     """Try to grab the keyboard."""
 
-    # Instead of grabbing the keyboard, we just change the root window
-    # attributes to receive all keypress events.
-    mask = pwm.root.EVENT_MASK
-    mask |= xcb.EVENT_MASK_KEY_PRESS
+    # Try (repeatedly, if necessary) to grab the keyboard. We might not
+    # get the keyboard at the first attempt because of the keybinding
+    # still being active when started via a wm's keybinding.
+    for _ in range(1000):
+        reply = xcb.core.grab_keyboard(True, xcb.screen.root, xcb.CURRENT_TIME,
+                                       xcb.GRAB_MODE_ASYNC,
+                                       xcb.GRAB_MODE_ASYNC).reply()
+        reply = xcb.ffi.cast("xcb_grab_keyboard_reply_t*", reply)
+        if reply != xcb.ffi.NULL and reply.status == xcb.GRAB_STATUS_SUCCESS:
+            return
+        time.sleep(1.0/1000.0)
 
-    cookie = xcb.core.change_window_attributes_checked(
-        xcb.screen.root,
-        *xcb.mask((xcb.CW_EVENT_MASK, mask)))
-    cookie.check()
+    raise Exception("Cannot grab keyboard")
 
 
 def _ungrab_keyboard():
     """Ungrab the keyboard."""
-    xcb.core.change_window_attributes(
-        xcb.screen.root,
-        *xcb.mask((xcb.CW_EVENT_MASK, pwm.root.EVENT_MASK)))
+    xcb.core.ungrab_keyboard(xcb.CURRENT_TIME)
 
 
 def _hide():
