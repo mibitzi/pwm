@@ -10,7 +10,7 @@ import sys
 import pwm
 from pwm.config import config
 from pwm.ffi.xcb import xcb
-import pwm.xutil
+import pwm.root
 import pwm.events
 import pwm.bar
 import pwm.menu
@@ -62,7 +62,7 @@ def main():
 
     logging.info("Startup...")
     xcb.connect()
-    pwm.xutil.setup_root_window()
+    pwm.root.setup()
     pwm.workspaces.setup()
     pwm.bar.setup()
     pwm.menu.setup()

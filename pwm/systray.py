@@ -4,7 +4,7 @@
 import logging
 
 from pwm.ffi.xcb import xcb
-import pwm.xutil
+import pwm.atom
 
 selection_window = None
 tray_atom = None
@@ -36,7 +36,7 @@ def setup():
 
     # Get the selection
     global tray_atom
-    tray_atom = pwm.xutil.get_atom("_NET_SYSTEM_TRAY_S{}".format(
+    tray_atom = pwm.atom.get("_NET_SYSTEM_TRAY_S{}".format(
         xcb.screen_number))
     xcb.core.set_selection_owner(selection_window, tray_atom, xcb.CURRENT_TIME)
 
@@ -44,7 +44,7 @@ def setup():
     # selection.
     event = pwm.windows.create_client_message(
         xcb.screen.root,
-        pwm.xutil.get_atom("MANAGER"),
+        pwm.atom.get("MANAGER"),
         xcb.CURRENT_TIME,
         tray_atom,
         selection_window)
@@ -135,7 +135,7 @@ def handle_client_message(event):
         # and propagation turned off.
         event = pwm.windows.create_client_message(
             client,
-            pwm.xutil.get_atom("_XEMBED"),
+            pwm.atom.get("_XEMBED"),
             xcb.CURRENT_TIME,
             XEMBED_EMBEDDED_NOTIFY,
             0,
@@ -175,7 +175,7 @@ def handle_unmap(wid):
 def handle_property_notify(event):
     # We are only interested in new values for _XEMBED_INFO.
     # Those will tell us whether a client should be mapped or not.
-    if (event.atom != pwm.xutil.get_atom("_XEMBED_INFO") or
+    if (event.atom != pwm.atom.get("_XEMBED_INFO") or
             event.state != xcb.PROPERTY_NEW_VALUE):
         return
 

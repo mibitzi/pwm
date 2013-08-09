@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-import pwm.xutil
+import pwm.atom
 import pwm.systray
 import pwm.events
 import test.util as util
@@ -94,7 +94,7 @@ class TestEvents(unittest.TestCase):
 
     def test_handle_property_notify_xembed(self):
         event = MagicMock()
-        event.atom = pwm.xutil.get_atom("_XEMBED_INFO")
+        event.atom = pwm.atom.get("_XEMBED_INFO")
 
         with patch.object(pwm.systray, "handle_property_notify") as handle:
             pwm.events.handle_property_notify(event)
@@ -104,7 +104,7 @@ class TestEvents(unittest.TestCase):
     def test_handle_property_notify_name(self):
         wid = util.create_window()
         event = MagicMock()
-        event.atom = pwm.xutil.get_atom("_NET_WM_NAME")
+        event.atom = pwm.atom.get("_NET_WM_NAME")
         event.window = wid
 
         with patch.object(pwm.events, "window_name_changed") as ev:
@@ -115,8 +115,7 @@ class TestEvents(unittest.TestCase):
     def _test_wm_state_fullscreen(self, wid, action):
         event = MagicMock()
         event.format = 32
-        event.data.data32 = [action,
-                             pwm.xutil.get_atom("_NET_WM_STATE_FULLSCREEN")]
+        event.data.data32 = [action, pwm.atom.get("_NET_WM_STATE_FULLSCREEN")]
         event.window = wid
 
         with patch.object(pwm.windows.managed[wid].workspace,
@@ -127,13 +126,13 @@ class TestEvents(unittest.TestCase):
 
     def test_handle_wm_state_add_fullscreen(self):
         wid = util.create_window()
-        self._test_wm_state_fullscreen(wid, pwm.xutil._NET_WM_STATE_ADD)
+        self._test_wm_state_fullscreen(wid, pwm.atom._NET_WM_STATE_ADD)
 
     def test_handle_wm_state_remove_fullscreen(self):
         wid = util.create_window()
         pwm.windows.managed[wid].fullscreen = True
-        self._test_wm_state_fullscreen(wid, pwm.xutil._NET_WM_STATE_REMOVE)
+        self._test_wm_state_fullscreen(wid, pwm.atom._NET_WM_STATE_REMOVE)
 
     def test_handle_wm_state_toggle_fullscreen(self):
         wid = util.create_window()
-        self._test_wm_state_fullscreen(wid, pwm.xutil._NET_WM_STATE_TOGGLE)
+        self._test_wm_state_fullscreen(wid, pwm.atom._NET_WM_STATE_TOGGLE)

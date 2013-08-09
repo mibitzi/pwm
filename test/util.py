@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from pwm.config import config
 from pwm.ffi.xcb import xcb
-import pwm.xutil
+import pwm.root
 import pwm.bar
 import pwm.workspaces
 
@@ -20,7 +20,7 @@ def setup():
     global connected
     if not connected:
         xcb.connect()
-        pwm.xutil.setup_root_window()
+        pwm.root.setup()
         connected = True
 
     pwm.workspaces.setup()

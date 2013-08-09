@@ -14,6 +14,7 @@ import pwm.keybind
 import pwm.xdg
 import pwm.spawn
 import pwm.bar
+import pwm.root
 
 
 active = False
@@ -113,7 +114,7 @@ def _grab_keyboard():
 
     # Instead of grabbing the keyboard, we just change the root window
     # attributes to receive all keypress events.
-    mask = pwm.xutil.ROOT_MASK
+    mask = pwm.root.EVENT_MASK
     mask |= xcb.EVENT_MASK_KEY_PRESS
 
     cookie = xcb.core.change_window_attributes_checked(
@@ -126,7 +127,7 @@ def _ungrab_keyboard():
     """Ungrab the keyboard."""
     xcb.core.change_window_attributes(
         xcb.screen.root,
-        *xcb.mask((xcb.CW_EVENT_MASK, pwm.xutil.ROOT_MASK)))
+        *xcb.mask((xcb.CW_EVENT_MASK, pwm.root.EVENT_MASK)))
 
 
 def _hide():

@@ -7,7 +7,7 @@ import struct
 
 from pwm.ffi.xcb import xcb
 from pwm.config import config
-import pwm.xutil
+import pwm.atom
 import pwm.events
 import pwm.workspaces
 import pwm.color
@@ -131,10 +131,10 @@ def should_float(wid):
         return False
 
     for wt in wintype:
-        if (wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_DIALOG") or
-                wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_UTILITY") or
-                wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_TOOLBAR") or
-                wt == pwm.xutil.get_atom("_NET_WM_WINDOW_TYPE_SPLASH")):
+        if (wt == pwm.atom.get("_NET_WM_WINDOW_TYPE_DIALOG") or
+                wt == pwm.atom.get("_NET_WM_WINDOW_TYPE_UTILITY") or
+                wt == pwm.atom.get("_NET_WM_WINDOW_TYPE_TOOLBAR") or
+                wt == pwm.atom.get("_NET_WM_WINDOW_TYPE_SPLASH")):
 
             return True
 
@@ -173,7 +173,7 @@ def get_property(wid, atom):
     """Get a property of this window."""
 
     if isinstance(atom, str):
-        atom = pwm.xutil.get_atom(atom)
+        atom = pwm.atom.get(atom)
 
     reply = xcb.core.get_property(False, wid, atom,
                                   xcb.GET_PROPERTY_TYPE_ANY, 0,
@@ -223,7 +223,7 @@ def set_property(wid, atom, value, proptype=None):
         datalen = len(data)
 
         if not proptype:
-            proptype = pwm.xutil.get_atom("UTF8_STRING")
+            proptype = pwm.atom.get("UTF8_STRING")
 
     elif isinstance(value[0], int):
         fmt = 32
@@ -235,7 +235,7 @@ def set_property(wid, atom, value, proptype=None):
             proptype = xcb.ATOM_ATOM
 
     if isinstance(atom, str):
-        atom = pwm.xutil.get_atom(atom)
+        atom = pwm.atom.get(atom)
 
     xcb.core.change_property(xcb.PROP_MODE_REPLACE, wid, atom, proptype, fmt,
                              datalen, data)
@@ -353,11 +353,11 @@ def kill(wid):
 
     # Check if the window supports WM_DELETE_WINDOW, otherwise kill it
     # the hard way.
-    atom = pwm.xutil.get_atom("WM_DELETE_WINDOW")
+    atom = pwm.atom.get("WM_DELETE_WINDOW")
     if atom in get_property(wid, "WM_PROTOCOLS"):
         event = create_client_message(
             wid,
-            pwm.xutil.get_atom("WM_PROTOCOLS"),
+            pwm.atom.get("WM_PROTOCOLS"),
             atom,
             xcb.CURRENT_TIME)
 

@@ -5,8 +5,7 @@ import logging
 
 from pwm.ffi.xcb import xcb
 import pwm.windows
-
-_atom_cache = {}
+import pwm.atom
 
 
 class Cursor:
@@ -21,34 +20,36 @@ class Cursor:
     double_arrow_vert = 116
 
 
-ROOT_MASK = (xcb.EVENT_MASK_STRUCTURE_NOTIFY |
-             xcb.EVENT_MASK_SUBSTRUCTURE_NOTIFY |
-             xcb.EVENT_MASK_SUBSTRUCTURE_REDIRECT |
-             xcb.EVENT_MASK_ENTER_WINDOW |
-             xcb.EVENT_MASK_LEAVE_WINDOW)
+EVENT_MASK = (xcb.EVENT_MASK_STRUCTURE_NOTIFY |
+              xcb.EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+              xcb.EVENT_MASK_SUBSTRUCTURE_REDIRECT |
+              xcb.EVENT_MASK_ENTER_WINDOW |
+              xcb.EVENT_MASK_LEAVE_WINDOW)
 
 
-def setup_root_window():
+def setup():
+    """Setup the root window."""
+
     cookie = xcb.core.change_window_attributes_checked(
         xcb.screen.root,
-        *xcb.mask([(xcb.CW_EVENT_MASK, ROOT_MASK)]))
+        *xcb.mask([(xcb.CW_EVENT_MASK, EVENT_MASK)]))
 
     cookie.check()
 
     try:
         # We have to set the cursor now, otherwise it will not show up until
         # the first client is launched.
-        set_root_cursor(Cursor.left_ptr)
+        set_cursor(Cursor.left_ptr)
     except:
         logging.exception("Root cursor error")
 
     try:
-        set_root_properties()
+        _set_properties()
     except:
         logging.exception("Root properties error")
 
 
-def set_root_cursor(cursor):
+def set_cursor(cursor):
     fid = xcb.core.generate_id()
     xcb.core.open_font(fid, len("cursor"), "cursor".encode("UTF-8"))
 
@@ -62,7 +63,7 @@ def set_root_cursor(cursor):
     xcb.core.close_font(fid)
 
 
-def set_root_properties():
+def _set_properties():
     # The root window must set certain properties, see:
     # See http://standards.freedesktop.org/wm-spec/latest/ar01s03.html
 
@@ -106,46 +107,5 @@ def set_root_properties():
         #"_NET_WM_STATE_DEMANDS_ATTENTION"
     ]
 
-    atoms = [get_atom(name) for name in supported]
+    atoms = [pwm.atom.get(name) for name in supported]
     pwm.windows.set_property(xcb.screen.root, "_NET_SUPPORTED", atoms)
-
-
-_NET_WM_STATE_REMOVE = 0  # remove/unset property
-_NET_WM_STATE_ADD = 1  # add/set property
-_NET_WM_STATE_TOGGLE = 2  # toggle property
-
-
-def get_atom(atom_name, only_if_exists=False):
-    """Query the X server for an ATOM identifier using a name. If we've already
-    cached the identifier, then don't contact the X server.
-
-    If the identifier is not cached, it is added to the cache.
-
-    If 'only_if_exists' is false, then the atom is created if it does not exist
-    already.
-    """
-    global _atom_cache
-
-    if atom_name in _atom_cache:
-        return _atom_cache[atom_name]
-
-    atom = xcb.core.intern_atom_unchecked(only_if_exists, len(atom_name),
-                                          atom_name.encode("UTF-8"))
-    atom = atom.reply().atom
-    _atom_cache[atom_name] = atom
-
-    return atom
-
-
-def get_atom_name(atom):
-    try:
-        reply = xcb.core.get_atom_name(atom).reply()
-    except:
-        reply = None
-
-    if not reply:
-        return ""
-
-    name = xcb.ffi.string(xcb.get_atom_name_name(reply), reply.name_len)
-    name = name.decode("UTF-8")
-    return name
