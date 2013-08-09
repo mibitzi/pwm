@@ -54,6 +54,7 @@ class TestWorkspace(unittest.TestCase):
         util.create_window(floating=True)
 
         self.tiling.add_window.reset_mock()
+        self.tiling.windows = [wid]
         with patch.object(self.tiling, "path", return_value=(1, 2)) as path:
             window = util.create_window()
 

@@ -51,7 +51,7 @@ class Workspace:
                 column = 0
                 row = -1
                 for priority in reversed(self.windows):
-                    if not pwm.windows.managed[priority].floating:
+                    if priority in self.tiling.windows:
                         column, row = self.tiling.path(priority)
                         row += 1
                         break
