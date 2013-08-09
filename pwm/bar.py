@@ -28,7 +28,7 @@ class Bar:
         (self.surface, self.ctx) = self.create_cairo_context()
         self.extents = self.font_extents()
         self.center_y = (self.height/2 - self.extents.descent +
-                         self.extents.height/2)+1
+                         self.extents.height/2)
 
         self.handlers = pwm.events.HandlerList()
         self.handlers.add(pwm.events.focus_changed, self.handle_focus_changed)
