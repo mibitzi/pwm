@@ -64,8 +64,8 @@ class Workspace:
 
     def _proxy_layout(self, attr, wid, *args, **kwargs):
         for layout in self.layouts:
-                if wid in layout.windows and hasattr(layout, attr):
-                    return getattr(layout, attr)(wid, *args, **kwargs)
+            if wid in layout.windows and hasattr(layout, attr):
+                return getattr(layout, attr)(wid, *args, **kwargs)
 
     def remove_window(self, wid):
         with pwm.windows.no_enter_notify_event():
