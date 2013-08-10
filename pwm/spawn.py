@@ -25,6 +25,7 @@ def spawn(cmd):
 
     if pid != 0:
         # Parent (calling) process is all done
+        os.wait()
         return
 
     # To become the session leader of this new session and the process group
@@ -73,7 +74,7 @@ def spawn(cmd):
         pid = os.fork()  # Fork a second child.
     except OSError:
         logging.exception("Fork second child error")
-        raise
+        os._exit(0)
 
     if pid != 0:
         # First child process is all done
@@ -119,7 +120,7 @@ def spawn(cmd):
         maxfd = 1024
 
     # Iterate through and close all file descriptors.
-    for fd in range(0, maxfd):
+    for fd in range(maxfd):
         try:
             os.close(fd)
         except OSError:  # ERROR, fd wasn't open to begin with (ignored)
