@@ -174,19 +174,15 @@ def get_name(wid):
     return name or ""
 
 
-def get_property_reply(wid, atom):
-    if isinstance(atom, str):
-        atom = pwm.atom.get(atom)
-
-    return xcb.core.get_property(False, wid, atom,
-                                 xcb.GET_PROPERTY_TYPE_ANY, 0,
-                                 2 ** 32 - 1).reply()
-
-
 def get_property(wid, atom):
     """Get a property of this window."""
 
-    reply = get_property_reply(wid, atom)
+    if isinstance(atom, str):
+        atom = pwm.atom.get(atom)
+
+    reply =  xcb.core.get_property(False, wid, atom,
+                                   xcb.GET_PROPERTY_TYPE_ANY, 0,
+                                   2 ** 32 - 1).reply()
 
     # We want to turn the value into something useful.
     # In particular, if the format of the reply is 8, then assume that it is a
