@@ -40,6 +40,8 @@ class Bar:
                           self.handle_workspace_switched)
         self.handlers.add(pwm.events.window_exposed,
                           self.handle_window_exposed)
+        self.handlers.add(pwm.events.window_urgent_set,
+                          self.handle_window_urgent_set)
 
     def destroy(self):
         self.handlers.destroy()
@@ -124,12 +126,16 @@ class Bar:
         box_height = self.height - 2*padding_top
 
         left = 0.5
-        for widx, _ in pwm.workspaces.opened():
+        for widx, ws in pwm.workspaces.opened():
             fg = None
             bg = None
             border = None
 
-            if widx == pwm.workspaces.current_workspace_index:
+            if ws.is_urgent():
+                fg = config.bar.urgent_workspace_foreground
+                bg = config.bar.urgent_workspace_background
+                border = config.bar.urgent_workspace_border
+            elif ws == pwm.workspaces.current():
                 fg = config.bar.active_workspace_foreground
                 bg = config.bar.active_workspace_background
                 border = config.bar.active_workspace_border
@@ -232,6 +238,9 @@ class Bar:
     def handle_window_exposed(self, wid):
         if wid == self.wid:
             self.copy_pixmap()
+
+    def handle_window_urgent_set(self, wid):
+        self.update()
 
 
 def setup():

@@ -124,13 +124,11 @@ class TestWorkspace(unittest.TestCase):
     def test_toggle_floating_floating(self):
         wid = util.create_window(floating=True)
         self.workspace.toggle_floating(wid)
-        self.floating.remove_window.assert_called_once_with(wid)
         self.tiling.add_window.assert_called_once_with(wid)
 
     def test_toggle_floating_tiling(self):
         wid = util.create_window()
         self.workspace.toggle_floating(wid)
-        self.tiling.remove_window.assert_called_once_with(wid)
         self.floating.add_window.assert_called_once_with(wid)
 
     def test_toggle_focus_layer(self):
@@ -187,6 +185,11 @@ class TestWorkspace(unittest.TestCase):
         self.floating.reset_mock()
         self.workspace.remove_fullscreen(wid)
         self.floating.add_window.assert_called_once_with(wid)
+
+    def test_is_urgent(self):
+        wid = util.create_window()
+        pwm.windows.managed[wid].urgent = True
+        self.assertTrue(self.workspace.is_urgent())
 
 
 class TestWorkspaces(unittest.TestCase):

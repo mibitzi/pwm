@@ -31,6 +31,7 @@ class Info:
 
         self.floating = False
         self.fullscreen = False
+        self.urgent = False
         self.workspace = None
         self.geometry = None
 
@@ -79,13 +80,13 @@ def manage(wid, only_if_mapped=False):
 
     info = Info()
     managed[wid] = info
+
     info.floating = should_float(wid)
+    update_geometry(wid, force=True)
 
     state = get_property(wid, "_NET_WM_STATE")
     if state and pwm.atom.get("_NET_WM_STATE_FULLSCREEN") in state:
         info.fullscreen = True
-
-    update_geometry(wid)
 
     change_attributes(wid, [(xcb.CW_EVENT_MASK, MANAGED_EVENT_MASK)])
 
@@ -145,9 +146,9 @@ def should_float(wid):
     return False
 
 
-def update_geometry(wid):
+def update_geometry(wid, force=False):
     # We only want the geometry if this window is floating
-    if wid not in managed or managed[wid].floating:
+    if force or managed[wid].floating:
         managed[wid].geometry = get_geometry(wid)
 
 
@@ -173,15 +174,19 @@ def get_name(wid):
     return name or ""
 
 
-def get_property(wid, atom):
-    """Get a property of this window."""
-
+def get_property_reply(wid, atom):
     if isinstance(atom, str):
         atom = pwm.atom.get(atom)
 
-    reply = xcb.core.get_property(False, wid, atom,
-                                  xcb.GET_PROPERTY_TYPE_ANY, 0,
-                                  2 ** 32 - 1).reply()
+    return xcb.core.get_property(False, wid, atom,
+                                 xcb.GET_PROPERTY_TYPE_ANY, 0,
+                                 2 ** 32 - 1).reply()
+
+
+def get_property(wid, atom):
+    """Get a property of this window."""
+
+    reply = get_property_reply(wid, atom)
 
     # We want to turn the value into something useful.
     # In particular, if the format of the reply is 8, then assume that it is a
@@ -416,6 +421,26 @@ def _handle_focus(wid, focused):
         # Focused floating windows should always be at the top.
         if managed[wid].floating:
             configure(wid, stackmode=xcb.STACK_MODE_ABOVE)
+
+        # Focusing a window should remove its urgency flag
+        if managed[wid].urgent:
+            managed[wid].urgent = False
+
+
+def toggle_urgent(wid):
+    urgent = not managed[wid].urgent
+
+    if urgent:
+        border = pwm.color.get_pixel(config.window.urgent)
+    else:
+        border = pwm.color.get_pixel(config.window.unfocused)
+
+    change_attributes(wid, [(xcb.CW_BORDER_PIXEL, border)])
+
+    managed[wid].urgent = urgent
+
+    if urgent:
+        pwm.events.window_urgent_set(wid)
 
 
 @contextmanager

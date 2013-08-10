@@ -31,7 +31,7 @@ bar = Values(
     inactive_workspace_border="#333333",
 
     urgent_workspace_foreground="#ffffff",
-    urgent_workspace_background="#900000",
+    urgent_workspace_background="#ff0000",
     urgent_workspace_border="#2f343a",
 
     # Widgets are defined as a list of callables.

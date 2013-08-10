@@ -60,6 +60,9 @@ window_exposed = Event()
 # handler(index)
 workspace_switched = Event()
 
+# handler(window)
+window_urgent_set = Event()
+
 
 def loop():
     while not shutdown:
@@ -209,12 +212,16 @@ def handle_wm_state(event):
     action = event.data.data32[0]
 
     if msgtype == type_fullscreen:
-        isfull = pwm.windows.managed[wid].fullscreen
-
-        if (action == pwm.atom._NET_WM_STATE_TOGGLE or
-                (isfull and action == pwm.atom._NET_WM_STATE_REMOVE) or
-                (not isfull and action == pwm.atom._NET_WM_STATE_ADD)):
-            pwm.windows.managed[wid].workspace.toggle_fullscreen(wid)
-
+        isset = pwm.windows.managed[wid].fullscreen
     elif msgtype == type_urgent:
-        pass
+        isset = pwm.windows.managed[wid].urgent
+
+    toggle = (action == pwm.atom._NET_WM_STATE_TOGGLE or
+              (isset and action == pwm.atom._NET_WM_STATE_REMOVE) or
+              (not isset and action == pwm.atom._NET_WM_STATE_ADD))
+
+    if toggle and msgtype == type_fullscreen:
+        pwm.windows.managed[wid].workspace.toggle_fullscreen(wid)
+
+    elif toggle and msgtype == type_urgent:
+        pwm.windows.toggle_urgent(wid)

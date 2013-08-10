@@ -25,6 +25,7 @@ def spawn(cmd):
 
     if pid != 0:
         # Parent (calling) process is all done
+        # We need to wait for the child to finish in order to prevent zombies.
         os.wait()
         return
 

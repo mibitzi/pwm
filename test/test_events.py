@@ -136,3 +136,28 @@ class TestEvents(unittest.TestCase):
     def test_handle_wm_state_toggle_fullscreen(self):
         wid = util.create_window()
         self._test_wm_state_fullscreen(wid, pwm.atom._NET_WM_STATE_TOGGLE)
+
+    def _test_wm_state_urgent(self, wid, action):
+        event = MagicMock()
+        event.format = 32
+        event.data.data32 = [action,
+                             pwm.atom.get("_NET_WM_STATE_DEMANDS_ATTENTION")]
+        event.window = wid
+
+        with patch.object(pwm.windows, "toggle_urgent") as urgent:
+            pwm.events.handle_wm_state(event)
+
+        urgent.assert_called_once_with(wid)
+
+    def test_handle_wm_state_add_urgent(self):
+        wid = util.create_window()
+        self._test_wm_state_urgent(wid, pwm.atom._NET_WM_STATE_ADD)
+
+    def test_handle_wm_state_remove_urgent(self):
+        wid = util.create_window()
+        pwm.windows.managed[wid].urgent = True
+        self._test_wm_state_urgent(wid, pwm.atom._NET_WM_STATE_REMOVE)
+
+    def test_handle_wm_state_toggle_urgent(self):
+        wid = util.create_window()
+        self._test_wm_state_urgent(wid, pwm.atom._NET_WM_STATE_TOGGLE)

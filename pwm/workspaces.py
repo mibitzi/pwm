@@ -109,15 +109,15 @@ class Workspace:
 
     def toggle_floating(self, wid):
         with pwm.windows.no_enter_notify_event():
-            if pwm.windows.managed[wid].floating:
-                self.floating.remove_window(wid)
-                self.tiling.add_window(wid)
-            else:
-                self.tiling.remove_window(wid)
-                self.floating.add_window(wid)
+            self._proxy_layout("remove_window", wid)
 
-            pwm.windows.managed[wid].floating = (
-                not pwm.windows.managed[wid].floating)
+            floating = not pwm.windows.managed[wid].floating
+            pwm.windows.managed[wid].floating = floating
+
+            if floating:
+                self.floating.add_window(wid)
+            else:
+                self.tiling.add_window(wid)
 
     def toggle_focus_layer(self):
         target = not pwm.windows.managed[pwm.windows.focused].floating
@@ -145,6 +145,12 @@ class Workspace:
             self.floating.add_window(wid)
         else:
             self.tiling.add_window(wid)
+
+    def is_urgent(self):
+        for wid in self.windows:
+            if pwm.windows.managed[wid].urgent:
+                return True
+        return False
 
 
 def setup():
