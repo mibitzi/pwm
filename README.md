@@ -22,6 +22,11 @@ cd pwm
 python setup.py install
 ```
 
+In both cases the `~/.xinitrc` file will have to be edited to include a line like:
+```
+exec pwm
+```
+
 Layout
 ------
 In pwm windows can in one of three different states: tiling (default), floating or fullscreen.
