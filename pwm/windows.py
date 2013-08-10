@@ -180,9 +180,9 @@ def get_property(wid, atom):
     if isinstance(atom, str):
         atom = pwm.atom.get(atom)
 
-    reply =  xcb.core.get_property(False, wid, atom,
-                                   xcb.GET_PROPERTY_TYPE_ANY, 0,
-                                   2 ** 32 - 1).reply()
+    reply = xcb.core.get_property(False, wid, atom,
+                                  xcb.GET_PROPERTY_TYPE_ANY, 0,
+                                  2 ** 32 - 1).reply()
 
     # We want to turn the value into something useful.
     # In particular, if the format of the reply is 8, then assume that it is a
@@ -428,6 +428,8 @@ def toggle_urgent(wid):
 
     if urgent:
         border = pwm.color.get_pixel(config.window.urgent)
+    elif wid == focused:
+        border = pwm.color.get_pixel(config.window.focused)
     else:
         border = pwm.color.get_pixel(config.window.unfocused)
 
