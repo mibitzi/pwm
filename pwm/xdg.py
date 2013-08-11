@@ -65,6 +65,10 @@ def applications():
     applications = []
     for path in find_desktop_files():
         with open(path) as f:
-            applications.append(parse_desktop_file(f.read()))
+            try:
+                parsed = parse_desktop_file(f.read())
+                applications.append(parsed)
+            except:
+                pass
 
     return applications
