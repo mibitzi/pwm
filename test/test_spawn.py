@@ -4,6 +4,7 @@
 import os
 import time
 import unittest
+import subprocess
 
 import pwm.spawn
 
@@ -16,7 +17,7 @@ class TestCommands(unittest.TestCase):
             os.unlink(tmp_file)
 
         pwm.spawn.spawn("touch %s" % tmp_file)
-        time.sleep(0.05)
+        subprocess.check_call("sync")
 
         self.assertTrue(os.path.isfile(tmp_file))
 
