@@ -4,6 +4,7 @@
 import os
 import glob
 import re
+import logging
 
 # The directories are defined in:
 # http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -69,6 +70,6 @@ def applications():
                 parsed = parse_desktop_file(f.read())
                 applications.append(parsed)
             except:
-                pass
+                logging.exception("Parse desktop file error")
 
     return applications
