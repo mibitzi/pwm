@@ -61,4 +61,16 @@ To get started, some important default shortcuts:
   - `Mod4-shift-r` Restart pwm
   - ...
 
+Development
+-----------
+For development it is convenient to use Xephyr to create a new X display:
+
+```
+Xephyr :1 -screen 1024x768
+```
+Then pwm can be run in this screen by setting the environment variable:
+```
+DISPLAY=":1" pwm
+```
+
 [aur]: [https://aur.archlinux.org/packages/pwm-git]
