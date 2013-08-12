@@ -61,9 +61,9 @@ To get started, some important default shortcuts:
   - `Mod4-shift-r` Restart pwm
   - ...
 
-Development
------------
-For development it is convenient to use Xephyr to create a new X display:
+Testing
+-------
+For testing it is convenient to use Xephyr to create a new X display:
 
 ```
 Xephyr :1 -screen 1024x768
