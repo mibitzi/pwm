@@ -261,7 +261,12 @@ def handle_key_press_event(event):
         _filter_applist()
 
     else:
-        sym = chr(sym)
+        try:
+            sym = chr(sym)
+        except ValueError:
+            # some keys have no usable values
+            return
+
         if sym not in string.printable:
             return
 
