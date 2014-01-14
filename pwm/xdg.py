@@ -65,7 +65,7 @@ def applications():
 
     applications = []
     for path in find_desktop_files():
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             try:
                 parsed = parse_desktop_file(f.read())
                 applications.append(parsed)
